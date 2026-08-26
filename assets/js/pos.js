@@ -409,6 +409,8 @@ function showReceipt(data) {
 
     document.getElementById('receiptContent').innerHTML = html;
     receiptM.show();
+    // Auto-print receipt after a short delay to ensure modal is rendered
+    setTimeout(function() { window.print(); }, 500);
 }
 
 function loadDailySummary() {
