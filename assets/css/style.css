@@ -413,7 +413,12 @@ a { text-decoration: none; color: inherit; }
   border-radius: var(--r);
   padding: 18px;
   box-shadow: var(--sh-sm);
-  display: flex; align-items: center; gap: 16px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 4px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   text-decoration: none; color: inherit; height: 100%;
 }
@@ -423,6 +428,7 @@ a { text-decoration: none; color: inherit; }
   text-decoration: none; color: inherit;
 }
 .stat-icon {
+  grid-row: 1 / 3;
   width: 52px; height: 52px; border-radius: 13px;
   display: flex; align-items: center; justify-content: center;
   font-size: 1.35rem; flex-shrink: 0;
@@ -444,13 +450,16 @@ a { text-decoration: none; color: inherit; }
 .stat-icon.teal    { background: var(--accent-lt);   color: var(--accent-dk); }
 
 .stat-value {
+  grid-column: 2;
   font-size: 1.85rem; font-weight: 900;
   color: var(--txt); line-height: 1; letter-spacing: -0.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .stat-label {
+  grid-column: 2;
   font-size: 0.72rem; font-weight: 700;
   color: var(--txt-muted); text-transform: uppercase;
-  letter-spacing: 0.5px; margin-top: 4px;
+  letter-spacing: 0.5px; margin-top: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════

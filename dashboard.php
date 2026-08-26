@@ -7,7 +7,7 @@
     <meta name="description" content="Sharon Store Business Intelligence Dashboard � Real-time sales and inventory overview">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=14">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=16">
     <?php
     require_once __DIR__ . '/includes/auth_check.php';
     requireAdmin();

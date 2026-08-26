@@ -1,12 +1,12 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Accounts â€” Sharon Store</title>
+    <title>Manage Accounts — Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=14">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=16">
     <?php
     require_once __DIR__ . '/includes/auth_check.php';
     requireAdmin();
@@ -47,7 +47,7 @@
                 <div class="ms-auto">
                     <div class="input-group input-group-sm" style="max-width:220px;">
                         <span class="input-group-text"><i class="fa-solid fa-search"></i></span>
-                        <input type="text" id="accountSearch" class="form-control" placeholder="Search name or usernameâ€¦">
+                        <input type="text" id="accountSearch" class="form-control" placeholder="Search name or username…">
                     </div>
                 </div>
             </div>
@@ -65,7 +65,7 @@
                             </tr>
                         </thead>
                         <tbody id="usersBody">
-                            <tr><td colspan="6" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loadingâ€¦</td></tr>
+                            <tr><td colspan="6" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading…</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -240,7 +240,7 @@ document.getElementById('userForm').addEventListener('submit', async function(e)
     body.append('confirm_password', document.getElementById('fConfirm').value);
     if (isEdit) body.append('is_active', document.getElementById('fIsActive').checked ? '1' : '0');
 
-    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Savingâ€¦';
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving…';
     const r = await fetch('/sharonstore3.0/api/accounts.php', {method:'POST', body});
     const j = await r.json();
     btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-save me-2"></i>Save';

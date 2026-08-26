@@ -1,12 +1,12 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Backup â€” Sharon Store</title>
+    <title>Database Backup — Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=14">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=16">
     <?php
     require_once __DIR__ . '/includes/auth_check.php';
     requireAdmin();
@@ -118,8 +118,8 @@ async function loadBackups() {
 
 document.getElementById('btnBackup').addEventListener('click', async function() {
     this.disabled = true;
-    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating backupâ€¦';
-    showToast('Generating backup, please waitâ€¦', 'info');
+    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating backup…';
+    showToast('Generating backup, please wait…', 'info');
     window.location.href = '/sharonstore3.0/api/backup.php?action=download';
     setTimeout(() => {
         this.disabled = false;
