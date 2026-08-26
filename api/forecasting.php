@@ -131,4 +131,53 @@ if ($action === 'forecast') {
     ]);
 }
 
+
+
+// ── Forecast All Products ───────────────────────────────────────
+if ($action === 'forecast_all') {
+    $periods = (int)($_GET['periods'] ?? 6);
+    $periods = in_array($periods, [3,6,12], true) ? $periods : 6;
+
+    $items = $db->query("SELECT item_id FROM tbl_inventory WHERE is_active = 1")->fetchAll();
+    $nextMonth = date('Y-m-01', strtotime('first day of next month'));
+
+    $histStmt = $db->prepare("
+        SELECT COALESCE(SUM(d.quantity), 0) AS qty_sold
+        FROM tbl_transaction_details d
+        JOIN tbl_transactions t ON t.transaction_id = d.transaction_id
+        WHERE d.item_id = :id
+          AND t.transaction_date >= DATE_SUB(CURDATE(), INTERVAL :periods MONTH)
+          AND (t.status IS NULL OR t.status != 'voided')
+        GROUP BY DATE_FORMAT(t.transaction_date, '%Y-%m')
+        ORDER BY DATE_FORMAT(t.transaction_date, '%Y-%m') ASC
+    ");
+    
+    $delStmt = $db->prepare("DELETE FROM tbl_forecasts WHERE item_id = :id AND forecast_period = :period");
+    $insStmt = $db->prepare("INSERT INTO tbl_forecasts (item_id, forecast_period, predicted_qty, method) VALUES (:id,:period,:qty,:method)");
+
+    foreach ($items as $item) {
+        $itemId = (int)$item['item_id'];
+        
+        $histStmt->execute([':id' => $itemId, ':periods' => $periods]);
+        $qtys = array_map(fn($r) => (float)$r['qty_sold'], $histStmt->fetchAll());
+        $n = count($qtys);
+
+        $sma_forecast = $n > 0 ? round(array_sum($qtys) / $n, 2) : 0;
+        
+        $wma_numerator = 0; $wma_denominator = 0;
+        foreach ($qtys as $i => $qty) {
+            $w = $i + 1;
+            $wma_numerator += $w * $qty;
+            $wma_denominator += $w;
+        }
+        $wma_forecast = $wma_denominator > 0 ? round($wma_numerator / $wma_denominator, 2) : 0;
+
+        $delStmt->execute([':id' => $itemId, ':period' => $nextMonth]);
+        $insStmt->execute([':id' => $itemId, ':period' => $nextMonth, ':qty' => $sma_forecast, ':method' => 'SMA']);
+        $insStmt->execute([':id' => $itemId, ':period' => $nextMonth, ':qty' => $wma_forecast, ':method' => 'WMA']);
+    }
+
+    respond(true, 'Generated forecast for all ' . count($items) . ' products.', ['count' => count($items)]);
+}
+
 respond(false, 'Unknown action.');

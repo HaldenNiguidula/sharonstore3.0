@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -192,6 +192,7 @@ async function loadItems() {
     const j = await r.json();
     if (!j.success) return;
     const sel = document.getElementById('itemSelect');
+    sel.innerHTML += `<option value="all" style="font-weight:700;color:#0abf8a;">★★ FORECAST ALL PRODUCTS ★★</option>`;
     j.data.forEach(i => {
         sel.innerHTML += `<option value="${i.item_id}" data-stock="${i.stock_qty}" data-unit="${esc(i.unit)}">${esc(i.item_name)} (Stock: ${i.stock_qty} ${i.unit})</option>`;
     });
@@ -206,6 +207,21 @@ document.getElementById('btnForecast').addEventListener('click', async () => {
     const btn = document.getElementById('btnForecast');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Calculating…';
+
+    if (itemId === 'all') {
+        const r = await fetch(`/sharonstore3.0/api/forecasting.php?action=forecast_all&periods=${periods}`);
+        const j = await r.json();
+        
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles me-2"></i>Forecast';
+        
+        if (!j.success) { showToast(j.message, 'error'); return; }
+        
+        document.getElementById('forecastResults').style.display = 'none';
+        showToast(j.message, 'success');
+        loadOverview();
+        return;
+    }
 
     const r = await fetch(`/sharonstore3.0/api/forecasting.php?action=forecast&item_id=${itemId}&periods=${periods}`);
     const j = await r.json();
@@ -306,7 +322,45 @@ async function loadOverview() {
             container.innerHTML = '<div class="empty-state p-5"><i class="fa-solid fa-chart-simple fa-2x text-muted mb-3"></i><p class="text-muted">No forecasts generated yet. Select a product above and click Forecast.</p></div>';
             return;
         }
-        let html = `<div class="table-responsive"><table class="table table-custom mb-0">
+        let totalItems = j.data.length;
+        let needsRestockCount = 0;
+        let totalRestockQty = 0;
+
+        j.data.forEach(row => {
+            if (row.needs_restock) {
+                needsRestockCount++;
+                totalRestockQty += (row.sma_restock > 0 ? row.sma_restock : row.wma_restock);
+            }
+        });
+
+        let html = `
+            <div class="row g-3 mb-3 p-3 pb-0" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; margin:0;">
+                <div class="col-md-4">
+                    <div class="card h-100" style="border:none;box-shadow:0 2px 8px rgba(0,0,0,0.04);border-left:4px solid #10b981;">
+                        <div class="card-body p-3">
+                            <h6 class="text-muted mb-1" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;">Total Forecasted</h6>
+                            <h3 class="mb-0" style="font-weight:800;color:#2C2D2D;">${totalItems} <small class="text-muted" style="font-size:0.8rem;">Items</small></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100" style="border:none;box-shadow:0 2px 8px rgba(0,0,0,0.04);border-left:4px solid ${needsRestockCount > 0 ? '#f59e0b' : '#10b981'};">
+                        <div class="card-body p-3">
+                            <h6 class="text-muted mb-1" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;">Needs Restock</h6>
+                            <h3 class="mb-0" style="font-weight:800;color:${needsRestockCount > 0 ? '#f59e0b' : '#2C2D2D'};">${needsRestockCount} <small class="text-muted" style="font-size:0.8rem;">Items</small></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100" style="border:none;box-shadow:0 2px 8px rgba(0,0,0,0.04);border-left:4px solid #3b82f6;">
+                        <div class="card-body p-3">
+                            <h6 class="text-muted mb-1" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;">Est. Units to Order</h6>
+                            <h3 class="mb-0" style="font-weight:800;color:#3b82f6;">${totalRestockQty} <small class="text-muted" style="font-size:0.8rem;">Units</small></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive"><table class="table table-custom mb-0">
             <thead><tr>
                 <th>Product</th><th>Category</th><th class="text-center">Current Stock</th>
                 <th class="text-center" style="color:#3b82f6;">SMA Forecast</th>
@@ -315,6 +369,7 @@ async function loadOverview() {
                 <th class="text-center" style="color:#f59e0b;">WMA Order</th>
                 <th class="text-center">Status</th>
             </tr></thead><tbody>`;
+            
         j.data.forEach(row => {
             const needsRestock = row.needs_restock;
             const badge = needsRestock

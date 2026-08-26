@@ -419,7 +419,7 @@ function loadDailySummary() {
     .then(function (j) {
         if (j && j.success) {
             document.getElementById('todayTxCount').textContent = j.transaction_count;
-            document.getElementById('todayTxTotal').textContent = j.total_sales_fmt;
+            document.getElementById('todayTxTotal').innerHTML = j.total_sales_fmt;
         }
     })
     .catch(function () {});

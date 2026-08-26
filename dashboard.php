@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -238,7 +238,7 @@ async function loadSalesTrend() {
             data: {
                 labels: j.data.labels,
                 datasets: [{
-                    label: 'Daily Sales (&#8369;)',
+                    label: 'Daily Sales (\u20b1)',
                     data: j.data.data,
                     borderColor: EMERALD,
                     backgroundColor: 'rgba(16,185,129,0.1)',
@@ -252,7 +252,7 @@ async function loadSalesTrend() {
             options: {
                 responsive: true, maintainAspectRatio: true,
                 plugins: { legend: { display: false }, tooltip: {
-                    callbacks: { label: ctx => '&#8369;' + parseFloat(ctx.parsed.y).toLocaleString('en-PH',{minimumFractionDigits:2}) }
+                    callbacks: { label: ctx => '\u20b1' + parseFloat(ctx.parsed.y).toLocaleString('en-PH',{minimumFractionDigits:2}) }
                 }},
                 scales: {
                     x: {
@@ -293,7 +293,7 @@ async function loadCategoryChart() {
                 responsive: true, maintainAspectRatio: true,
                 plugins: {
                     legend: { position: 'bottom', labels: { padding: 12, color: '#2C2D2D', font: { size: 11 } } },
-                    tooltip: { callbacks: { label: ctx => ctx.label + ': &#8369;' + parseFloat(ctx.parsed).toLocaleString('en-PH',{minimumFractionDigits:2}) } }
+                    tooltip: { callbacks: { label: ctx => ctx.label + ': \u20b1' + parseFloat(ctx.parsed).toLocaleString('en-PH',{minimumFractionDigits:2}) } }
                 }
             }
         });

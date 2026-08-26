@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // ============================================================
 // POS Page � Sharon Store System
 // Accessible by both Admin and Cashier
@@ -475,10 +475,10 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 </head>
 <body>
 
-<div class="app-wrapper">
+<div class="app-wrapper" style="height:100vh;max-height:100vh;overflow:hidden;">
     <?php require_once __DIR__ . '/includes/sidebar.php'; ?>
 
-    <div class="main-content" style="padding:0;display:flex;flex-direction:column;overflow:hidden;">
+    <div class="main-content" style="padding:0;display:flex;flex-direction:column;overflow:hidden;height:100%;">
 
         <!-- Shared topbar (same as all other pages) -->
         <?php require_once __DIR__ . '/includes/header.php'; ?>

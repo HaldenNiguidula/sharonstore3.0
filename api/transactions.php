@@ -23,7 +23,7 @@ function jsonOut(array $data, int $status = 200): never {
 
 // ── Helper: format peso ───────────────────────────────────────
 function peso(float $v): string {
-    return '&#8369;' . number_format($v, 2);
+    return "\u{20B1}" . number_format($v, 2);
 }
 
 // ── Route: detect action ──────────────────────────────────────
