@@ -237,15 +237,20 @@ function handleCompleteSale(array $body): never {
     $changeAmount = round($amountTendered - $grandTotal, 2);
 
     // ── Generate transaction code: TXN-YYYYMMDD-#### ──────────
-    $today = date('Ymd');
-    $cntStmt = $db->prepare(
-        "SELECT COUNT(*) FROM tbl_transactions
-         WHERE  DATE(transaction_date) = CURDATE()"
+    $today   = date('Ymd');
+    $prefix  = 'TXN-' . $today . '-';
+
+    // Find the highest existing sequence for today's prefix
+    $prefixLen = strlen($prefix);
+    $seqStmt = $db->prepare(
+        "SELECT MAX(CAST(SUBSTRING(transaction_code, {$prefixLen} + 1) AS UNSIGNED)) AS max_seq
+         FROM   tbl_transactions
+         WHERE  transaction_code LIKE :like"
     );
-    $cntStmt->execute();
-    $todayCount      = (int)$cntStmt->fetchColumn();
-    $seq             = $todayCount + 1;
-    $transactionCode = 'TXN-' . $today . '-' . str_pad((string)$seq, 4, '0', STR_PAD_LEFT);
+    $seqStmt->execute([':like' => $prefix . '%']);
+    $maxSeq  = (int)($seqStmt->fetchColumn() ?: 0);
+    $seq     = $maxSeq + 1;
+    $transactionCode = $prefix . str_pad((string)$seq, 4, '0', STR_PAD_LEFT);
 
     // ── PDO transaction: INSERT + stock deduction ─────────────
     try {

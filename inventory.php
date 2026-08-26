@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -164,11 +164,12 @@
                             <label class="form-label">Barcode</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-solid fa-barcode"></i></span>
-                                <input type="text" id="fBarcode" class="form-control" placeholder="Scan or type barcode">
+                                <input type="text" id="fBarcode" class="form-control" placeholder="Scan or type barcode, then press Enter">
                                 <button type="button" class="btn btn-secondary" id="btnScanBarcode" title="Click then scan">
                                     <i class="fa-solid fa-qrcode me-1"></i>Scan
                                 </button>
                             </div>
+                            <div id="barcodeLookupStatus" style="margin-top:5px;font-size:0.78rem;font-weight:600;display:none;"></div>
                         </div>
                         <div class="col-12 col-md-8">
                             <label class="form-label">Item Name <span class="text-danger">*</span></label>
@@ -566,7 +567,10 @@ document.getElementById('btnAddItem').addEventListener('click', () => {
     document.getElementById('itemForm').reset();
     document.getElementById('fItemId').value = '';
     document.getElementById('itemFormError').classList.add('d-none');
+    document.getElementById('barcodeLookupStatus').style.display = 'none';
     itemModal.show();
+    // Auto-focus barcode field so user can start scanning immediately
+    setTimeout(() => document.getElementById('fBarcode').focus(), 300);
 });
 
 // -- Edit Item -------------------------------------------------
@@ -666,10 +670,105 @@ document.getElementById('btnDeleteConfirm').addEventListener('click', async () =
     else showToast(j.message, 'error');
 });
 
-// -- Barcode scan focus ----------------------------------------
+// -- Barcode Auto-Lookup ----------------------------------------
+// Looks up barcode via API and auto-fills form fields if found.
+// Leaves selling price and expiry empty — user must set those manually.
+async function lookupBarcode() {
+    const bc = document.getElementById('fBarcode').value.trim();
+    const statusEl = document.getElementById('barcodeLookupStatus');
+
+    if (!bc) {
+        statusEl.style.display = 'none';
+        return;
+    }
+
+    // Only lookup when adding (not editing)
+    const isEditing = !!document.getElementById('fItemId').value;
+    if (isEditing) return;
+
+    statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Looking up barcode...';
+    statusEl.style.color = '#888888';
+    statusEl.style.display = 'block';
+
+    try {
+        const r = await fetch('/sharonstore3.0/api/inventory.php?action=barcode_lookup&barcode=' + encodeURIComponent(bc));
+        const j = await r.json();
+
+        if (j.success && j.data) {
+            const d = j.data;
+            // Auto-fill fields from existing product (EXCEPT price and expiry)
+            document.getElementById('fItemName').value  = d.item_name  || '';
+            document.getElementById('fUnit').value      = d.unit       || 'pieces';
+            document.getElementById('fCostPrice').value = d.cost_price || '';
+            document.getElementById('fStockQty').value  = d.stock_qty  || '';
+            document.getElementById('fThreshold').value = d.low_stock_threshold || '10';
+
+            // Set category dropdown if the category exists
+            if (d.category_id) {
+                const catSelect = document.getElementById('fCategory');
+                // Check if the option exists before setting
+                const optExists = Array.from(catSelect.options).some(o => o.value == d.category_id);
+                if (optExists) catSelect.value = d.category_id;
+            }
+
+            // Leave price and expiry empty — user fills these
+            document.getElementById('fPrice').value  = '';
+            document.getElementById('fExpiry').value = '';
+
+            // Focus selling price so user can fill it immediately
+            document.getElementById('fPrice').focus();
+
+            statusEl.innerHTML = '<i class="fa-solid fa-check-circle me-1" style="color:#059669;"></i>'
+                + '<span style="color:#059669;">Found: ' + escHtml(d.item_name) + '</span>'
+                + ' <span style="color:#888;font-weight:400;">— set selling price & expiry</span>';
+            statusEl.style.display = 'block';
+        } else {
+            // Barcode not in system — this is a brand new product
+            statusEl.innerHTML = '<i class="fa-solid fa-circle-plus me-1" style="color:#2563eb;"></i>'
+                + '<span style="color:#2563eb;">New barcode — fill in product details below</span>';
+            statusEl.style.display = 'block';
+
+            // Focus item name so user can start typing
+            document.getElementById('fItemName').focus();
+        }
+    } catch (err) {
+        statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1" style="color:#dc2626;"></i>'
+            + '<span style="color:#dc2626;">Lookup failed — fill in details manually</span>';
+        statusEl.style.display = 'block';
+    }
+}
+
+// Escape HTML for safe display
+function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+// Trigger lookup on Enter key (USB barcode scanners send Enter after barcode)
+document.getElementById('fBarcode').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();  // Prevent form submission
+        lookupBarcode();
+    }
+});
+
+// Scan button: focus the barcode field + trigger lookup if barcode already entered
 document.getElementById('btnScanBarcode').addEventListener('click', () => {
-    document.getElementById('fBarcode').focus();
-    showToast('Scanner ready � scan your barcode.', 'info');
+    const bc = document.getElementById('fBarcode');
+    bc.focus();
+    if (bc.value.trim()) {
+        lookupBarcode();
+    } else {
+        showToast('Scanner ready \u2014 scan your barcode.', 'info');
+    }
+});
+
+// Clear the status when barcode field is cleared
+document.getElementById('fBarcode').addEventListener('input', function() {
+    if (!this.value.trim()) {
+        document.getElementById('barcodeLookupStatus').style.display = 'none';
+    }
 });
 
 // -- Search / filter -------------------------------------------
