@@ -365,7 +365,7 @@ function showReceipt(data) {
         rows += '<tr>'
             + '<td colspan="2" style="' + SB + 'padding:3px 0 0;word-break:break-word;">' + esc(it.item_name) + '</td>'
             + '</tr><tr>'
-            + '<td style="' + SM + 'padding:0 0 5px 0;">' + it.quantity + ' x &#8369;' + parseFloat(it.unit_price).toFixed(2) + '</td>'
+            + '<td style="' + SM + 'padding:0 0 5px 0;">' + parseFloat(it.quantity) + ' x &#8369;' + parseFloat(it.unit_price).toFixed(2) + '</td>'
             + '<td style="' + SB + 'text-align:right;padding:0 0 5px;">&#8369;' + parseFloat(it.subtotal).toFixed(2) + '</td>'
             + '</tr>';
     }

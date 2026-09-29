@@ -173,7 +173,7 @@ async function loadLowStock() {
         items.forEach(row => {
             const rowCls = row.stock_status==='out'?'table-row-danger':'table-row-warning';
             const badge  = row.stock_status==='out'?'<span class="badge badge-danger">Out</span>':'<span class="badge badge-warning">Low</span>';
-            html += `<tr class="${rowCls}"><td style="font-weight:600;">${esc(row.item_name)}<br><small style="color:#555657;">${esc(row.category_name)}</small></td><td style="font-weight:700;">${row.stock_qty} ${row.unit}</td><td>${badge}</td></tr>`;
+            html += `<tr class="${rowCls}"><td style="font-weight:600;">${esc(row.item_name)}<br><small style="color:#555657;">${esc(row.category_name)}</small></td><td style="font-weight:700;">${parseFloat(row.stock_qty)} ${row.unit}</td><td>${badge}</td></tr>`;
         });
         html += '</tbody></table></div>';
         el.innerHTML = html;

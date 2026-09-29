@@ -294,16 +294,16 @@ document.getElementById('btnForecast').addEventListener('click', async () => {
     d.history.forEach(h => {
         tbody += `<tr>
             <td class="fw-600">${esc(h.month_label)}</td>
-            <td class="text-center fw-700">${parseFloat(h.qty_sold).toFixed(2)}</td>
-            <td class="text-center" style="color:#3b82f6;">${d.sma_forecast}</td>
-            <td class="text-center" style="color:#10b981;">${d.wma_forecast}</td>
+            <td class="text-center fw-700">${parseFloat(h.qty_sold)}</td>
+            <td class="text-center" style="color:#3b82f6;">${d.sma_forecast ? Math.round(d.sma_forecast) : '-'}</td>
+            <td class="text-center" style="color:#10b981;">${d.wma_forecast ? Math.round(d.wma_forecast) : '-'}</td>
         </tr>`;
     });
     tbody += `<tr style="background:rgba(16,185,129,0.08); font-weight:800;">
         <td>Next Month (${esc(d.next_period)})</td>
         <td class="text-center text-muted">—</td>
-        <td class="text-center" style="color:#3b82f6;">${d.sma_forecast}</td>
-        <td class="text-center" style="color:#10b981;">${d.wma_forecast}</td>
+        <td class="text-center" style="color:#3b82f6;">${d.sma_forecast ? Math.round(d.sma_forecast) : '-'}</td>
+        <td class="text-center" style="color:#10b981;">${d.wma_forecast ? Math.round(d.wma_forecast) : '-'}</td>
     </tr>`;
     document.getElementById('forecastTableBody').innerHTML = tbody;
 
@@ -378,9 +378,9 @@ async function loadOverview() {
             html += `<tr class="${needsRestock?'table-row-warning':''}">
                 <td class="fw-600">${esc(row.item_name)}</td>
                 <td class="text-muted">${esc(row.category_name)}</td>
-                <td class="text-center">${parseFloat(row.stock_qty).toFixed(2)} ${esc(row.unit)}</td>
-                <td class="text-center" style="color:#3b82f6;">${row.sma_forecast ? parseFloat(row.sma_forecast).toFixed(2) : '—'}</td>
-                <td class="text-center" style="color:#10b981;">${row.wma_forecast ? parseFloat(row.wma_forecast).toFixed(2) : '—'}</td>
+                <td class="text-center">${parseFloat(row.stock_qty)} ${esc(row.unit)}</td>
+                <td class="text-center" style="color:#3b82f6;">${row.sma_forecast ? Math.round(row.sma_forecast) : '—'}</td>
+                <td class="text-center" style="color:#10b981;">${row.wma_forecast ? Math.round(row.wma_forecast) : '—'}</td>
                 <td class="text-center fw-700" style="color:#f59e0b;">${row.sma_restock > 0 ? row.sma_restock : '—'}</td>
                 <td class="text-center fw-700" style="color:#f59e0b;">${row.wma_restock > 0 ? row.wma_restock : '—'}</td>
                 <td class="text-center">${badge}</td>

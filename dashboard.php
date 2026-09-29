@@ -360,7 +360,7 @@ async function loadLowStock() {
             html += `<tr class="${rowCls}">
                 <td><span class="fw-600">${esc(row.item_name)}</span></td>
                 <td><span class="text-muted-sm">${esc(row.category_name)}</span></td>
-                <td><span class="fw-700">${row.stock_qty} ${row.unit}</span></td>
+                <td><span class="fw-700">${parseFloat(row.stock_qty)} ${row.unit}</span></td>
                 <td>${badge}</td>
             </tr>`;
         });
@@ -387,7 +387,7 @@ async function loadExpiring() {
             html += `<tr class="${rowCls}">
                 <td class="fw-600">${esc(row.item_name)}</td>
                 <td class="text-muted-sm">${esc(row.category_name)}</td>
-                <td>${row.stock_qty} ${row.unit}</td>
+                <td>${parseFloat(row.stock_qty)} ${row.unit}</td>
                 <td>${row.expiry_date}</td>
                 <td><span class="${daysCls}">${days <= 0 ? 'EXPIRED' : days + ' days'}</span></td>
             </tr>`;
