@@ -88,6 +88,14 @@ $pageTitle  = $pageTitle ?? 'Sharon Store';
                     </a>
                 </li>
                 <?php endif; ?>
+                <?php if (isset($pageTitle) && $pageTitle === 'Point of Sale'): ?>
+                <li><hr class="dropdown-divider ss-divider"></li>
+                <li>
+                    <a href="#" class="dropdown-item ss-dropdown-item" onclick="shiftModals.end.show(); return false;">
+                        <i class="fa-solid fa-lock me-2" style="color:#ef4444;width:16px;"></i>End Shift
+                    </a>
+                </li>
+                <?php endif; ?>
                 <li><hr class="dropdown-divider ss-divider"></li>
                 <li>
                     <a href="/sharonstore3.0/logout.php" class="dropdown-item ss-dropdown-item ss-logout-item"

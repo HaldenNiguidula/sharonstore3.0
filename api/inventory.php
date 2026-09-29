@@ -89,6 +89,7 @@ if ($action === 'list') {
                 i.created_at,
                 i.updated_at,
                 CASE
+                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date <= CURDATE() THEN 'expired'
                     WHEN i.stock_qty <= 0                        THEN 'out'
                     WHEN i.stock_qty <= i.low_stock_threshold    THEN 'low'
                     ELSE                                              'ok'

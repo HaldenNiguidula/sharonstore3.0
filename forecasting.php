@@ -34,10 +34,12 @@
     <div class="main-content">
         <?php require_once __DIR__ . '/includes/header.php'; ?>
 
-        <div class="page-header">
-            <ul class="breadcrumb-custom"><li><a href="/sharonstore3.0/dashboard.php">Home</a></li><li class="active">Forecasting</li></ul>
-            <h1 class="page-header-title"><i class="fa-solid fa-chart-line me-2 text-emerald"></i>Sales Forecasting</h1>
-            <p class="page-header-subtitle">Predict future demand using Simple &amp; Weighted Moving Averages to optimize wholesale purchasing.</p>
+        <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <ul class="breadcrumb-custom"><li><a href="/sharonstore3.0/dashboard.php">Home</a></li><li class="active">Forecasting</li></ul>
+                <h1 class="page-header-title"><i class="fa-solid fa-chart-line me-2 text-emerald"></i>Sales Forecasting</h1>
+                <p class="page-header-subtitle">Predict future demand using Simple &amp; Weighted Moving Averages to optimize wholesale purchasing.</p>
+            </div>
         </div>
 
         <!-- Forecast Controls -->

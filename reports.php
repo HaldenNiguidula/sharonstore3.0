@@ -45,6 +45,26 @@ $pageTitle = 'Sales Reports';
     height: 300px;
     width: 100%;
 }
+.clickable-period {
+    color: var(--accent);
+    text-decoration: none;
+    cursor: pointer;
+}
+.clickable-period:hover {
+    text-decoration: underline;
+}
+.sortable-th {
+    cursor: pointer;
+    user-select: none;
+}
+.sortable-th:hover {
+    background-color: var(--surface-2);
+}
+.sort-icon {
+    font-size: 0.8em;
+    margin-left: 5px;
+    color: var(--txt-muted);
+}
 @media print {
     body { background: white !important; }
     .ss-sidebar, .ss-topbar, .report-tabs, .btn, .breadcrumb-custom { display: none !important; }
@@ -117,13 +137,50 @@ $pageTitle = 'Sales Reports';
     </div>
 </div>
 
+<!-- Detailed Item Breakdown Modal -->
+<div class="modal fade" id="breakdownModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title fw-bold">Items Sold: <span id="bdModalTitle" class="text-emerald"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th class="sortable-th" onclick="sortBreakdown('item_name')">Item Name <i class="fa-solid fa-sort sort-icon" id="sort-icon-item_name"></i></th>
+                                <th class="sortable-th text-center" onclick="sortBreakdown('qty_sold')">Quantity Sold <i class="fa-solid fa-sort sort-icon" id="sort-icon-qty_sold"></i></th>
+                                <th class="sortable-th text-end" onclick="sortBreakdown('total_revenue')">Total Revenue <i class="fa-solid fa-sort sort-icon" id="sort-icon-total_revenue"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="bdTableBody">
+                            <tr><td colspan="3" class="text-center py-4">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="/sharonstore3.0/assets/js/app.js"></script>
 <script>
 let salesChart = null;
+let currentReportType = 'daily';
+let breakdownData = [];
+let sortCol = 'total_revenue';
+let sortDesc = true;
+const bdModal = new bootstrap.Modal(document.getElementById('breakdownModal'));
 
 async function loadReport(type, tabEl = null) {
+    currentReportType = type;
     if (tabEl) {
         document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
         tabEl.classList.add('active');
@@ -180,8 +237,14 @@ async function loadReport(type, tabEl = null) {
             tbody = '<tr><td colspan="3" class="text-center py-4 text-muted">No sales data found for this period.</td></tr>';
         } else {
             d.tableData.forEach(row => {
+                const safePeriod = esc(row.period);
+                const safeRawDate = esc(row.raw_date);
                 tbody += `<tr>
-                    <td class="fw-600">${esc(row.period)}</td>
+                    <td class="fw-600">
+                        <a class="clickable-period" onclick="openBreakdown('${safeRawDate}', '${safePeriod}')">
+                            <i class="fa-solid fa-magnifying-glass-chart me-1"></i> ${safePeriod}
+                        </a>
+                    </td>
                     <td class="text-center">${row.tx_count}</td>
                     <td class="text-end fw-700" style="color:var(--accent);">₱${parseFloat(row.revenue).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                 </tr>`;
@@ -193,6 +256,85 @@ async function loadReport(type, tabEl = null) {
         showToast('Failed to load report data.', 'error');
         document.getElementById('tableBody').innerHTML = '<tr><td colspan="3" class="text-center py-4 text-danger">Error loading data.</td></tr>';
     }
+}
+
+async function openBreakdown(rawDate, periodLabel) {
+    document.getElementById('bdModalTitle').textContent = periodLabel;
+    document.getElementById('bdTableBody').innerHTML = '<tr><td colspan="3" class="text-center py-4"><span class="spinner-border text-emerald"></span></td></tr>';
+    bdModal.show();
+    
+    // Reset sort
+    sortCol = 'total_revenue';
+    sortDesc = true;
+    updateSortIcons();
+
+    try {
+        const res = await fetch(`/sharonstore3.0/api/reports.php?action=item_breakdown&type=${currentReportType}&raw_date=${encodeURIComponent(rawDate)}`);
+        const json = await res.json();
+        
+        if (json.success) {
+            breakdownData = json.data;
+            renderBreakdownTable();
+        } else {
+            document.getElementById('bdTableBody').innerHTML = `<tr><td colspan="3" class="text-center py-4 text-danger">${esc(json.message)}</td></tr>`;
+        }
+    } catch (err) {
+        document.getElementById('bdTableBody').innerHTML = '<tr><td colspan="3" class="text-center py-4 text-danger">Failed to fetch data.</td></tr>';
+    }
+}
+
+function sortBreakdown(col) {
+    if (sortCol === col) {
+        sortDesc = !sortDesc;
+    } else {
+        sortCol = col;
+        sortDesc = true;
+    }
+    updateSortIcons();
+    
+    breakdownData.sort((a, b) => {
+        let valA = a[sortCol];
+        let valB = b[sortCol];
+        
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+        
+        if (valA < valB) return sortDesc ? 1 : -1;
+        if (valA > valB) return sortDesc ? -1 : 1;
+        return 0;
+    });
+    
+    renderBreakdownTable();
+}
+
+function updateSortIcons() {
+    ['item_name', 'qty_sold', 'total_revenue'].forEach(c => {
+        const el = document.getElementById('sort-icon-' + c);
+        if (c === sortCol) {
+            el.className = 'fa-solid sort-icon ' + (sortDesc ? 'fa-sort-down' : 'fa-sort-up');
+            el.style.color = 'var(--accent)';
+        } else {
+            el.className = 'fa-solid fa-sort sort-icon';
+            el.style.color = 'var(--txt-muted)';
+        }
+    });
+}
+
+function renderBreakdownTable() {
+    if (breakdownData.length === 0) {
+        document.getElementById('bdTableBody').innerHTML = '<tr><td colspan="3" class="text-center py-4 text-muted">No items sold in this period.</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    breakdownData.forEach(row => {
+        html += `<tr>
+            <td class="fw-600">${esc(row.item_name)}</td>
+            <td class="text-center fw-700">${parseFloat(row.qty_sold)}</td>
+            <td class="text-end fw-700" style="color:var(--accent);">₱${parseFloat(row.total_revenue).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+        </tr>`;
+    });
+    document.getElementById('bdTableBody').innerHTML = html;
 }
 
 // Initial load

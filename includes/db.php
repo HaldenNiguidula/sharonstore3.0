@@ -26,3 +26,27 @@ function getDB(): PDO {
     }
     return $pdo;
 }
+
+function getDailyManagerPIN(PDO $db): string {
+    $today = date('Y-m-d');
+    
+    // Check if we have a PIN generated for today
+    $stmt = $db->prepare("SELECT setting_value FROM tbl_settings WHERE setting_key = 'pin_date'");
+    $stmt->execute();
+    $pinDate = $stmt->fetchColumn();
+
+    if ($pinDate === $today) {
+        $stmt = $db->prepare("SELECT setting_value FROM tbl_settings WHERE setting_key = 'daily_pin'");
+        $stmt->execute();
+        return $stmt->fetchColumn() ?: '0000';
+    }
+
+    // Generate a new 4-digit PIN for today
+    $newPin = str_pad((string)mt_rand(1000, 9999), 4, '0', STR_PAD_LEFT);
+
+    // Save/Update settings
+    $db->prepare("REPLACE INTO tbl_settings (setting_key, setting_value) VALUES ('pin_date', ?)")->execute([$today]);
+    $db->prepare("REPLACE INTO tbl_settings (setting_key, setting_value) VALUES ('daily_pin', ?)")->execute([$newPin]);
+
+    return $newPin;
+}

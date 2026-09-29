@@ -29,7 +29,7 @@ html,body{height:100%;overflow:hidden;}
 body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;}
 
 /* POS body below topbar */
-.pos-body{display:flex;flex:1;min-height:0;overflow:hidden;}
+.pos-body{display:flex;flex:1;min-height:0;overflow:hidden;position:relative;}
 
 /* Left panel  cart side */
 .pos-left{
@@ -484,7 +484,15 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
         <?php require_once __DIR__ . '/includes/header.php'; ?>
 
         <!-- POS Body -->
-        <div class="pos-body" style="flex:1;min-height:0;">
+        <div class="pos-body" style="flex:1;min-height:0;position:relative;">
+            
+            <!-- Shift Lock Overlay -->
+            <div id="shiftOverlay" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(240,244,248,0.95); z-index:100; flex-direction:column; align-items:center; justify-content:center;">
+                <i class="fa-solid fa-lock text-danger fa-4x mb-3"></i>
+                <h2 class="fw-bold text-dark mb-2">POS Locked</h2>
+                <p class="text-muted mb-4 text-center">Your shift has not been started or has ended.<br>Manager authorization is required.</p>
+                <button class="btn btn-primary btn-lg" onclick="shiftModals.start.show()"><i class="fa-solid fa-key me-2"></i>Start Shift (Manager)</button>
+            </div>
 
             <!-- --- LEFT: Cart Panel --- -->
             <div class="pos-left">
@@ -690,6 +698,14 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                             <div class="pos-summary-lbl">Total Sales</div>
                         </div>
                     </div>
+                    <div class="d-flex gap-2 mt-3">
+                        <button class="btn btn-outline-secondary w-100 fw-bold" style="font-size: 0.85rem;" onclick="viewShiftSummary()">
+                            <i class="fa-solid fa-list-check me-2"></i>Live Summary
+                        </button>
+                        <button class="btn btn-danger w-100 fw-bold" style="font-size: 0.85rem;" onclick="shiftModals.end.show()">
+                            <i class="fa-solid fa-lock me-2"></i>End Shift
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Keyboard shortcuts -->
@@ -734,11 +750,262 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
     </div>
 </div>
 
+<!-- Start Shift Modal -->
+<div class="modal fade" id="startShiftModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-key text-primary me-2"></i>Manager Authorization</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="startShiftForm">
+                <div class="modal-body p-4">
+                    <p class="text-muted mb-4">Please enter the Daily Manager PIN and the starting petty cash amount to unlock the POS.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Manager PIN <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control form-control-lg text-center fw-bold" id="startPin" required maxlength="4" placeholder="****">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Starting Cash (₱) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control form-control-lg text-end" id="startCash" required placeholder="0.00">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold" id="btnStartShift">Open Shift</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- End Shift Modal -->
+<div class="modal fade" id="endShiftModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-lock text-danger me-2"></i>Close Shift</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="endShiftForm">
+                <div class="modal-body p-4">
+                    <p class="text-muted mb-4">A Manager PIN is required to close the drawer. Please count the physical cash in the drawer and enter it below.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Manager PIN <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control form-control-lg text-center fw-bold" id="endPin" required maxlength="4" placeholder="****">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Counted Drawer Cash (₱) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control form-control-lg text-end" id="endCash" required placeholder="0.00">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger fw-bold" id="btnEndShift">Close Drawer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Shift Summary Modal -->
+<div class="modal fade" id="shiftSummaryModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-file-invoice-dollar text-emerald me-2"></i>Drawer Closed</h5>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <h4 class="mb-4">Drawer successfully closed!</h4>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted fw-bold">Expected Cash:</span>
+                    <span class="fw-bold" id="sumExpected">₱0.00</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted fw-bold">Actual Counted:</span>
+                    <span class="fw-bold" id="sumActual">₱0.00</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted fw-bold">Variance:</span>
+                    <span class="fw-bold fs-5" id="sumVariance">₱0.00</span>
+                </div>
+                <button type="button" class="btn btn-primary w-100 fw-bold mt-2" onclick="location.reload()">Okay</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Shift View Modal -->
+<div class="modal fade" id="liveShiftModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-list-check text-primary me-2"></i>Live Shift Summary</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                    <span class="text-muted fw-bold">Shift Started:</span>
+                    <span class="fw-bold" id="liveShiftStarted">--</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted fw-bold">Starting Cash:</span>
+                    <span class="fw-bold" id="liveStartingCash">₱0.00</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted fw-bold">Total Transactions:</span>
+                    <span class="fw-bold text-primary" id="liveTxnCount">0</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted fw-bold">Total Sales:</span>
+                    <span class="fw-bold text-success" id="liveTotalSales">₱0.00</span>
+                </div>
+                <div class="alert alert-primary text-center mb-0 py-2">
+                    <span class="d-block text-muted fw-bold" style="font-size:0.8rem;">EXPECTED DRAWER CASH</span>
+                    <span class="fw-bold fs-3" id="liveExpectedCash">₱0.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Toast container -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="/sharonstore3.0/assets/js/app.js"></script>
 <script src="/sharonstore3.0/assets/js/pos.js"></script>
+<script>
+const shiftModals = {
+    start: new bootstrap.Modal(document.getElementById('startShiftModal')),
+    end: new bootstrap.Modal(document.getElementById('endShiftModal')),
+    summary: new bootstrap.Modal(document.getElementById('shiftSummaryModal')),
+    live: new bootstrap.Modal(document.getElementById('liveShiftModal'))
+};
+
+let currentShiftId = null;
+const isAdmin = <?= isAdmin() ? 'true' : 'false' ?>;
+
+async function checkShiftStatus() {
+    if (isAdmin) {
+        document.getElementById('shiftOverlay').style.display = 'none';
+        return; // Admins don't need a shift to operate the POS
+    }
+
+    try {
+        const res = await fetch('/sharonstore3.0/api/shifts.php?action=check');
+        const json = await res.json();
+        if (json.success) {
+            currentShiftId = json.data.shift_id;
+            document.getElementById('shiftOverlay').style.display = 'none';
+        } else {
+            currentShiftId = null;
+            document.getElementById('shiftOverlay').style.display = 'flex';
+        }
+    } catch (e) {
+        console.error('Failed to check shift status', e);
+    }
+}
+
+// Check on load
+document.addEventListener('DOMContentLoaded', () => {
+    checkShiftStatus();
+});
+
+document.getElementById('startShiftForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnStartShift');
+    btn.disabled = true;
+    
+    const fd = new FormData();
+    fd.append('action', 'start');
+    fd.append('pin', document.getElementById('startPin').value);
+    fd.append('starting_cash', document.getElementById('startCash').value);
+    
+    try {
+        const res = await fetch('/sharonstore3.0/api/shifts.php', { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.success) {
+            currentShiftId = json.data.shift_id;
+            shiftModals.start.hide();
+            document.getElementById('shiftOverlay').style.display = 'none';
+            showToast('Shift opened successfully.', 'success');
+        } else {
+            showToast(json.message, 'error');
+        }
+    } catch (err) {
+        showToast('Error connecting to server.', 'error');
+    }
+    btn.disabled = false;
+});
+
+document.getElementById('endShiftForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnEndShift');
+    btn.disabled = true;
+    
+    const fd = new FormData();
+    fd.append('action', 'end');
+    fd.append('pin', document.getElementById('endPin').value);
+    fd.append('actual_cash', document.getElementById('endCash').value);
+    
+    try {
+        const res = await fetch('/sharonstore3.0/api/shifts.php', { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.success) {
+            shiftModals.end.hide();
+            
+            document.getElementById('sumExpected').textContent = '₱' + parseFloat(json.data.expected_cash).toLocaleString('en-US', {minimumFractionDigits:2});
+            document.getElementById('sumActual').textContent = '₱' + parseFloat(json.data.actual_cash).toLocaleString('en-US', {minimumFractionDigits:2});
+            
+            const variance = parseFloat(json.data.short_over);
+            const varEl = document.getElementById('sumVariance');
+            varEl.textContent = '₱' + variance.toLocaleString('en-US', {minimumFractionDigits:2});
+            if (variance < 0) {
+                varEl.className = 'fw-bold fs-5 text-danger';
+            } else if (variance > 0) {
+                varEl.className = 'fw-bold fs-5 text-success';
+            } else {
+                varEl.className = 'fw-bold fs-5 text-muted';
+            }
+            
+            shiftModals.summary.show();
+        } else {
+            showToast(json.message, 'error');
+            btn.disabled = false;
+        }
+    } catch (err) {
+        showToast('Error connecting to server.', 'error');
+        btn.disabled = false;
+    }
+});
+
+async function viewShiftSummary() {
+    if (isAdmin) {
+        showToast('Admins do not have active shifts.', 'info');
+        return;
+    }
+    
+    try {
+        const res = await fetch('/sharonstore3.0/api/shifts.php?action=summary');
+        const json = await res.json();
+        
+        if (json.success) {
+            document.getElementById('liveShiftStarted').textContent = new Date(json.data.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('liveStartingCash').textContent = '₱' + parseFloat(json.data.starting_cash).toLocaleString('en-US', {minimumFractionDigits:2});
+            document.getElementById('liveTxnCount').textContent = json.data.txn_count;
+            document.getElementById('liveTotalSales').textContent = '₱' + parseFloat(json.data.total_sales).toLocaleString('en-US', {minimumFractionDigits:2});
+            document.getElementById('liveExpectedCash').textContent = '₱' + parseFloat(json.data.expected_cash).toLocaleString('en-US', {minimumFractionDigits:2});
+            
+            shiftModals.live.show();
+        } else {
+            showToast(json.message, 'error');
+        }
+    } catch (err) {
+        showToast('Error retrieving summary.', 'error');
+    }
+}
+</script>
 </body>
 </html>

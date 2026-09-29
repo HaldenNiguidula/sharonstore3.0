@@ -103,13 +103,14 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fa-solid fa-table me-2 text-emerald"></i>Full Stock List</h5>
-                <div class="d-flex gap-2 flex-wrap">
+                <div class="d-flex gap-2 flex-nowrap">
                     <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search..." style="width:180px;">
                     <select id="catFilter" class="form-select form-select-sm" style="width:140px;"></select>
                     <select id="statusFilterStock" class="form-select form-select-sm" style="max-width:160px;">
                         <option value="">All Status</option>
                         <option value="low">Low Stock</option>
                         <option value="out">Out of Stock</option>
+                        <option value="expired">Expired</option>
                     </select>
                 </div>
             </div>
@@ -250,8 +251,8 @@ function renderList(items) {
 
     let html = '';
     filtered.forEach(item => {
-        const rowCls  = item.stock_status==='out'?'table-row-danger':item.stock_status==='low'?'table-row-warning':'';
-        const sBadge  = item.stock_status==='out'?'<span class="badge badge-danger">Out</span>':item.stock_status==='low'?'<span class="badge badge-warning">Low</span>':'<span class="badge badge-success">OK</span>';
+        const rowCls  = item.stock_status==='expired'?'table-row-danger':item.stock_status==='out'?'table-row-danger':item.stock_status==='low'?'table-row-warning':'';
+        const sBadge  = item.stock_status==='expired'?'<span class="badge badge-danger">Expired</span>':item.stock_status==='out'?'<span class="badge badge-danger">Out</span>':item.stock_status==='low'?'<span class="badge badge-warning">Low</span>':'<span class="badge badge-success">OK</span>';
         const expHtml = item.expiry_date ? (() => {
             // Safe date parse: treat YYYY-MM-DD as local date, not UTC
             const [ey, em, ed] = item.expiry_date.split('-').map(Number);

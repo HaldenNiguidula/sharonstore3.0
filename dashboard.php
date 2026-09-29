@@ -11,6 +11,7 @@
     <?php
     require_once __DIR__ . '/includes/auth_check.php';
     requireAdmin();
+    require_once __DIR__ . '/includes/db.php';
     $pageTitle = 'Business Intelligence Dashboard';
     ?>
 <style>
@@ -79,25 +80,32 @@
 
         <!-- -- ROW 2: Alert Cards -- -->
         <div class="row g-3 mb-4">
-            <div class="col-6 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="stat-card" style="cursor:pointer;" onclick="window.location='/sharonstore3.0/inventory.php'">
                     <div class="stat-icon amber"><i class="fa-solid fa-triangle-exclamation"></i></div>
                     <div class="stat-value text-warning" id="statLowStock"></div>
                     <div class="stat-label">Low Stock Items</div>
                 </div>
             </div>
-            <div class="col-6 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="stat-card" style="cursor:pointer;" onclick="window.location='/sharonstore3.0/inventory.php'">
                     <div class="stat-icon red"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div class="stat-value text-danger" id="statExpiring"></div>
                     <div class="stat-label">Expiring in 30 Days</div>
                 </div>
             </div>
-            <div class="col-6 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon emerald"><i class="fa-solid fa-peso-sign"></i></div>
                     <div class="stat-value" id="statStockValue"></div>
                     <div class="stat-label">Stock Value (Retail)</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fa-solid fa-key"></i></div>
+                    <div class="stat-value font-monospace text-primary" id="statManagerPin"><?= getDailyManagerPIN(getDB()) ?></div>
+                    <div class="stat-label">Today's Manager PIN</div>
                 </div>
             </div>
         </div>

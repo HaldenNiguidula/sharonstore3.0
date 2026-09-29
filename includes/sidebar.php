@@ -123,6 +123,17 @@ function sidebarActive(string $page, string $current): string {
             </li>
 
             <li>
+                <a href="/sharonstore3.0/shifts.php"
+                   class="ss-nav-item <?= sidebarActive('shifts.php', $__currentPage) ?>">
+                    <span class="ss-nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                    <span class="ss-nav-label">Shift History</span>
+                    <?php if ($__currentPage === 'shifts.php'): ?>
+                    <span class="ss-nav-active-dot ms-auto"></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+
+            <li>
                 <a href="/sharonstore3.0/accounts.php"
                    class="ss-nav-item <?= sidebarActive('accounts.php', $__currentPage) ?>">
                     <span class="ss-nav-icon"><i class="fa-solid fa-users-gear"></i></span>

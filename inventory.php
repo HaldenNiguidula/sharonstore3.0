@@ -94,6 +94,7 @@
                             <option value="ok">In Stock</option>
                             <option value="low">Low Stock</option>
                             <option value="out">Out of Stock</option>
+                            <option value="expired">Expired</option>
                         </select>
                     </div>
                     <div class="col-12 col-md-2 d-flex gap-2">
@@ -506,8 +507,10 @@ async function loadItems(page = 1) {
     } else {
         let html = '';
         items.forEach((item, idx) => {
-            const rowCls = item.stock_status === 'out' ? 'table-row-danger' : item.stock_status === 'low' ? 'table-row-warning' : '';
-            const sBadge = item.stock_status === 'out'
+            const rowCls = item.stock_status === 'expired' ? 'table-row-danger' : item.stock_status === 'out' ? 'table-row-danger' : item.stock_status === 'low' ? 'table-row-warning' : '';
+            const sBadge = item.stock_status === 'expired'
+                ? '<span class="badge badge-danger">Expired</span>'
+                : item.stock_status === 'out'
                 ? '<span class="badge badge-danger">Out of Stock</span>'
                 : item.stock_status === 'low'
                 ? '<span class="badge badge-warning">Low Stock</span>'

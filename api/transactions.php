@@ -256,16 +256,23 @@ function handleCompleteSale(array $body): never {
     try {
         $db->beginTransaction();
 
+        // Fetch active shift
+        $shiftStmt = $db->prepare("SELECT shift_id FROM tbl_shifts WHERE cashier_id = :uid AND status = 'open' ORDER BY shift_id DESC LIMIT 1");
+        $shiftStmt->execute([':uid' => $userId]);
+        $activeShift = $shiftStmt->fetchColumn();
+        $shiftIdVal = $activeShift ? (int)$activeShift : null;
+
         // Insert header
         $insHdr = $db->prepare(
             "INSERT INTO tbl_transactions
-                (transaction_code, user_id, total_amount, amount_tendered, change_amount, transaction_date)
+                (transaction_code, user_id, shift_id, total_amount, amount_tendered, change_amount, transaction_date)
              VALUES
-                (:code, :uid, :total, :tendered, :change, NOW())"
+                (:code, :uid, :shift_id, :total, :tendered, :change, NOW())"
         );
         $insHdr->execute([
             ':code'     => $transactionCode,
             ':uid'      => $userId,
+            ':shift_id' => $shiftIdVal,
             ':total'    => $grandTotal,
             ':tendered' => $amountTendered,
             ':change'   => $changeAmount,
