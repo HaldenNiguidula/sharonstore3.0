@@ -638,7 +638,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                                 style="font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:6px;
                                        background:#fff5f5;border:1.5px solid #fecaca;color:#ef4444;cursor:pointer;
                                        transition:all 0.15s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff5f5'">
-                            ? Clear
+                            <i class="fa-solid fa-rotate-left me-1"></i>Clear
                         </button>
                     </div>
                     <input type="number" id="amountTendered" class="pos-tendered-inp"
@@ -657,7 +657,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                         <button class="pos-qbtn" onclick="setTendered(500)">&#8369;500</button>
                         <button class="pos-qbtn" id="btnExact" onclick="setExact()"
                                 style="flex:2;background:#e6faf4;border-color:#b2edd8;color:#0abf8a;font-weight:800;">
-                            ? Exact
+                            <i class="fa-solid fa-coins me-1"></i>Exact
                         </button>
                     </div>
                 </div>
