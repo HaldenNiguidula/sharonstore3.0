@@ -112,6 +112,17 @@ function sidebarActive(string $page, string $current): string {
             </li>
 
             <li>
+                <a href="/sharonstore3.0/reports.php"
+                   class="ss-nav-item <?= sidebarActive('reports.php', $__currentPage) ?>">
+                    <span class="ss-nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+                    <span class="ss-nav-label">Sales Reports</span>
+                    <?php if ($__currentPage === 'reports.php'): ?>
+                    <span class="ss-nav-active-dot ms-auto"></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+
+            <li>
                 <a href="/sharonstore3.0/accounts.php"
                    class="ss-nav-item <?= sidebarActive('accounts.php', $__currentPage) ?>">
                     <span class="ss-nav-icon"><i class="fa-solid fa-users-gear"></i></span>
