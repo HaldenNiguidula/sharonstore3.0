@@ -101,6 +101,17 @@ function sidebarActive(string $page, string $current): string {
             <li><span class="ss-nav-section-label">Administration</span></li>
 
             <li>
+                <a href="/sharonstore3.0/suppliers.php"
+                   class="ss-nav-item <?= sidebarActive('suppliers.php', $__currentPage) ?>">
+                    <span class="ss-nav-icon"><i class="fa-solid fa-truck-field"></i></span>
+                    <span class="ss-nav-label">Suppliers</span>
+                    <?php if ($__currentPage === 'suppliers.php'): ?>
+                    <span class="ss-nav-active-dot ms-auto"></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+
+            <li>
                 <a href="/sharonstore3.0/accounts.php"
                    class="ss-nav-item <?= sidebarActive('accounts.php', $__currentPage) ?>">
                     <span class="ss-nav-icon"><i class="fa-solid fa-users-gear"></i></span>

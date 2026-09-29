@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard � Sharon Store</title>
-    <meta name="description" content="Sharon Store Business Intelligence Dashboard � Real-time sales and inventory overview">
+    <title>Dashboard - Sharon Store</title>
+    <meta name="description" content="Sharon Store Business Intelligence Dashboard  Real-time sales and inventory overview">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=16">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=17">
     <?php
     require_once __DIR__ . '/includes/auth_check.php';
     requireAdmin();
@@ -50,28 +50,28 @@
             <div class="col-6 col-xl-3">
                 <div class="stat-card">
                     <div class="stat-icon emerald"><i class="fa-solid fa-peso-sign"></i></div>
-                    <div class="stat-value" id="statTodayRevenue">�</div>
+                    <div class="stat-value" id="statTodayRevenue"></div>
                     <div class="stat-label">Today's Revenue</div>
                 </div>
             </div>
             <div class="col-6 col-xl-3">
                 <div class="stat-card">
                     <div class="stat-icon blue"><i class="fa-solid fa-calendar-week"></i></div>
-                    <div class="stat-value" id="statMonthlyRevenue">�</div>
+                    <div class="stat-value" id="statMonthlyRevenue"></div>
                     <div class="stat-label">Monthly Revenue</div>
                 </div>
             </div>
             <div class="col-6 col-xl-3">
                 <div class="stat-card">
                     <div class="stat-icon purple"><i class="fa-solid fa-receipt"></i></div>
-                    <div class="stat-value" id="statTodayTx">�</div>
+                    <div class="stat-value" id="statTodayTx"></div>
                     <div class="stat-label">Today's Transactions</div>
                 </div>
             </div>
             <div class="col-6 col-xl-3">
                 <div class="stat-card">
                     <div class="stat-icon amber"><i class="fa-solid fa-boxes-stacked"></i></div>
-                    <div class="stat-value" id="statTotalItems">�</div>
+                    <div class="stat-value" id="statTotalItems"></div>
                     <div class="stat-label">Active Products</div>
                 </div>
             </div>
@@ -82,21 +82,21 @@
             <div class="col-6 col-md-4">
                 <div class="stat-card" style="cursor:pointer;" onclick="window.location='/sharonstore3.0/inventory.php'">
                     <div class="stat-icon amber"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                    <div class="stat-value text-warning" id="statLowStock">�</div>
+                    <div class="stat-value text-warning" id="statLowStock"></div>
                     <div class="stat-label">Low Stock Items</div>
                 </div>
             </div>
             <div class="col-6 col-md-4">
                 <div class="stat-card" style="cursor:pointer;" onclick="window.location='/sharonstore3.0/inventory.php'">
                     <div class="stat-icon red"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                    <div class="stat-value text-danger" id="statExpiring">�</div>
+                    <div class="stat-value text-danger" id="statExpiring"></div>
                     <div class="stat-label">Expiring in 30 Days</div>
                 </div>
             </div>
             <div class="col-6 col-md-4">
                 <div class="stat-card">
                     <div class="stat-icon emerald"><i class="fa-solid fa-peso-sign"></i></div>
-                    <div class="stat-value" id="statStockValue">�</div>
+                    <div class="stat-value" id="statStockValue"></div>
                     <div class="stat-label">Stock Value (Retail)</div>
                 </div>
             </div>
@@ -310,7 +310,7 @@ async function loadTopItems() {
         if (!j.success) return;
         const ctx = document.getElementById('topItemsChart').getContext('2d');
         if (topChart) topChart.destroy();
-        const labels = j.data.labels.map(l => l.length > 20 ? l.substring(0,20)+'�' : l);
+        const labels = j.data.labels.map(l => l.length > 20 ? l.substring(0,20)+'' : l);
         topChart = new Chart(ctx, {
             type: 'bar',
             data: {

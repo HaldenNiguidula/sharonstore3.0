@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Management � Sharon Store</title>
-    <meta name="description" content="Manage grocery inventory � add, update, and track stock levels.">
+    <title>Inventory Management - Sharon Store</title>
+    <meta name="description" content="Manage grocery inventory add, update, and track stock levels.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=16">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=17">
     <?php
     require_once __DIR__ . '/includes/auth_check.php';
     requireAdmin();
@@ -46,28 +46,28 @@
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon emerald"><i class="fa-solid fa-boxes-stacked"></i></div>
-                    <div class="stat-value" id="sTotal">�</div>
+                    <div class="stat-value" id="sTotal"></div>
                     <div class="stat-label">Total Items</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon blue"><i class="fa-solid fa-peso-sign"></i></div>
-                    <div class="stat-value" id="sValue">�</div>
+                    <div class="stat-value" id="sValue"></div>
                     <div class="stat-label">Stock Value</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon amber"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                    <div class="stat-value text-warning" id="sLow">�</div>
+                    <div class="stat-value text-warning" id="sLow"></div>
                     <div class="stat-label">Low Stock</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon red"><i class="fa-solid fa-ban"></i></div>
-                    <div class="stat-value text-danger" id="sOut">�</div>
+                    <div class="stat-value text-danger" id="sOut"></div>
                     <div class="stat-label">Out of Stock</div>
                 </div>
             </div>
@@ -80,7 +80,7 @@
                     <div class="col-12 col-md-5">
                         <div class="input-group">
                             <span class="input-group-text"><i class="fa-solid fa-search text-muted"></i></span>
-                            <input type="text" id="searchInput" class="form-control" placeholder="Search by item name or barcode�">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search by item name or barcode...">
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
@@ -133,7 +133,7 @@
                         </thead>
                         <tbody id="inventoryBody">
                             <tr><td colspan="11" class="text-center py-5">
-                                <div class="loading-spinner mx-auto mb-2"></div>Loading inventory�
+                                <div class="loading-spinner mx-auto mb-2"></div>Loading inventory
                             </td></tr>
                         </tbody>
                     </table>
@@ -178,13 +178,13 @@
                         <div class="col-12 col-md-4">
                             <label class="form-label">Category <span class="text-danger">*</span></label>
                             <select id="fCategory" class="form-select" required>
-                                <option value="">Select�</option>
+                                <option value="">Select</option>
                             </select>
                             <!-- Inline new-category row (hidden by default) -->
                             <div id="newCatRow" class="d-none mt-2">
                                 <div class="input-group input-group-sm">
                                     <input type="text" id="newCatName" class="form-control"
-                                           placeholder="New category name�" maxlength="80"
+                                           placeholder="New category name" maxlength="80"
                                            style="border-color:rgba(16,185,129,0.5);">
                                     <button type="button" class="btn btn-success btn-sm" id="btnCreateCat"
                                             style="white-space:nowrap;">
@@ -319,7 +319,7 @@
             </thead>
             <tbody id="catTableBody">
                 <tr><td colspan="4" class="text-center py-4">
-                    <div class="loading-spinner mx-auto mb-2"></div>Loading�
+                    <div class="loading-spinner mx-auto mb-2"></div>Loading
                 </td></tr>
             </tbody>
         </table>
@@ -367,7 +367,7 @@ async function loadCategories() {
     const fCat   = document.getElementById('fCategory');
 
     // Reset to base option only
-    fCat.innerHTML = '<option value="">Select�</option>';
+    fCat.innerHTML = '<option value="">Select</option>';
 
     j.data.forEach(c => {
         const o1 = `<option value="${c.category_id}">${esc(c.category_name)}</option>`;
@@ -376,7 +376,7 @@ async function loadCategories() {
     });
 
     // Append sentinel at bottom of form select
-    fCat.innerHTML += `<option value="__new__" style="color:#10b981;font-weight:700;">+ New Category�</option>`;
+    fCat.innerHTML += `<option value="__new__" style="color:#10b981;font-weight:700;">+ New Category</option>`;
 }
 
 // -- New Category Inline Creator -------------------------------
@@ -401,7 +401,7 @@ function bindNewCategory() {
         }
     });
 
-    // Cancel � hide row and reset select
+    // Cancel  hide row and reset select
     btnCancel.addEventListener('click', () => {
         row.classList.add('d-none');
         fCat.value = '';
@@ -489,7 +489,7 @@ async function loadItems(page = 1) {
     if (q)    url += `&q=${encodeURIComponent(q)}`;
     if (cat)  url += `&category_id=${cat}`;
 
-    document.getElementById('inventoryBody').innerHTML = `<tr><td colspan="11" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading�</td></tr>`;
+    document.getElementById('inventoryBody').innerHTML = `<tr><td colspan="11" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading</td></tr>`;
 
     const r = await fetch(url);
     const j = await r.json();
@@ -614,7 +614,7 @@ document.getElementById('itemForm').addEventListener('submit', async function(e)
     body.append('low_stock_threshold', document.getElementById('fThreshold').value);
     body.append('expiry_date',         document.getElementById('fExpiry').value);
 
-    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving�';
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving';
     const r = await fetch('/sharonstore3.0/api/inventory.php', { method: 'POST', body });
     const j = await r.json();
     btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-save me-2"></i>Save Item';
@@ -801,7 +801,7 @@ document.getElementById('manageCatsModal').addEventListener('show.bs.modal', loa
 
 async function loadCatTable() {
     const tbody = document.getElementById('catTableBody');
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="loading-spinner mx-auto mb-2"></div>Loading�</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="loading-spinner mx-auto mb-2"></div>Loading</td></tr>';
 
     const r = await fetch('/sharonstore3.0/api/inventory.php?action=categories_with_counts');
     const j = await r.json();
@@ -842,7 +842,7 @@ async function loadCatTable() {
     }).join('');
 }
 
-// -- Delete Category � smart 3-tier prompt ----------------------
+// -- Delete Category  smart 3-tier prompt ----------------------
 async function promptDeleteCat(catId, catName, totalItems, stockedItems) {
     const body   = document.getElementById('deleteCatBody');
     const footer = document.getElementById('deleteCatFooter');
@@ -908,7 +908,7 @@ async function promptDeleteCat(catId, catName, totalItems, stockedItems) {
         </li>`
     ).join('');
     const moreNote = d.stocked_count > 5
-        ? `<li class="list-group-item text-muted text-center py-1" style="font-size:.8rem;">�and ${d.stocked_count - 5} more</li>`
+        ? `<li class="list-group-item text-muted text-center py-1" style="font-size:.8rem;">and ${d.stocked_count - 5} more</li>`
         : '';
 
     body.innerHTML = `
@@ -948,7 +948,7 @@ window.promptDeleteCat = promptDeleteCat;
 // -- Execute deletion POST --------------------------------------
 async function execDeleteCat(catId, reassignTo) {
     const btn = document.getElementById('btnConfirmDelCat');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting�'; }
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting'; }
 
     const fd = new FormData();
     fd.append('action', 'delete_category');

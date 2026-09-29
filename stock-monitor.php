@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Monitoring — Sharon Store</title>
+    <title>Stock Monitoring - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=16">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=17">
     <?php
     require_once __DIR__ . '/includes/auth_check.php';
     requireLogin();
@@ -33,7 +33,7 @@
             <div>
                 <ul class="breadcrumb-custom"><li><a href="/sharonstore3.0/dashboard.php">Home</a></li><li class="active">Stock Monitoring</li></ul>
                 <h1 class="page-header-title"><i class="fa-solid fa-magnifying-glass-chart me-2 text-emerald"></i>Stock Monitoring</h1>
-                <p class="page-header-subtitle">View-only stock overview — current levels, low stock alerts, and expiring items.</p>
+                <p class="page-header-subtitle">View-only stock overview  current levels, low stock alerts, and expiring items.</p>
             </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-secondary" onclick="loadAll()"><i class="fa-solid fa-rotate-right me-1"></i>Refresh</button>
@@ -46,28 +46,28 @@
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon emerald"><i class="fa-solid fa-boxes-stacked"></i></div>
-                    <div class="stat-value" id="sTotal">—</div>
+                    <div class="stat-value" id="sTotal"></div>
                     <div class="stat-label">Total Products</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon blue"><i class="fa-solid fa-circle-check"></i></div>
-                    <div class="stat-value text-success" id="sOk">—</div>
+                    <div class="stat-value text-success" id="sOk"></div>
                     <div class="stat-label">In Stock</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon amber"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                    <div class="stat-value text-warning" id="sLow">—</div>
+                    <div class="stat-value text-warning" id="sLow"></div>
                     <div class="stat-label">Low Stock</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon red"><i class="fa-solid fa-ban"></i></div>
-                    <div class="stat-value text-danger" id="sOut">—</div>
+                    <div class="stat-value text-danger" id="sOut"></div>
                     <div class="stat-label">Out of Stock</div>
                 </div>
             </div>
@@ -104,7 +104,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fa-solid fa-table me-2 text-emerald"></i>Full Stock List</h5>
                 <div class="d-flex gap-2 flex-wrap">
-                    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search…" style="width:180px;">
+                    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search..." style="width:180px;">
                     <select id="catFilter" class="form-select form-select-sm" style="width:140px;"></select>
                     <select id="statusFilterStock" class="form-select form-select-sm" style="max-width:160px;">
                         <option value="">All Status</option>
@@ -128,7 +128,7 @@
                             </tr>
                         </thead>
                         <tbody id="stockBody">
-                            <tr><td colspan="7" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading…</td></tr>
+                            <tr><td colspan="7" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -258,7 +258,7 @@ function renderList(items) {
             const expDate = new Date(ey, em - 1, ed);
             const days = Math.ceil((expDate - new Date()) / 86400000);
             return `<span class="${days<=0?'text-danger fw-700':days<=30?'text-warning':'text-muted'}">${item.expiry_date}${days<=30?' ('+days+'d)':''}</span>`;
-        })() : '<span class="text-muted">—</span>';
+        })() : '<span class="text-muted"></span>';
         html += `<tr class="${rowCls}">
             <td class="fw-600">${esc(item.item_name)}</td>
             <td><span class="badge badge-secondary">${esc(item.category_name)}</span></td>

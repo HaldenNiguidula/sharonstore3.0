@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// POS Page � Sharon Store System
+// POS Page  Sharon Store System
 // Accessible by both Admin and Cashier
 // ============================================================
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -16,13 +16,13 @@ $userRole     = currentRole();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS � Sharon Store</title>
+    <title>POS - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=16">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=17">
 <style>
 /* ============================================================
-   POS-specific styles � Light Theme aligned to system design
+   POS-specific styles  Light Theme aligned to system design
    ============================================================ */
 *,*::before,*::after{box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;}
@@ -31,7 +31,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 /* POS body below topbar */
 .pos-body{display:flex;flex:1;min-height:0;overflow:hidden;}
 
-/* Left panel � cart side */
+/* Left panel  cart side */
 .pos-left{
     display:flex;flex-direction:column;
     flex:1;min-width:0;
@@ -69,7 +69,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
     border-bottom:1px solid #e2e8f0;
 }
 
-/* Manual search panel � scrollable, never clips content */
+/* Manual search panel  scrollable, never clips content */
 #panelManual{
     max-height:55vh;   /* taller so more cards are visible */
     overflow:visible;  /* let the grid handle its own scroll */
@@ -201,7 +201,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 }
 .rm-btn:hover{background:#fee2e2;color:#dc2626;}
 
-/* Right panel � checkout */
+/* Right panel  checkout */
 .pos-right{
     width:340px;min-width:280px;max-width:380px;
     flex-shrink:0;
@@ -284,7 +284,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
     border-radius:3px;color:#4a4b4b;
 }
 
-/* Receipt modal � 58mm thermal receipt width */
+/* Receipt modal  58mm thermal receipt width */
 .receipt-modal .modal-dialog{
     max-width: calc(58mm + 32px) !important;  /* 58mm content + padding */
     width:     calc(58mm + 32px) !important;
@@ -326,7 +326,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
     color: #000 !important;
 }
 
-/* Print � exact 58mm thermal roll */
+/* Print  exact 58mm thermal roll */
 @media print{
     body * { visibility: hidden !important; }
     #receiptContent, #receiptContent * { visibility: visible !important; }
@@ -508,7 +508,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                                style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#0abf8a;pointer-events:none;"></i>
                             <input type="text" id="scannerInput" class="form-control"
                                    style="padding-left:36px;font-size:0.95rem;font-weight:600;"
-                                   placeholder="Scan barcode or type and press Enter�"
+                                   placeholder="Scan barcode or type and press Enter..."
                                    autocomplete="off" autocorrect="off" spellcheck="false">
                         </div>
                         <button class="btn btn-secondary"
@@ -534,18 +534,18 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                                style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#888888;pointer-events:none;"></i>
                             <input type="text" id="itemSearchInput" class="form-control"
                                    style="padding-left:36px;"
-                                   placeholder="Search by product name, barcode, or category�"
+                                   placeholder="Search by product name, barcode, or category..."
                                    autocomplete="off">
                         </div>
                         <button class="btn btn-secondary" onclick="clearSearch()" title="Clear search">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
-                    <!-- Product grid � items rendered here by JS -->
+                    <!-- Product grid  items rendered here by JS -->
                     <div id="itemGrid" class="product-grid">
                         <div style="grid-column:1/-1;text-align:center;padding:20px;color:#888888;">
                             <div class="loading-spinner" style="margin:0 auto 8px;"></div>
-                            Loading products�
+                            Loading products...
                         </div>
                     </div>
                 </div>
@@ -579,7 +579,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                         </div>
                     </div>
 
-                    <!-- Cart table � each row is a proper <tr>, no overlap possible -->
+                    <!-- Cart table  each row is a proper <tr>, no overlap possible -->
                     <table id="cartTable" class="pos-cart-table" style="display:none;">
                         <thead>
                             <tr>
@@ -635,10 +635,10 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                     </div>
                     <input type="number" id="amountTendered" class="pos-tendered-inp"
                            placeholder="0.00" min="0" step="0.01">
-                    <!-- Quick denomination buttons � each click ADDS to the tendered amount -->
+                    <!-- Quick denomination buttons  each click ADDS to the tendered amount -->
                     <div style="margin-top:7px;margin-bottom:4px;">
                         <span style="font-size:0.63rem;font-weight:700;color:#888888;text-transform:uppercase;letter-spacing:0.5px;">
-                            Quick Bills � tap to add
+                            Quick Bills - tap to add
                         </span>
                     </div>
                     <div class="pos-quick-btns">
@@ -681,12 +681,12 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                     <span class="pos-label"><i class="fa-solid fa-calendar-day me-1"></i>Today's Summary</span>
                     <div class="pos-summary-nums">
                         <div>
-                            <div class="pos-summary-num" id="todayTxCount">�</div>
+                            <div class="pos-summary-num" id="todayTxCount"></div>
                             <div class="pos-summary-lbl">Transactions</div>
                         </div>
                         <div style="border-left:1px solid #e2e8f0;"></div>
                         <div>
-                            <div class="pos-summary-num" id="todayTxTotal" style="color:#0abf8a;">�</div>
+                            <div class="pos-summary-num" id="todayTxTotal" style="color:#0abf8a;"></div>
                             <div class="pos-summary-lbl">Total Sales</div>
                         </div>
                     </div>

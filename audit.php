@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audit Trail — Sharon Store</title>
+    <title>Audit Trail  Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=16">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=17">
     <?php
     require_once __DIR__ . '/includes/auth_check.php';
     requireAdmin();
@@ -91,7 +91,7 @@
                             </tr>
                         </thead>
                         <tbody id="auditBody">
-                            <tr><td colspan="7" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading…</td></tr>
+                            <tr><td colspan="7" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -131,7 +131,7 @@ async function loadLogs(page = 1) {
         date_from: document.getElementById('filterDateFrom').value,
         date_to:   document.getElementById('filterDateTo').value,
     });
-    document.getElementById('auditBody').innerHTML = `<tr><td colspan="7" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading…</td></tr>`;
+    document.getElementById('auditBody').innerHTML = `<tr><td colspan="7" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading</td></tr>`;
 
     try {
         const r = await fetch(`/sharonstore3.0/api/audit_logs.php?${params}`);
@@ -174,14 +174,14 @@ async function loadLogs(page = 1) {
                         <div class="ss-avatar" style="width:28px;height:28px;font-size:0.7rem;">${initials}</div>
                         <div>
                             <div style="font-size:0.82rem; font-weight:600;">${esc(log.full_name||'System')}</div>
-                            <div class="text-muted" style="font-size:0.7rem;">${esc(log.role||'—')}</div>
+                            <div class="text-muted" style="font-size:0.7rem;">${esc(log.role||'')}</div>
                         </div>
                     </div>
                 </td>
                 <td><span class="badge" style="background:rgba(${hexToRgb(color)},0.15); color:${color}; border:1px solid rgba(${hexToRgb(color)},0.3);">${esc(log.module)}</span></td>
                 <td><code style="font-size:0.75rem; color:#10b981;">${esc(log.action)}</code></td>
-                <td style="font-size:0.8rem; max-width:280px; word-break:break-word;">${esc(log.description||'—')}</td>
-                <td class="text-muted" style="font-size:0.75rem; white-space:nowrap;">${esc(log.ip_address||'—')}</td>
+                <td style="font-size:0.8rem; max-width:280px; word-break:break-word;">${esc(log.description||'')}</td>
+                <td class="text-muted" style="font-size:0.75rem; white-space:nowrap;">${esc(log.ip_address||'')}</td>
             </tr>`;
         });
         document.getElementById('auditBody').innerHTML = html;
