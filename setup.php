@@ -122,13 +122,18 @@ $users = [
     ['username' => 'cashier2', 'password' => 'cashier123', 'full_name' => 'Jose Reyes',        'role' => 'cashier'],
 ];
 
-$pdo->exec("DELETE FROM tbl_users WHERE username IN ('admin','cashier1','cashier2')");
-
+$upd = $pdo->prepare("UPDATE tbl_users SET password = ?, full_name = ?, role = ?, is_active = 1 WHERE username = ?");
 $ins = $pdo->prepare("INSERT INTO tbl_users (username, password, full_name, role, is_active) VALUES (?,?,?,?,1)");
 foreach ($users as $u) {
     $hash = password_hash($u['password'], PASSWORD_BCRYPT, ['cost' => 12]);
-    $ins->execute([$u['username'], $hash, $u['full_name'], $u['role']]);
-    echo '<span class="ok">✓ User created: ' . $u['username'] . ' / ' . $u['password'] . '</span>' . PHP_EOL;
+    $chk = $pdo->prepare("SELECT COUNT(*) FROM tbl_users WHERE username = ?");
+    $chk->execute([$u['username']]);
+    if ($chk->fetchColumn() > 0) {
+        $upd->execute([$hash, $u['full_name'], $u['role'], $u['username']]);
+    } else {
+        $ins->execute([$u['username'], $hash, $u['full_name'], $u['role']]);
+    }
+    echo '<span class="ok">✓ User configured: ' . $u['username'] . ' / ' . $u['password'] . '</span>' . PHP_EOL;
 }
 
 // ── Step 5: Verify tables exist ───────────────────────────────
