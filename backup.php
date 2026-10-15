@@ -154,7 +154,14 @@
                     <button class="btn btn-light btn-sm copy-badge-btn" id="btnCopyScript" onclick="copyAppsScript()">
                         <i class="fa-regular fa-copy me-1"></i>Copy Script
                     </button>
-                    <pre class="mb-0" id="appsScriptCode"><code>function doPost(e) {
+                    <pre class="mb-0" id="appsScriptCode"><code>function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({
+    status: "success",
+    message: "Sharon Store Google Apps Script Webhook is active and reachable!"
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var filename = data.filename || ("sharonstore_backup_" + Utilities.formatDate(new Date(), "GMT+8", "yyyy-MM-dd_HH-mm-ss") + ".sql");
@@ -179,23 +186,29 @@
 }</code></pre>
                 </div>
 
+                <div class="alert alert-warning py-2 px-3 small mb-3 border-0" style="background:#fffbeb; color:#92400e; border-left:4px solid #f59e0b !important; border-radius: 8px;">
+                    <strong><i class="fa-solid fa-triangle-exclamation me-1"></i>Crucial Step to Avoid Error 403:</strong><br>
+                    When deploying in Google Apps Script, you <strong>MUST</strong> set <strong>"Who has access"</strong> to <strong>"Anyone"</strong> (do not leave as "Only myself"). Ensure your Web App URL ends with <code>/exec</code> (not <code>/dev</code>).
+                </div>
+
                 <div class="mb-4">
                     <ol start="3" class="small text-muted ps-3 mb-0" style="line-height: 1.6;">
                         <li>Click <strong>Deploy &gt; New deployment &gt; Select type: Web app</strong>:
                             <ul class="ps-3 mt-1">
                                 <li>Description: <em>Sharon Store Backup</em></li>
                                 <li>Execute as: <strong>Me (your google account)</strong></li>
-                                <li>Who has access: <strong>Anyone</strong></li>
+                                <li>Who has access: <strong class="text-danger" style="background:rgba(239,68,68,0.1); padding:1px 6px; border-radius:4px;">Anyone</strong> (Required!)</li>
                             </ul>
                         </li>
-                        <li>Click <strong>Deploy</strong>, grant permission, copy the <strong>Web app URL</strong>, and paste it below:</li>
+                        <li>Click <strong>Deploy</strong>, authorize access, copy the <strong>Web app URL</strong>, and paste it below:</li>
                     </ol>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold small text-dark">Google Apps Script Web App URL <span class="text-danger">*</span></label>
                     <input type="url" id="gdriveWebhookInput" class="form-control" placeholder="https://script.google.com/macros/s/AKfycbx.../exec" required>
-                    <div class="form-text small">Must start with <code>https://script.google.com/macros/s/</code></div>
+                    <div id="urlWarning" class="d-none text-danger small mt-1 fw-bold"><i class="fa-solid fa-triangle-exclamation me-1"></i>Your URL ends with <code>/dev</code> (Test deployment). Please use the Web App URL that ends with <code>/exec</code> instead!</div>
+                    <div class="form-text small">Must start with <code>https://script.google.com/macros/s/</code> and end with <code>/exec</code></div>
                 </div>
 
                 <div class="form-check form-switch mb-3">
@@ -347,6 +360,17 @@ document.getElementById('btnSaveGdrive').addEventListener('click', async functio
     this.disabled = false;
 });
 
+// Live URL Warning for /dev
+document.getElementById('gdriveWebhookInput').addEventListener('input', function() {
+    const val = this.value.trim();
+    const warn = document.getElementById('urlWarning');
+    if (val.endsWith('/dev')) {
+        warn.classList.remove('d-none');
+    } else {
+        warn.classList.add('d-none');
+    }
+});
+
 // ── Test Connection ───────────────────────────────────────────
 document.getElementById('btnTestGdrive').addEventListener('click', async function () {
     const webhook = document.getElementById('gdriveWebhookInput').value.trim();
@@ -354,6 +378,12 @@ document.getElementById('btnTestGdrive').addEventListener('click', async functio
     if (!webhook) {
         resBox.className = 'alert alert-danger py-2 small mb-0';
         resBox.textContent = 'Please enter a Webhook URL first.';
+        resBox.classList.remove('d-none');
+        return;
+    }
+    if (webhook.endsWith('/dev')) {
+        resBox.className = 'alert alert-danger py-2 small mb-0';
+        resBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>URL ends with <code>/dev</code> (Test deployment). Please copy the Web App URL that ends with <code>/exec</code> from <strong>Deploy &gt; New deployment</strong>.';
         resBox.classList.remove('d-none');
         return;
     }

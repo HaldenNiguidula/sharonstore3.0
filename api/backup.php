@@ -76,10 +76,18 @@ function generateBackupFile(string $backupDir, PDO $db): string {
 
 // ── Google Drive Webhook Helper ───────────────────────────────
 function sendToGoogleDrive(string $webhookUrl, string $filename, string $filepath): array {
+    $webhookUrl = trim($webhookUrl);
     if (!filter_var($webhookUrl, FILTER_VALIDATE_URL) || !str_contains($webhookUrl, 'script.google.com')) {
         return [
             'success' => false,
             'message' => 'Invalid Google Apps Script Webhook URL. It must start with https://script.google.com/'
+        ];
+    }
+
+    if (str_ends_with($webhookUrl, '/dev')) {
+        return [
+            'success' => false,
+            'message' => 'Your Webhook URL ends with "/dev" (Test deployment), which is private and causes Error 403. In Google Apps Script, click "Deploy" > "New deployment" > Select type "Web app" and copy the URL that ends with "/exec".'
         ];
     }
 
@@ -97,12 +105,16 @@ function sendToGoogleDrive(string $webhookUrl, string $filename, string $filepat
     curl_setopt_array($ch, [
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => $payload,
-        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'Accept: application/json'
+        ],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true, // Necessary because Google Apps Script redirects with 302
         CURLOPT_TIMEOUT        => 90,
         CURLOPT_SSL_VERIFYPEER => false,
         CURLOPT_SSL_VERIFYHOST => false,
+        CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     ]);
 
     $raw = curl_exec($ch);
@@ -112,6 +124,20 @@ function sendToGoogleDrive(string $webhookUrl, string $filename, string $filepat
 
     if ($curlErr) {
         return ['success' => false, 'message' => 'Network error connecting to Google: ' . $curlErr];
+    }
+
+    if ($httpCode === 403) {
+        return [
+            'success' => false,
+            'message' => 'Google returned Error 403 (Forbidden): Your Google Web App is not public. Fix: In script.google.com, click "Deploy" > "Manage deployments" > Edit (pencil icon) > set "Who has access" to "Anyone" (not "Only myself") > click "Deploy".'
+        ];
+    }
+
+    if ($httpCode === 401) {
+        return [
+            'success' => false,
+            'message' => 'Google returned Error 401 (Unauthorized): Access is restricted. Please make sure "Who has access" is set to "Anyone" in your Google Apps Script deployment settings.'
+        ];
     }
 
     if ($httpCode !== 200 && $httpCode !== 302) {
