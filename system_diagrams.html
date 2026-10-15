@@ -1018,7 +1018,7 @@ flowchart LR
         decimal total_amount "10,2"
         decimal amount_tendered "10,2"
         decimal change_amount "10,2"
-        varchar status "completed, voided"
+        varchar status "completed"
         timestamp transaction_date
         int shift_id FK "References tbl_shifts"
     }
@@ -1206,7 +1206,7 @@ erDiagram
                             <span class="badge-tag badge-system">End-to-End System Logic</span>
                         </div>
                         <h3 class="diagram-title"><i class="fa-solid fa-network-wired text-success"></i> Comprehensive System Flowchart</h3>
-                        <p class="diagram-subtitle">Exhaustive end-to-end routing, decision gates, cashier checkout & PIN reconciliation, and granular administrative operations across all 10 core subsystems.</p>
+                        <p class="diagram-subtitle">Clear end-to-end operational workflows for Cashier operations (unlocked stock monitoring vs PIN-protected POS checkout) and Admin management across all enrolled modules.</p>
                     </div>
                     <div class="diagram-header-actions">
                         <button class="tool-btn" onclick="zoomDiagram('diagram-7', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
@@ -1219,133 +1219,127 @@ erDiagram
                 
                 <div class="diagram-source-drawer" id="src-diag-7">
                     <pre><code>%% ══════════════════════════════════════════════════════════
-%% VIEW 1: INTEGRATED END-TO-END SYSTEM FLOWCHART
+%% INTEGRATED SYSTEM FLOWCHART (ENROLLED SYSTEM MODULES)
 %% ══════════════════════════════════════════════════════════
 flowchart TD
-    START([START: User Access]) --> LOGIN[/Enter Username and Password/]
-    LOGIN --> V_AUTH{Valid Credentials and Active?}
-    V_AUTH -- No --> ERR_AUTH[Display Invalid Credentials Error] --> LOGIN
-    V_AUTH -- Yes --> V_ROLE{Evaluate User Role}
+    START([START: User Access]) --&gt; LOGIN[/Enter Username and Password/]
+    LOGIN --&gt; V_AUTH{Valid Credentials and Active?}
+    V_AUTH -- No --&gt; ERR_AUTH[&quot;Display Invalid Credentials Alert&quot;] --&gt; LOGIN
+    V_AUTH -- Yes --&gt; V_ROLE{User Role?}
 
-    %% CASHIER WORKSTATION LIFECYCLE
-    subgraph CASHIER_FLOW ["1. CASHIER WORKSTATION LIFECYCLE"]
+    %% 1. CASHIER WORKSTATION LIFECYCLE
+    subgraph CASHIER_FLOW [&quot;1. CASHIER WORKSTATION LIFECYCLE&quot;]
         direction TB
-        C_START[Open Cashier Session] --> CHK_S{Active Open Shift in tbl_shifts?}
-        CHK_S -- No --> PIN_IN[/Enter Daily Manager PIN and Starting Float/]
-        PIN_IN --> V_PIN{PIN Matches tbl_settings?}
-        V_PIN -- No --> ERR_PIN[Invalid Manager PIN] --> PIN_IN
-        V_PIN -- Yes --> OPEN_S[Create Open Shift Record in tbl_shifts] --> POS_MAIN
-        CHK_S -- Yes --> POS_MAIN[Open POS Register Interface]
+        C_START[&quot;Open Cashier Workspace&quot;] --&gt; CHK_S{Active Open Shift Exists?}
+        CHK_S -- No --&gt; PIN_IN[/Enter Manager Authorization PIN and Starting Cash Float/]
+        PIN_IN --&gt; V_PIN{Valid Manager PIN?}
+        V_PIN -- No --&gt; ERR_PIN[&quot;Invalid Authorization PIN&quot;] --&gt; PIN_IN
+        V_PIN -- Yes --&gt; OPEN_S[&quot;Open Cashier Shift with Recorded Float&quot;] --&gt; POS_MAIN
+        CHK_S -- Yes --&gt; POS_MAIN[&quot;Load POS Sales Register&quot;]
 
-        POS_MAIN --> SCAN_PROD[/Scan Barcode with HID Reader or Type Search/]
-        SCAN_PROD --> V_ITEM{Item Active and Exists in tbl_inventory?}
-        V_ITEM -- No --> ERR_ITEM[Item Not Found] --> POS_MAIN
-        V_ITEM -- Yes --> V_STK{Stock Available?}
-        V_STK -- No --> ERR_STK[Out of Stock Alert] --> POS_MAIN
-        V_STK -- Yes --> ADD_CART[Add Item to Active Cart and Compute Subtotal]
+        POS_MAIN --&gt; C_ACTION{Cashier Task}
+        C_ACTION -- Ring Up Sale --&gt; SCAN_PROD[/Scan Barcode with Reader or Search Item/]
+        C_ACTION -- Stock Monitor --&gt; C_STK_MON[/Search Real-Time Stock and Expiry Alerts/] --&gt; POS_MAIN
+        C_ACTION -- Shift Monitor --&gt; LIVE_SHIFT[/View Running Shift Sales and Expected Cash/] --&gt; POS_MAIN
+        C_ACTION -- Close Shift --&gt; CLOSE_PROMPT[/Enter Manager PIN and Counted Drawer Cash/]
 
-        ADD_CART --> MORE_ITEMS{Ring Up More Items?}
-        MORE_ITEMS -- Yes --> SCAN_PROD
-        MORE_ITEMS -- No --> TENDER_IN[/Enter Cash Tendered by Customer/]
+        SCAN_PROD --&gt; V_ITEM{Product Found in Catalog?}
+        V_ITEM -- No --&gt; ERR_ITEM[&quot;Product Not Found Alert&quot;] --&gt; POS_MAIN
+        V_ITEM -- Yes --&gt; V_STK{Stock Available?}
+        V_STK -- No --&gt; ERR_STK[&quot;Out of Stock Alert&quot;] --&gt; POS_MAIN
+        V_STK -- Yes --&gt; ADD_CART[&quot;Add Item to Cart and Update Subtotal&quot;]
 
-        TENDER_IN --> V_TEND{Tendered Sufficient?}
-        V_TEND -- No --> ERR_TEND[Insufficient Cash Tendered] --> TENDER_IN
-        V_TEND -- Yes --> CHANGE_CALC[Calculate Customer Change]
+        ADD_CART --&gt; MORE_ITEMS{Scan More Items?}
+        MORE_ITEMS -- Yes --&gt; SCAN_PROD
+        MORE_ITEMS -- No --&gt; TENDER_IN[/Enter Cash Payment Tendered by Customer/]
 
-        CHANGE_CALC --> ATOMIC_COMMIT[Execute Atomic PDO Transaction:<br/>1. Generate TXN-YYYYMMDD-####<br/>2. Insert tbl_transactions and details<br/>3. Decrement stock_qty in tbl_inventory<br/>4. Write Audit Log and COMMIT]
-        ATOMIC_COMMIT --> DISP_RCPT[/Display Digital On-Screen Receipt/]
+        TENDER_IN --&gt; V_TEND{Payment Sufficient?}
+        V_TEND -- No --&gt; ERR_TEND[&quot;Insufficient Cash Warning&quot;] --&gt; TENDER_IN
+        V_TEND -- Yes --&gt; CHANGE_CALC[&quot;Calculate Customer Change Due&quot;]
 
-        DISP_RCPT --> C_NEXT{Next Cashier Action?}
-        C_NEXT -- Next Sale --> POS_MAIN
-        C_NEXT -- Live Shift Monitor --> LIVE_SHIFT[/View Running Shift Totals and Cash In Drawer/] --> POS_MAIN
-        C_NEXT -- End Shift --> CLOSE_PROMPT[/Enter Daily Manager PIN and Actual Counted Cash/]
+        CHANGE_CALC --&gt; CONFIRM_SALE[&quot;Record Transaction and Deduct Sold Quantities from Stock&quot;]
+        CONFIRM_SALE --&gt; DISP_RCPT[/Display Digital Receipt and Print Customer Copy/] --&gt; POS_MAIN
 
-        CLOSE_PROMPT --> V_PIN_CLOSE{PIN Valid?}
-        V_PIN_CLOSE -- No --> ERR_PIN_CLOSE[Invalid Manager PIN] --> CLOSE_PROMPT
-        V_PIN_CLOSE -- Yes --> RECON_CALC[Reconcile Cash Drawer:<br/>Expected = Float + Total Cash Sales<br/>Over/Short = Actual Cash - Expected]
-        RECON_CALC --> CLOSE_S_REC[Update tbl_shifts status='closed' and Record Variance]
-        CLOSE_S_REC --> DISP_S_MODAL[/Display Shift Reconciliation Summary Modal/]
-        DISP_S_MODAL --> C_LOGOUT[Destroy PHP Session and Sign Out]
+        CLOSE_PROMPT --&gt; V_PIN_CLOSE{Manager PIN Valid?}
+        V_PIN_CLOSE -- No --&gt; ERR_PIN_CLOSE[&quot;Invalid Manager PIN&quot;] --&gt; CLOSE_PROMPT
+        V_PIN_CLOSE -- Yes --&gt; RECON_CALC[&quot;Calculate Cash Drawer Over / Short Reconciliation&quot;]
+        RECON_CALC --&gt; CLOSE_S[&quot;Close Shift and Save Reconciliation Summary&quot;]
+        CLOSE_S --&gt; DISP_S_MODAL[/Display Shift Summary Report/]
+        DISP_S_MODAL --&gt; C_LOGOUT[&quot;Sign Out Cashier Session&quot;]
     end
 
-    %% ADMINISTRATIVE OPERATIONS & GOVERNANCE
-    subgraph ADMIN_FLOW ["2. ADMINISTRATIVE OPERATIONS & GOVERNANCE"]
+    %% 2. ADMINISTRATIVE MANAGEMENT HUB
+    subgraph ADMIN_FLOW [&quot;2. ADMINISTRATIVE MANAGEMENT HUB&quot;]
         direction TB
-        ADM_START[Admin Control Center] --> ADM_ROUTER{Select Operational Pillar}
+        ADM_START[&quot;Open Admin Dashboard Hub&quot;] --&gt; ADM_ROUTER{Select Management Area}
 
-        %% Pillar A: Inventory & Wholesale Catalog
-        subgraph PIL_INV ["Pillar A: Inventory & Catalog Control"]
+        %% Area 1: Inventory &amp; Suppliers
+        subgraph PIL_INV [&quot;Area 1: Inventory &amp; Suppliers&quot;]
             direction TB
-            INV_MENU{Inventory Tasks}
-            INV_MENU -- Add Product --> INV_ADD[Open itemModal: Barcode, Price, Threshold, Expiry -> Save tbl_inventory]
-            INV_MENU -- Edit Product --> INV_EDIT[Update Selling Prices, Alert Thresholds, or Supplier ID]
-            INV_MENU -- Stock Adjust --> INV_ADJ[Open adjustModal: Restock (+) vs Spoilage/Damaged (-) with Audit Reason]
-            INV_MENU -- Categories --> INV_CAT[Open manageCatsModal: Add or Delete Category verifying 0 linked items]
-            INV_MENU -- Soft-Delete --> INV_DEL[Archive Item setting is_active=0 to preserve historical sales]
-            INV_MENU -- Suppliers --> SUPP_OPS[Manage Wholesale Suppliers: Add, Edit Contacts, or Detach]
-            INV_ADD & INV_EDIT & INV_ADJ & INV_CAT & INV_DEL & SUPP_OPS --> INV_DONE[Log Audit Trail and Return to Hub]
+            INV_MENU{Inventory Actions}
+            INV_MENU -- Add Product --&gt; INV_ADD[&quot;Register New Product: Barcode, Pricing, and Reorder Threshold&quot;]
+            INV_MENU -- Edit Details --&gt; INV_EDIT[&quot;Update Product Information, Prices, and Thresholds&quot;]
+            INV_MENU -- Adjust Stock --&gt; INV_ADJ[&quot;Record Stock In Deliveries, Spoilage, or Damaged Items&quot;]
+            INV_MENU -- Categories --&gt; INV_CAT[&quot;Create, Edit, and Organize Product Categories&quot;]
+            INV_MENU -- Suppliers --&gt; SUPP_OPS[&quot;Manage Wholesale Suppliers and Vendor Contact Records&quot;]
+            INV_ADD &amp; INV_EDIT &amp; INV_ADJ &amp; INV_CAT &amp; SUPP_OPS --&gt; INV_DONE[&quot;Save Changes and Return to Hub&quot;]
         end
 
-        %% Pillar B: POS Override & 24h Voiding
-        subgraph PIL_POS ["Pillar B: Sales Register & 24h Voiding"]
+        %% Area 2: Point of Sale &amp; Stock Monitor
+        subgraph PIL_POS [&quot;Area 2: Point of Sale &amp; Stock Monitor&quot;]
             direction TB
-            POS_MENU{Sales Operations}
-            POS_MENU -- Direct POS --> ADM_POS_DIRECT[Access Cashier Register for Direct Transactions]
-            POS_MENU -- Void Transaction --> VOID_CHK[/Search Transaction Code within Last 24 Hours/]
-            VOID_CHK --> V_VOID{Eligible and within 24h?}
-            V_VOID -- No --> ERR_VOID[Cannot Void: Older than 24h or Already Voided]
-            V_VOID -- Yes --> EXEC_VOID[Atomic Void Procedure:<br/>1. Set tbl_transactions status='voided'<br/>2. Re-increment item quantities in tbl_inventory<br/>3. Record VOID_TRANSACTION in tbl_audit_logs]
-            ADM_POS_DIRECT & ERR_VOID & EXEC_VOID --> POS_DONE[Return to Hub]
+            POS_MENU{Operations Actions}
+            POS_MENU -- Open Register --&gt; ADM_POS_DIRECT[&quot;Open Cashier Register for Direct Store Sales&quot;]
+            POS_MENU -- Stock Monitor --&gt; ADM_STK_MON[&quot;Inspect Real-Time Stock Levels and Expiry Alerts&quot;]
+            ADM_POS_DIRECT &amp; ADM_STK_MON --&gt; POS_DONE[&quot;Return to Hub&quot;]
         end
 
-        %% Pillar C: Shift Governance & Financial Reports
-        subgraph PIL_FIN ["Pillar C: Shift Auditing & Financial Analytics"]
+        %% Area 3: Financial Analytics &amp; Shift History
+        subgraph PIL_FIN [&quot;Area 3: Financial Analytics &amp; Shift History&quot;]
             direction TB
-            FIN_MENU{Governance Tasks}
-            FIN_MENU -- Shift History --> SHIFTS_AUDIT[Inspect Cashier Shift Logs, Float, Sales, and Over/Short Variance]
-            FIN_MENU -- Manager PIN --> PIN_MGT[View / Rotate Daily 4-Digit Authorization PIN in tbl_settings]
-            FIN_MENU -- Sales Reports --> REP_GEN[Generate Daily, Weekly, or Monthly Reports: Revenue, COGS, Profit Margin %]
-            FIN_MENU -- Item Breakdown --> REP_ITEMS[Inspect breakdownModal: Itemized Quantities Sold and Subtotals]
-            FIN_MENU -- Asset Valuation --> REP_VALU[Calculate Store Inventory Valuation: Cost Basis vs Retail Market Value]
-            SHIFTS_AUDIT & PIN_MGT & REP_GEN & REP_ITEMS & REP_VALU --> FIN_DONE[Export PDF/CSV, Print, or Return to Hub]
+            FIN_MENU{Financial Actions}
+            FIN_MENU -- Sales Reports --&gt; REP_GEN[&quot;Generate Daily, Weekly, and Monthly Revenue &amp; Profit Reports&quot;]
+            FIN_MENU -- Item Sales --&gt; REP_ITEMS[&quot;View Itemized Sales Breakdown and Top-Selling Products&quot;]
+            FIN_MENU -- Store Valuation --&gt; REP_VALU[&quot;Calculate Total Inventory Value: Cost vs Retail Value&quot;]
+            FIN_MENU -- Shift History --&gt; SHIFTS_AUDIT[&quot;Review Cashier Shift Logs, Float, and Cash Variances&quot;]
+            FIN_MENU -- Manager PIN --&gt; PIN_MGT[&quot;View or Change Today&#039;s 4-Digit Manager PIN&quot;]
+            REP_GEN &amp; REP_ITEMS &amp; REP_VALU &amp; SHIFTS_AUDIT &amp; PIN_MGT --&gt; FIN_DONE[&quot;Export PDF or CSV, Print, or Return&quot;]
         end
 
-        %% Pillar D: Predictive Intelligence & System Administration
-        subgraph PIL_SYS ["Pillar D: BI, Forecasting & System Admin"]
+        %% Area 4: Forecasting &amp; System Administration
+        subgraph PIL_SYS [&quot;Area 4: Forecasting &amp; System Admin&quot;]
             direction TB
-            SYS_MENU{Analytics & Security}
-            SYS_MENU -- BI Dashboard --> BI_VIEW[Real-Time KPIs, 30-Day Sales Trend, Category Doughnut, Low Stock & Expiry Alerts]
-            SYS_MENU -- Forecasting --> FCST_RUN[Select 3/6/12 Mo Lookback -> Run SMA / WMA -> Calculate Demand and Restock Gap]
-            SYS_MENU -- User Accounts --> ACC_MGT[Create Users with Bcrypt Hash, Toggle Active Status, Reset Passwords]
-            SYS_MENU -- Database Backup --> BAK_MGT[Trigger mysqldump / PHP PDO Fallback -> Download .sql or Purge Old Backups]
-            SYS_MENU -- Audit Trail --> AUD_MGT[Inspect Immutable Action Logs by User, Action Type, Date, or IP Address]
-            BI_VIEW & FCST_RUN & ACC_MGT & BAK_MGT & AUD_MGT --> SYS_DONE[Return to Hub]
+            SYS_MENU{Admin Actions}
+            SYS_MENU -- BI Dashboard --&gt; BI_VIEW[&quot;View Real-Time Sales KPIs, Trends, and Low-Stock Warnings&quot;]
+            SYS_MENU -- Demand Forecasting --&gt; FCST_RUN[&quot;Run Moving Average Demand Forecasts and Restocking Quantities&quot;]
+            SYS_MENU -- Staff Accounts --&gt; ACC_MGT[&quot;Manage Staff Accounts, Assign Roles, and Reset Passwords&quot;]
+            SYS_MENU -- Database Backup --&gt; BAK_MGT[&quot;Create, Download, or Manage Database Backups&quot;]
+            BI_VIEW &amp; FCST_RUN &amp; ACC_MGT &amp; BAK_MGT --&gt; SYS_DONE[&quot;Return to Hub&quot;]
         end
 
-        ADM_ROUTER --> PIL_INV
-        ADM_ROUTER --> PIL_POS
-        ADM_ROUTER --> PIL_FIN
-        ADM_ROUTER --> PIL_SYS
+        ADM_ROUTER --&gt; INV_MENU
+        ADM_ROUTER --&gt; POS_MENU
+        ADM_ROUTER --&gt; FIN_MENU
+        ADM_ROUTER --&gt; SYS_MENU
 
-        INV_DONE & POS_DONE & FIN_DONE & SYS_DONE --> ADM_CYCLE{Admin Next Action?}
-        ADM_CYCLE -- Select Another Task --> ADM_START
-        ADM_CYCLE -- Sign Out --> ADM_LOGOUT[Destroy PHP Session and Log LOGOUT]
+        INV_DONE &amp; POS_DONE &amp; FIN_DONE &amp; SYS_DONE --&gt; ADM_CYCLE{Next Admin Action?}
+        ADM_CYCLE -- Select Another Area --&gt; ADM_START
+        ADM_CYCLE -- Sign Out --&gt; ADM_LOGOUT[&quot;Sign Out Admin Session&quot;]
     end
 
-    %% Role Connections
-    V_ROLE -- Cashier --> C_START
-    V_ROLE -- Admin --> ADM_START
+    %% Role Routing
+    V_ROLE -- Cashier --&gt; C_START
+    V_ROLE -- Admin --&gt; ADM_START
 
-    C_LOGOUT --> END_TERM([END: Session Terminated])
-    ADM_LOGOUT --> END_TERM
+    C_LOGOUT --&gt; END_TERM([END: Session Terminated])
+    ADM_LOGOUT --&gt; END_TERM
 
-    %% Visual Styling
+    %% Styling
     style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
     style END_TERM fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
     style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
     style V_ROLE fill:#dbeafe,stroke:#2563eb,stroke-width:2.5px
-    style ATOMIC_COMMIT fill:#dcfce7,stroke:#16a34a,stroke-width:2px
-    style EXEC_VOID fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+    style CONFIRM_SALE fill:#dcfce7,stroke:#16a34a,stroke-width:2px
     style FCST_RUN fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
     style RECON_CALC fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
     style CASHIER_FLOW fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
@@ -1355,13 +1349,13 @@ flowchart TD
     style PIL_FIN fill:#ffffff,stroke:#64748b,stroke-width:1.5px
     style PIL_SYS fill:#ffffff,stroke:#64748b,stroke-width:1.5px</code></pre>
                 </div>
-
+                
                 <div class="diagram-canvas-container">
                     <!-- Multi-Perspective View Tabs -->
                     <div class="flowchart-tabs">
                         <button class="flowchart-tab-btn active" onclick="switchFlowchartTab('flowchart-integrated', this)"><i class="fa-solid fa-diagram-project"></i> All-in-One Integrated Flowchart</button>
                         <button class="flowchart-tab-btn" onclick="switchFlowchartTab('flowchart-cashier', this)"><i class="fa-solid fa-cash-register"></i> Cashier POS & Shift Lifecycle</button>
-                        <button class="flowchart-tab-btn" onclick="switchFlowchartTab('flowchart-admin', this)"><i class="fa-solid fa-user-shield"></i> Admin Decision Architecture (10 Modules)</button>
+                        <button class="flowchart-tab-btn" onclick="switchFlowchartTab('flowchart-admin', this)"><i class="fa-solid fa-user-shield"></i> Admin Management Hub (Enrolled Modules)</button>
                     </div>
 
                     <!-- VIEW 1: All-in-One Integrated Flowchart -->
@@ -1371,128 +1365,122 @@ flowchart TD
 flowchart TD
     START([START: User Access]) --> LOGIN[/Enter Username and Password/]
     LOGIN --> V_AUTH{Valid Credentials and Active?}
-    V_AUTH -- No --> ERR_AUTH[Display Invalid Credentials Error] --> LOGIN
-    V_AUTH -- Yes --> V_ROLE{Evaluate User Role}
+    V_AUTH -- No --> ERR_AUTH["Display Invalid Credentials Alert"] --> LOGIN
+    V_AUTH -- Yes --> V_ROLE{User Role?}
 
-    %% CASHIER WORKSTATION LIFECYCLE
+    %% 1. CASHIER WORKSTATION LIFECYCLE
     subgraph CASHIER_FLOW ["1. CASHIER WORKSTATION LIFECYCLE"]
         direction TB
-        C_START[Open Cashier Session] --> CHK_S{Active Open Shift in tbl_shifts?}
-        CHK_S -- No --> PIN_IN[/Enter Daily Manager PIN and Starting Float/]
-        PIN_IN --> V_PIN{PIN Matches tbl_settings?}
-        V_PIN -- No --> ERR_PIN[Invalid Manager PIN] --> PIN_IN
-        V_PIN -- Yes --> OPEN_S[Create Open Shift Record in tbl_shifts] --> POS_MAIN
-        CHK_S -- Yes --> POS_MAIN[Open POS Register Interface]
+        C_START["Open Cashier Workspace"] --> CHK_S{Active Open Shift Exists?}
+        CHK_S -- No --> PIN_IN[/Enter Manager Authorization PIN and Starting Cash Float/]
+        PIN_IN --> V_PIN{Valid Manager PIN?}
+        V_PIN -- No --> ERR_PIN["Invalid Authorization PIN"] --> PIN_IN
+        V_PIN -- Yes --> OPEN_S["Open Cashier Shift with Recorded Float"] --> POS_MAIN
+        CHK_S -- Yes --> POS_MAIN["Load POS Sales Register"]
 
-        POS_MAIN --> SCAN_PROD[/Scan Barcode with HID Reader or Type Search/]
-        SCAN_PROD --> V_ITEM{Item Active and Exists in tbl_inventory?}
-        V_ITEM -- No --> ERR_ITEM[Item Not Found] --> POS_MAIN
+        POS_MAIN --> C_ACTION{Cashier Task}
+        C_ACTION -- Ring Up Sale --> SCAN_PROD[/Scan Barcode with Reader or Search Item/]
+        C_ACTION -- Stock Monitor --> C_STK_MON[/Search Real-Time Stock and Expiry Alerts/] --> POS_MAIN
+        C_ACTION -- Shift Monitor --> LIVE_SHIFT[/View Running Shift Sales and Expected Cash/] --> POS_MAIN
+        C_ACTION -- Close Shift --> CLOSE_PROMPT[/Enter Manager PIN and Counted Drawer Cash/]
+
+        SCAN_PROD --> V_ITEM{Product Found in Catalog?}
+        V_ITEM -- No --> ERR_ITEM["Product Not Found Alert"] --> POS_MAIN
         V_ITEM -- Yes --> V_STK{Stock Available?}
-        V_STK -- No --> ERR_STK[Out of Stock Alert] --> POS_MAIN
-        V_STK -- Yes --> ADD_CART[Add Item to Active Cart and Compute Subtotal]
+        V_STK -- No --> ERR_STK["Out of Stock Alert"] --> POS_MAIN
+        V_STK -- Yes --> ADD_CART["Add Item to Cart and Update Subtotal"]
 
-        ADD_CART --> MORE_ITEMS{Ring Up More Items?}
+        ADD_CART --> MORE_ITEMS{Scan More Items?}
         MORE_ITEMS -- Yes --> SCAN_PROD
-        MORE_ITEMS -- No --> TENDER_IN[/Enter Cash Tendered by Customer/]
+        MORE_ITEMS -- No --> TENDER_IN[/Enter Cash Payment Tendered by Customer/]
 
-        TENDER_IN --> V_TEND{Tendered Sufficient?}
-        V_TEND -- No --> ERR_TEND[Insufficient Cash Tendered] --> TENDER_IN
-        V_TEND -- Yes --> CHANGE_CALC[Calculate Customer Change]
+        TENDER_IN --> V_TEND{Payment Sufficient?}
+        V_TEND -- No --> ERR_TEND["Insufficient Cash Warning"] --> TENDER_IN
+        V_TEND -- Yes --> CHANGE_CALC["Calculate Customer Change Due"]
 
-        CHANGE_CALC --> ATOMIC_COMMIT[Execute Atomic PDO Transaction:<br/>1. Generate TXN-YYYYMMDD-####<br/>2. Insert tbl_transactions and details<br/>3. Decrement stock_qty in tbl_inventory<br/>4. Write Audit Log and COMMIT]
-        ATOMIC_COMMIT --> DISP_RCPT[/Display Digital On-Screen Receipt/]
+        CHANGE_CALC --> CONFIRM_SALE["Record Transaction and Deduct Sold Quantities from Stock"]
+        CONFIRM_SALE --> DISP_RCPT[/Display Digital Receipt and Print Customer Copy/] --> POS_MAIN
 
-        DISP_RCPT --> C_NEXT{Next Cashier Action?}
-        C_NEXT -- Next Sale --> POS_MAIN
-        C_NEXT -- Live Shift Monitor --> LIVE_SHIFT[/View Running Shift Totals and Cash In Drawer/] --> POS_MAIN
-        C_NEXT -- End Shift --> CLOSE_PROMPT[/Enter Daily Manager PIN and Actual Counted Cash/]
-
-        CLOSE_PROMPT --> V_PIN_CLOSE{PIN Valid?}
-        V_PIN_CLOSE -- No --> ERR_PIN_CLOSE[Invalid Manager PIN] --> CLOSE_PROMPT
-        V_PIN_CLOSE -- Yes --> RECON_CALC[Reconcile Cash Drawer:<br/>Expected = Float + Total Cash Sales<br/>Over/Short = Actual Cash - Expected]
-        RECON_CALC --> CLOSE_S_REC[Update tbl_shifts status='closed' and Record Variance]
-        CLOSE_S_REC --> DISP_S_MODAL[/Display Shift Reconciliation Summary Modal/]
-        DISP_S_MODAL --> C_LOGOUT[Destroy PHP Session and Sign Out]
+        CLOSE_PROMPT --> V_PIN_CLOSE{Manager PIN Valid?}
+        V_PIN_CLOSE -- No --> ERR_PIN_CLOSE["Invalid Manager PIN"] --> CLOSE_PROMPT
+        V_PIN_CLOSE -- Yes --> RECON_CALC["Calculate Cash Drawer Over / Short Reconciliation"]
+        RECON_CALC --> CLOSE_S["Close Shift and Save Reconciliation Summary"]
+        CLOSE_S --> DISP_S_MODAL[/Display Shift Summary Report/]
+        DISP_S_MODAL --> C_LOGOUT["Sign Out Cashier Session"]
     end
 
-    %% ADMINISTRATIVE OPERATIONS & GOVERNANCE
-    subgraph ADMIN_FLOW ["2. ADMINISTRATIVE OPERATIONS & GOVERNANCE"]
+    %% 2. ADMINISTRATIVE MANAGEMENT HUB
+    subgraph ADMIN_FLOW ["2. ADMINISTRATIVE MANAGEMENT HUB"]
         direction TB
-        ADM_START[Admin Control Center] --> ADM_ROUTER{Select Operational Pillar}
+        ADM_START["Open Admin Dashboard Hub"] --> ADM_ROUTER{Select Management Area}
 
-        %% Pillar A: Inventory & Wholesale Catalog
-        subgraph PIL_INV ["Pillar A: Inventory & Catalog Control"]
+        %% Area 1: Inventory & Suppliers
+        subgraph PIL_INV ["Area 1: Inventory & Suppliers"]
             direction TB
-            INV_MENU{Inventory Tasks}
-            INV_MENU -- Add Product --> INV_ADD[Open itemModal: Barcode, Price, Threshold, Expiry -> Save tbl_inventory]
-            INV_MENU -- Edit Product --> INV_EDIT[Update Selling Prices, Alert Thresholds, or Supplier ID]
-            INV_MENU -- Stock Adjust --> INV_ADJ[Open adjustModal: Restock (+) vs Spoilage/Damaged (-) with Audit Reason]
-            INV_MENU -- Categories --> INV_CAT[Open manageCatsModal: Add or Delete Category verifying 0 linked items]
-            INV_MENU -- Soft-Delete --> INV_DEL[Archive Item setting is_active=0 to preserve historical sales]
-            INV_MENU -- Suppliers --> SUPP_OPS[Manage Wholesale Suppliers: Add, Edit Contacts, or Detach]
-            INV_ADD & INV_EDIT & INV_ADJ & INV_CAT & INV_DEL & SUPP_OPS --> INV_DONE[Log Audit Trail and Return to Hub]
+            INV_MENU{Inventory Actions}
+            INV_MENU -- Add Product --> INV_ADD["Register New Product: Barcode, Pricing, and Reorder Threshold"]
+            INV_MENU -- Edit Details --> INV_EDIT["Update Product Information, Prices, and Thresholds"]
+            INV_MENU -- Adjust Stock --> INV_ADJ["Record Stock In Deliveries, Spoilage, or Damaged Items"]
+            INV_MENU -- Categories --> INV_CAT["Create, Edit, and Organize Product Categories"]
+            INV_MENU -- Suppliers --> SUPP_OPS["Manage Wholesale Suppliers and Vendor Contact Records"]
+            INV_ADD & INV_EDIT & INV_ADJ & INV_CAT & SUPP_OPS --> INV_DONE["Save Changes and Return to Hub"]
         end
 
-        %% Pillar B: POS Override & 24h Voiding
-        subgraph PIL_POS ["Pillar B: Sales Register & 24h Voiding"]
+        %% Area 2: Point of Sale & Stock Monitor
+        subgraph PIL_POS ["Area 2: Point of Sale & Stock Monitor"]
             direction TB
-            POS_MENU{Sales Operations}
-            POS_MENU -- Direct POS --> ADM_POS_DIRECT[Access Cashier Register for Direct Transactions]
-            POS_MENU -- Void Transaction --> VOID_CHK[/Search Transaction Code within Last 24 Hours/]
-            VOID_CHK --> V_VOID{Eligible and within 24h?}
-            V_VOID -- No --> ERR_VOID[Cannot Void: Older than 24h or Already Voided]
-            V_VOID -- Yes --> EXEC_VOID[Atomic Void Procedure:<br/>1. Set tbl_transactions status='voided'<br/>2. Re-increment item quantities in tbl_inventory<br/>3. Record VOID_TRANSACTION in tbl_audit_logs]
-            ADM_POS_DIRECT & ERR_VOID & EXEC_VOID --> POS_DONE[Return to Hub]
+            POS_MENU{Operations Actions}
+            POS_MENU -- Open Register --> ADM_POS_DIRECT["Open Cashier Register for Direct Store Sales"]
+            POS_MENU -- Stock Monitor --> ADM_STK_MON["Inspect Real-Time Stock Levels and Expiry Alerts"]
+            ADM_POS_DIRECT & ADM_STK_MON --> POS_DONE["Return to Hub"]
         end
 
-        %% Pillar C: Shift Governance & Financial Reports
-        subgraph PIL_FIN ["Pillar C: Shift Auditing & Financial Analytics"]
+        %% Area 3: Financial Analytics & Shift History
+        subgraph PIL_FIN ["Area 3: Financial Analytics & Shift History"]
             direction TB
-            FIN_MENU{Governance Tasks}
-            FIN_MENU -- Shift History --> SHIFTS_AUDIT[Inspect Cashier Shift Logs, Float, Sales, and Over/Short Variance]
-            FIN_MENU -- Manager PIN --> PIN_MGT[View / Rotate Daily 4-Digit Authorization PIN in tbl_settings]
-            FIN_MENU -- Sales Reports --> REP_GEN[Generate Daily, Weekly, or Monthly Reports: Revenue, COGS, Profit Margin %]
-            FIN_MENU -- Item Breakdown --> REP_ITEMS[Inspect breakdownModal: Itemized Quantities Sold and Subtotals]
-            FIN_MENU -- Asset Valuation --> REP_VALU[Calculate Store Inventory Valuation: Cost Basis vs Retail Market Value]
-            SHIFTS_AUDIT & PIN_MGT & REP_GEN & REP_ITEMS & REP_VALU --> FIN_DONE[Export PDF/CSV, Print, or Return to Hub]
+            FIN_MENU{Financial Actions}
+            FIN_MENU -- Sales Reports --> REP_GEN["Generate Daily, Weekly, and Monthly Revenue & Profit Reports"]
+            FIN_MENU -- Item Sales --> REP_ITEMS["View Itemized Sales Breakdown and Top-Selling Products"]
+            FIN_MENU -- Store Valuation --> REP_VALU["Calculate Total Inventory Value: Cost vs Retail Value"]
+            FIN_MENU -- Shift History --> SHIFTS_AUDIT["Review Cashier Shift Logs, Float, and Cash Variances"]
+            FIN_MENU -- Manager PIN --> PIN_MGT["View or Change Today's 4-Digit Manager PIN"]
+            REP_GEN & REP_ITEMS & REP_VALU & SHIFTS_AUDIT & PIN_MGT --> FIN_DONE["Export PDF or CSV, Print, or Return"]
         end
 
-        %% Pillar D: Predictive Intelligence & System Administration
-        subgraph PIL_SYS ["Pillar D: BI, Forecasting & System Admin"]
+        %% Area 4: Forecasting & System Administration
+        subgraph PIL_SYS ["Area 4: Forecasting & System Admin"]
             direction TB
-            SYS_MENU{Analytics & Security}
-            SYS_MENU -- BI Dashboard --> BI_VIEW[Real-Time KPIs, 30-Day Sales Trend, Category Doughnut, Low Stock & Expiry Alerts]
-            SYS_MENU -- Forecasting --> FCST_RUN[Select 3/6/12 Mo Lookback -> Run SMA / WMA -> Calculate Demand and Restock Gap]
-            SYS_MENU -- User Accounts --> ACC_MGT[Create Users with Bcrypt Hash, Toggle Active Status, Reset Passwords]
-            SYS_MENU -- Database Backup --> BAK_MGT[Trigger mysqldump / PHP PDO Fallback -> Download .sql or Purge Old Backups]
-            SYS_MENU -- Audit Trail --> AUD_MGT[Inspect Immutable Action Logs by User, Action Type, Date, or IP Address]
-            BI_VIEW & FCST_RUN & ACC_MGT & BAK_MGT & AUD_MGT --> SYS_DONE[Return to Hub]
+            SYS_MENU{Admin Actions}
+            SYS_MENU -- BI Dashboard --> BI_VIEW["View Real-Time Sales KPIs, Trends, and Low-Stock Warnings"]
+            SYS_MENU -- Demand Forecasting --> FCST_RUN["Run Moving Average Demand Forecasts and Restocking Quantities"]
+            SYS_MENU -- Staff Accounts --> ACC_MGT["Manage Staff Accounts, Assign Roles, and Reset Passwords"]
+            SYS_MENU -- Database Backup --> BAK_MGT["Create, Download, or Manage Database Backups"]
+            BI_VIEW & FCST_RUN & ACC_MGT & BAK_MGT --> SYS_DONE["Return to Hub"]
         end
 
-        ADM_ROUTER --> PIL_INV
-        ADM_ROUTER --> PIL_POS
-        ADM_ROUTER --> PIL_FIN
-        ADM_ROUTER --> PIL_SYS
+        ADM_ROUTER --> INV_MENU
+        ADM_ROUTER --> POS_MENU
+        ADM_ROUTER --> FIN_MENU
+        ADM_ROUTER --> SYS_MENU
 
-        INV_DONE & POS_DONE & FIN_DONE & SYS_DONE --> ADM_CYCLE{Admin Next Action?}
-        ADM_CYCLE -- Select Another Task --> ADM_START
-        ADM_CYCLE -- Sign Out --> ADM_LOGOUT[Destroy PHP Session and Log LOGOUT]
+        INV_DONE & POS_DONE & FIN_DONE & SYS_DONE --> ADM_CYCLE{Next Admin Action?}
+        ADM_CYCLE -- Select Another Area --> ADM_START
+        ADM_CYCLE -- Sign Out --> ADM_LOGOUT["Sign Out Admin Session"]
     end
 
-    %% Role Connections
+    %% Role Routing
     V_ROLE -- Cashier --> C_START
     V_ROLE -- Admin --> ADM_START
 
     C_LOGOUT --> END_TERM([END: Session Terminated])
     ADM_LOGOUT --> END_TERM
 
-    %% Visual Styling
+    %% Styling
     style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
     style END_TERM fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
     style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
     style V_ROLE fill:#dbeafe,stroke:#2563eb,stroke-width:2.5px
-    style ATOMIC_COMMIT fill:#dcfce7,stroke:#16a34a,stroke-width:2px
-    style EXEC_VOID fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+    style CONFIRM_SALE fill:#dcfce7,stroke:#16a34a,stroke-width:2px
     style FCST_RUN fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
     style RECON_CALC fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
     style CASHIER_FLOW fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
@@ -1510,128 +1498,124 @@ flowchart TD
                         <div class="mermaid-wrapper">
                             <div class="mermaid">
 flowchart TD
-    START([START: User Access]) --> LOGIN[/Enter Cashier Username and Password/]
-    LOGIN --> V_AUTH{Valid Credentials and Active?}
-    V_AUTH -- No --> ERR_AUTH[Display Error: Invalid Credentials] --> LOGIN
-    V_AUTH -- Yes --> CHK_S{Active Open Shift in tbl_shifts?}
+    START([START: Cashier Access]) --> LOGIN[/Enter Cashier Username and Password/]
+    LOGIN --> V_AUTH{Valid Credentials?}
+    V_AUTH -- No --> ERR_AUTH["Display Invalid Credentials Alert"] --> LOGIN
+    V_AUTH -- Yes --> CHK_S{Active Open Shift Exists?}
 
-    CHK_S -- No --> PIN_IN[/Prompt Daily Manager PIN and Starting Cash Float/]
-    PIN_IN --> V_PIN{PIN Matches tbl_settings?}
-    V_PIN -- No --> ERR_PIN[Invalid Manager Authorization PIN] --> PIN_IN
-    V_PIN -- Yes --> OPEN_S[Insert Open Record into tbl_shifts] --> POS_MAIN
-    CHK_S -- Yes --> POS_MAIN[Load POS Cashier Register Workspace]
+    CHK_S -- No --> PIN_IN[/Enter Manager Authorization PIN and Starting Cash Float/]
+    PIN_IN --> V_PIN{Valid Manager PIN?}
+    V_PIN -- No --> ERR_PIN["Invalid Authorization PIN"] --> PIN_IN
+    V_PIN -- Yes --> OPEN_S["Open Cashier Shift with Recorded Float"] --> POS_MAIN
+    CHK_S -- Yes --> POS_MAIN["Load POS Sales Register Workspace"]
 
-    POS_MAIN --> SCAN_PROD[/Scan Product Barcode with Reader or Type Name/]
-    SCAN_PROD --> V_ITEM{Item Active and Exists in tbl_inventory?}
-    V_ITEM -- No --> ERR_ITEM[Alert: Product Not Found in Catalog] --> POS_MAIN
-    V_ITEM -- Yes --> V_STK{Is Stock Available in tbl_inventory?}
-    V_STK -- No --> ERR_STK[Alert: Out of Stock] --> POS_MAIN
-    V_STK -- Yes --> ADD_CART[Add Item to Active Cart and Update Subtotal]
+    POS_MAIN --> C_MENU{Select Cashier Action}
+    C_MENU -- Ring Up Sale --> SCAN_PROD[/Scan Barcode with Reader or Search Item by Name/]
+    C_MENU -- Check Stock --> STK_LOOKUP[/Open Stock Monitor: Check Available Stock & Expiry/] --> POS_MAIN
+    C_MENU -- Shift Monitor --> LIVE_SHIFT[/Open Live Shift Monitor: View Sales & Expected Cash/] --> POS_MAIN
+    C_MENU -- Close Shift --> CLOSE_PROMPT[/Enter Manager PIN and Counted Drawer Cash/]
 
-    ADD_CART --> MORE_ITEMS{Ring Up More Products?}
+    SCAN_PROD --> V_ITEM{Product Found in Catalog?}
+    V_ITEM -- No --> ERR_ITEM["Product Not Found Alert"] --> POS_MAIN
+    V_ITEM -- Yes --> V_STK{Stock Available?}
+    V_STK -- No --> ERR_STK["Out of Stock Alert"] --> POS_MAIN
+    V_STK -- Yes --> ADD_CART["Add Item to Cart and Update Subtotal"]
+
+    ADD_CART --> MORE_ITEMS{Scan More Items?}
     MORE_ITEMS -- Yes --> SCAN_PROD
-    MORE_ITEMS -- No --> TENDER_IN[/Enter Customer Cash Tendered/]
+    MORE_ITEMS -- No --> TENDER_IN[/Enter Cash Payment Tendered by Customer/]
 
-    TENDER_IN --> V_TEND{Tendered Cash Sufficient?}
-    V_TEND -- No --> ERR_TEND[Warning: Insufficient Cash Tendered] --> TENDER_IN
-    V_TEND -- Yes --> CHANGE_CALC[Calculate Customer Change Amount]
+    TENDER_IN --> V_TEND{Payment Sufficient?}
+    V_TEND -- No --> ERR_TEND["Insufficient Cash Warning"] --> TENDER_IN
+    V_TEND -- Yes --> CHANGE_CALC["Calculate Customer Change Due"]
 
-    CHANGE_CALC --> ATOMIC_COMMIT[Atomic PDO SQL Transaction:<br/>1. Generate TXN-YYYYMMDD-####<br/>2. Insert tbl_transactions<br/>3. Insert tbl_transaction_details<br/>4. Decrement tbl_inventory.stock_qty<br/>5. Log Completed Sale to tbl_audit_logs<br/>6. COMMIT TRANSACTION]
-    ATOMIC_COMMIT --> DISP_RCPT[/Display Digital On-Screen Receipt and Prompt Thermal Print/]
-
-    DISP_RCPT --> C_NEXT{Next Cashier Operation?}
-    C_NEXT -- Next Sale --> POS_MAIN
-    C_NEXT -- Live Shift Monitor --> LIVE_SHIFT[/View Running Shift Sales and Expected Cash/] --> POS_MAIN
-    C_NEXT -- Close Shift --> CLOSE_PROMPT[/Enter Daily Manager PIN and Counted Drawer Cash/]
+    CHANGE_CALC --> CONFIRM_SALE["Record Transaction and Deduct Sold Quantities from Stock"]
+    CONFIRM_SALE --> DISP_RCPT[/Display Digital Receipt and Print Customer Copy/] --> POS_MAIN
 
     CLOSE_PROMPT --> V_PIN_CLOSE{Manager PIN Valid?}
-    V_PIN_CLOSE -- No --> ERR_PIN_CLOSE[Invalid Manager PIN] --> CLOSE_PROMPT
-    V_PIN_CLOSE -- Yes --> RECON_CALC[Reconcile Cash Drawer:<br/>Expected Cash = Starting Float + Cash Sales<br/>Over/Short = Actual Counted Cash - Expected Cash]
-    RECON_CALC --> CLOSE_S_REC[Update tbl_shifts status='closed' and Record Variance]
-    CLOSE_S_REC --> DISP_S_MODAL[/Display Shift Reconciliation Summary Modal/]
-    DISP_S_MODAL --> C_LOGOUT[Destroy PHP Session and Sign Out] --> END_NODE([END: Session Terminated])
+    V_PIN_CLOSE -- No --> ERR_PIN_CLOSE["Invalid Manager PIN"] --> CLOSE_PROMPT
+    V_PIN_CLOSE -- Yes --> RECON_CALC["Calculate Cash Drawer Over / Short Reconciliation"]
+    RECON_CALC --> CLOSE_S["Close Shift and Save Reconciliation Summary"]
+    CLOSE_S --> DISP_S_MODAL[/Display Shift Summary Report/]
+    DISP_S_MODAL --> C_LOGOUT["Sign Out Cashier Session"] --> END_NODE([END: Session Terminated])
 
     style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
     style END_NODE fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
     style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
-    style ATOMIC_COMMIT fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px
+    style CONFIRM_SALE fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px
     style RECON_CALC fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
                             </div>
                         </div>
                     </div>
 
-                    <!-- VIEW 3: Administrative Control Hub (10 Subsystems) -->
+                    <!-- VIEW 3: Administrative Control Hub (Enrolled Modules) -->
                     <div class="flowchart-view" id="flowchart-admin">
                         <div class="mermaid-wrapper">
                             <div class="mermaid">
 flowchart TD
     START([START: Admin Access]) --> LOGIN[/Enter Administrator Username and Password/]
-    LOGIN --> V_AUTH{Valid Credentials and Active?}
-    V_AUTH -- No --> ERR_AUTH[Display Invalid Credentials Alert] --> LOGIN
-    V_AUTH -- Yes --> ADM_HUB[Open Administrator Control Center]
+    LOGIN --> V_AUTH{Valid Credentials?}
+    V_AUTH -- No --> ERR_AUTH["Display Invalid Credentials Alert"] --> LOGIN
+    V_AUTH -- Yes --> ADM_HUB["Open Administrator Control Center"]
 
-    ADM_HUB --> ADM_ROUTER{Select Administrative Subsystem}
+    ADM_HUB --> ADM_ROUTER{Select Enrolled Module}
 
-    %% 1. Inventory & Catalog
-    subgraph SUB_INV ["1. Inventory & Catalog Operations"]
+    %% 1. Inventory & Suppliers
+    subgraph SUB_INV ["1. Inventory & Suppliers"]
         direction TB
-        INV_OP{Inventory Task}
-        INV_OP -- Add Item --> I_ADD[Open itemModal: Enter Barcode, Name, Cost, Price, Threshold, Expiry -> Save tbl_inventory]
-        INV_OP -- Edit Item --> I_EDIT[Modify Selling Prices, Alert Thresholds, or Supplier ID]
-        INV_OP -- Stock Adjust --> I_ADJ[Open adjustModal: Restock (+) or Spoilage (-) with Mandatory Reason]
-        INV_OP -- Categories --> I_CAT[Open manageCatsModal: Add or Delete Categories verifying 0 linked items]
-        INV_OP -- Archive --> I_DEL[Soft-Delete Item: Set is_active=0 to preserve historical sales]
-        INV_OP -- Suppliers --> I_SUPP[Open supplierModal: Add/Edit Wholesale Suppliers and Terms]
-        I_ADD & I_EDIT & I_ADJ & I_CAT & I_DEL & I_SUPP --> INV_LOG[Write Audit Log to tbl_audit_logs]
+        INV_OP{Inventory Actions}
+        INV_OP -- Add Product --> I_ADD["Register New Product: Barcode, Pricing, and Reorder Threshold"]
+        INV_OP -- Edit Details --> I_EDIT["Update Product Information, Selling Prices, and Thresholds"]
+        INV_OP -- Adjust Stock --> I_ADJ["Record Stock In Deliveries, Spoilage, or Damaged Items"]
+        INV_OP -- Categories --> I_CAT["Create, Edit, and Organize Product Categories"]
+        INV_OP -- Suppliers --> I_SUPP["Manage Wholesale Suppliers and Contact Records"]
+        I_ADD & I_EDIT & I_ADJ & I_CAT & I_SUPP --> INV_LOG["Save Changes and Return"]
     end
 
-    %% 2. Sales & 24h Voiding
-    subgraph SUB_SALES ["2. POS Register & 24h Voiding"]
+    %% 2. Point of Sale & Stock Monitor
+    subgraph SUB_SALES ["2. Point of Sale & Stock Monitor"]
         direction TB
-        SALES_OP{Sales Task}
-        SALES_OP -- Direct POS --> S_POS[Open Cashier POS Register for Direct Sales]
-        SALES_OP -- Void Sale --> S_LOOKUP[/Search Transaction Code within Last 24 Hours/]
-        S_LOOKUP --> V_ELIGIBLE{Eligible and within 24h?}
-        V_ELIGIBLE -- No --> ERR_VOID[Cannot Void: Older than 24h or Already Voided]
-        V_ELIGIBLE -- Yes --> S_VOID[Atomic Void Procedure:<br/>1. Set tbl_transactions status='voided'<br/>2. Restore stock_qty in tbl_inventory<br/>3. Log VOID_TRANSACTION to tbl_audit_logs]
+        SALES_OP{Operations Actions}
+        SALES_OP -- Point of Sale --> S_POS["Open Cashier Register for Direct Store Sales"]
+        SALES_OP -- Stock Monitor --> S_MON["Inspect Real-Time Stock Levels and Expiry Alerts"]
+        S_POS & S_MON --> SALES_LOG["Complete Action and Return"]
     end
 
-    %% 3. Shifts & Financial Governance
-    subgraph SUB_FIN ["3. Shift Auditing & Financial Analytics"]
+    %% 3. Financial Analytics & Shift History
+    subgraph SUB_FIN ["3. Financial Analytics & Shift History"]
         direction TB
-        FIN_OP{Financial Task}
-        FIN_OP -- Shift History --> F_SHIFTS[Inspect Cashier Shift Logs, Float, Sales, and Over/Short Variance]
-        FIN_OP -- Manager PIN --> F_PIN[View / Rotate Daily 4-Digit Manager PIN in tbl_settings]
-        FIN_OP -- Sales Reports --> F_REP[Generate Daily, Weekly, or Monthly Reports: Revenue, COGS, Profit Margin %]
-        FIN_OP -- Item Breakdown --> F_ITEMS[Open breakdownModal: Line-Item Quantities Sold and Subtotals]
-        FIN_OP -- Valuation --> F_VAL[Calculate Total Asset Inventory Valuation: Cost Basis vs Retail Worth]
-        F_SHIFTS & F_PIN & F_REP & F_ITEMS & F_VAL --> F_EXPORT[Export to PDF/CSV, Print, or Return]
+        FIN_OP{Financial Actions}
+        FIN_OP -- Sales Reports --> F_REP["Generate Daily, Weekly, and Monthly Revenue & Profit Reports"]
+        FIN_OP -- Item Sales --> F_ITEMS["View Itemized Sales Breakdown and Top-Selling Products"]
+        FIN_OP -- Store Valuation --> F_VAL["Calculate Total Store Inventory Value: Cost vs Retail Value"]
+        FIN_OP -- Shift History --> F_SHIFTS["Audit Cashier Shift Logs, Float, Sales, and Cash Variances"]
+        FIN_OP -- Manager PIN --> F_PIN["View or Change Today's 4-Digit Manager PIN"]
+        F_REP & F_ITEMS & F_VAL & F_SHIFTS & F_PIN --> F_EXPORT["Export to PDF or CSV, Print, or Return"]
     end
 
-    %% 4. Predictive Intelligence & Security
-    subgraph SUB_SYS ["4. Predictive Analytics & System Governance"]
+    %% 4. Forecasting & System Admin
+    subgraph SUB_SYS ["4. Forecasting & System Admin"]
         direction TB
-        SYS_OP{Analytics & Security}
-        SYS_OP -- BI Dashboard --> Y_BI[Real-Time KPIs, 30-Day Trend, Category Doughnut, Low Stock & Expiry Alerts]
-        SYS_OP -- Forecasting --> Y_FCST[Select 3/6/12 Mo Lookback -> Run SMA / WMA -> Calculate Projected Demand and Restock Gap]
-        SYS_OP -- Accounts --> Y_ACC[Manage Users with Bcrypt Passwords, Toggle Active Status, Reset Passwords]
-        SYS_OP -- Backup --> Y_BAK[Trigger mysqldump / PHP PDO Fallback -> Download .sql or Purge Old Backups]
-        SYS_OP -- Audit Trail --> Y_AUD[Inspect Immutable System Action Logs by User, Action, Date, or IP Address]
+        SYS_OP{Admin Actions}
+        SYS_OP -- BI Dashboard --> Y_BI["View Real-Time Sales KPIs, Trends, and Low-Stock Warnings"]
+        SYS_OP -- Demand Forecasting --> Y_FCST["Run Moving Average Demand Forecasts and Restocking Quantities"]
+        SYS_OP -- Staff Accounts --> Y_ACC["Manage Staff Accounts, Assign Roles, and Reset Passwords"]
+        SYS_OP -- Database Backup --> Y_BAK["Create, Download, or Manage Database Backups"]
+        Y_BI & Y_FCST & Y_ACC & Y_BAK --> SYS_LOG["Complete Action and Return"]
     end
 
-    ADM_ROUTER --> SUB_INV
-    ADM_ROUTER --> SUB_SALES
-    ADM_ROUTER --> SUB_FIN
-    ADM_ROUTER --> SUB_SYS
+    ADM_ROUTER --> INV_OP
+    ADM_ROUTER --> SALES_OP
+    ADM_ROUTER --> FIN_OP
+    ADM_ROUTER --> SYS_OP
 
-    INV_LOG & S_POS & ERR_VOID & S_VOID & F_EXPORT & Y_BI & Y_FCST & Y_ACC & Y_BAK & Y_AUD --> ADM_DECIDE{Admin Action}
+    INV_LOG & SALES_LOG & F_EXPORT & SYS_LOG --> ADM_DECIDE{Next Admin Action?}
     ADM_DECIDE -- Perform Another Task --> ADM_HUB
-    ADM_DECIDE -- Sign Out --> ADM_EXIT[Destroy PHP Session and Log LOGOUT] --> END_TERM([END: Session Terminated])
+    ADM_DECIDE -- Sign Out --> ADM_EXIT["Sign Out Admin Session"] --> END_TERM([END: Session Terminated])
 
     style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
     style END_TERM fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
     style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
-    style S_VOID fill:#fee2e2,stroke:#dc2626,stroke-width:2px
     style Y_FCST fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
     style SUB_INV fill:#f8fafc,stroke:#64748b,stroke-width:1.5px
     style SUB_SALES fill:#f8fafc,stroke:#64748b,stroke-width:1.5px
@@ -1641,39 +1625,40 @@ flowchart TD
                         </div>
                     </div>
                 </div>
+
                 <div class="diagram-spec-panel">
                     <div class="spec-grid">
                         <div class="spec-block">
-                            <h4 class="spec-block-title"><i class="fa-solid fa-cash-register"></i> Cash Reconciliation Mathematics</h4>
+                            <h4 class="spec-block-title"><i class="fa-solid fa-cash-register"></i> Cash Drawer Reconciliation</h4>
                             <div class="math-formula-box">
-                                <div class="math-formula-title">Cash Drawer Reconciliation Formula</div>
+                                <div class="math-formula-title">Cash Drawer Balance Formula</div>
                                 <div class="math-formula-content">Expected Cash = Starting Float + &Sigma;(Cash Sales During Shift)</div>
-                                <div class="math-formula-content">Short / Over = Actual Cash Counted &minus; Expected Cash</div>
-                                <div class="math-formula-note">Where Short &lt; 0 indicates a register cash shortage, and Over &gt; 0 indicates an overage. Recorded in <code>tbl_shifts.short_over</code>.</div>
+                                <div class="math-formula-content">Discrepancy (Over / Short) = Counted Cash &minus; Expected Cash</div>
+                                <div class="math-formula-note">A negative discrepancy indicates a cash shortage in the drawer, while a positive value indicates an overage.</div>
                             </div>
                         </div>
                         <div class="spec-block">
-                            <h4 class="spec-block-title"><i class="fa-solid fa-bolt"></i> Atomic Checkout Safeguards</h4>
+                            <h4 class="spec-block-title"><i class="fa-solid fa-cart-shopping"></i> Cashier Access & POS Checkout Rules</h4>
                             <ul class="spec-list">
-                                <li><strong>Race Condition Prevention:</strong> <code>handleCompleteSale()</code> executes within a PDO transaction wrapper (<code>beginTransaction</code> and <code>commit</code>) ensuring that both transaction details and stock decrements are atomic.</li>
-                                <li><strong>Negative Stock Lockdown:</strong> If two cashiers attempt to ring up the last unit simultaneously, row-level verification halts the second sale with HTTP 409 Conflict.</li>
+                                <li><strong>Unlocked Stock Monitoring:</strong> Cashiers can freely open the Stock Monitor at any time to check product availability, remaining quantities, and expiry dates without entering the Manager PIN.</li>
+                                <li><strong>Locked POS Register Workspace:</strong> Only the Point of Sale checkout register is locked; it strictly requires a daily Manager PIN and starting cash float to unlock the cash drawer and begin ringing up sales.</li>
+                                <li><strong>Automated Stock Deduction:</strong> Automatically decrements product quantities and prints customer receipts upon completing customer sales.</li>
                             </ul>
                         </div>
                         <div class="spec-block">
-                            <h4 class="spec-block-title"><i class="fa-solid fa-user-shield"></i> Specific Administrative Subsystems</h4>
+                            <h4 class="spec-block-title"><i class="fa-solid fa-boxes-stacked"></i> Inventory & Wholesale Suppliers</h4>
                             <ul class="spec-list">
-                                <li><strong>BI Dashboard:</strong> Real-time KPIs, dynamic date filters (7d/30d/YTD), 30-day sales trend line charts, category distribution doughnut charts, and fast-moving FMCG alerts.</li>
-                                <li><strong>Inventory Operations:</strong> Add new items with barcode generation, edit selling prices, restock deliveries, write off damaged/expired stock, manage categories, and soft-delete (<code>is_active=0</code>).</li>
-                                <li><strong>Demand Forecasting:</strong> Run SMA and WMA models across 3, 6, or 12 month lookback horizons to calculate projected demand ($\hat{Y}$) and suggested restocking gaps.</li>
-                                <li><strong>Shift Governance:</strong> Review cash discrepancy reports, inspect starting floats vs actual cash, rotate daily manager PINs, and force-close abandoned cashier shifts.</li>
+                                <li><strong>Catalog Maintenance:</strong> Add new items, update selling prices, record delivery restocks or damage write-offs, and organize categories.</li>
+                                <li><strong>Supplier Directory:</strong> Maintain wholesale vendor profiles, contact information, and supplier associations per product.</li>
+                                <li><strong>Stock Monitoring:</strong> Real-time lookup of stock levels, minimum safety thresholds, and 30-day expiration alerts.</li>
                             </ul>
                         </div>
                         <div class="spec-block">
-                            <h4 class="spec-block-title"><i class="fa-solid fa-database"></i> Governance, Voiding & Disaster Recovery</h4>
+                            <h4 class="spec-block-title"><i class="fa-solid fa-chart-line"></i> Analytics & System Administration</h4>
                             <ul class="spec-list">
-                                <li><strong>Sale Voiding Authority:</strong> Admins can void erroneous sales within 24 hours via <code>handleVoidTransaction()</code>, atomically restoring stock to inventory and recording a <code>VOID_TRANSACTION</code> audit event.</li>
-                                <li><strong>User Security:</strong> Bcrypt password hashing, role-based session isolation, and non-destructive deactivation (preserving historical cashier links).</li>
-                                <li><strong>Database Backups:</strong> Automated <code>mysqldump</code> execution with standalone PHP PDO fallback creating portable, timestamped <code>.sql</code> files in <code>backups/</code>.</li>
+                                <li><strong>BI Dashboard & Reports:</strong> Track gross revenue, COGS, and profit margin % with exportable daily/weekly/monthly breakdowns.</li>
+                                <li><strong>Demand Forecasting:</strong> Calculate projected sales demand and suggested replenishment order quantities using moving average models.</li>
+                                <li><strong>User Security & Backups:</strong> Manage staff user accounts with role-based access control and generate one-click database backups.</li>
                             </ul>
                         </div>
                     </div>
