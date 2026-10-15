@@ -1,0 +1,2305 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sharon Store 3.0 — Comprehensive System Architecture & Engineering Diagrams</title>
+    <meta name="description" content="Complete architectural diagrams, DFDs, ERD, flowcharts, use cases, and sequence flows for Sharon Store 3.0 Web-Based Inventory and Sales Forecasting System.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/system_diagrams.css">
+    <!-- Mermaid.js for Vector Diagram Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: { 
+                useMaxWidth: false, 
+                htmlLabels: true, 
+                curve: 'basis',
+                nodeSpacing: 50,
+                rankSpacing: 55,
+                padding: 24
+            },
+            themeVariables: {
+                fontSize: '17px',
+                fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
+            },
+            er: { useMaxWidth: false },
+            sequence: { useMaxWidth: false, showSequenceNumbers: true },
+            state: { useMaxWidth: false }
+        });
+    </script>
+</head>
+<body>
+
+<div class="app-layout">
+
+    <!-- ══ SIDEBAR NAVIGATION ══════════════════════════════════ -->
+    <aside class="app-sidebar" id="appSidebar">
+        <div class="sidebar-header">
+            <div class="brand-wrapper">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div>
+                    <div class="brand-title">Sharon Store 3.0</div>
+                    <div class="brand-subtitle">System Diagrams & Specs</div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">Overview</div>
+            <a href="#summary" class="nav-item-link active" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-compass"></i>
+                <span>Executive Summary</span>
+                <span class="nav-badge nav-badge-app">11 Diag</span>
+            </a>
+
+            <div class="nav-section-title">Capstone Research Artifacts</div>
+            <a href="#diagram-1" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-cubes-stacked"></i>
+                <span>1. Conceptual Framework</span>
+                <span class="nav-badge nav-badge-fig">Fig 1</span>
+            </a>
+            <a href="#diagram-2" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-arrows-spin"></i>
+                <span>2. Agile Methodology</span>
+                <span class="nav-badge nav-badge-fig">Fig 2</span>
+            </a>
+            <a href="#diagram-3" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-circle-nodes"></i>
+                <span>3. DFD Level 0 (Context)</span>
+                <span class="nav-badge nav-badge-app">App F</span>
+            </a>
+            <a href="#diagram-4" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-diagram-project"></i>
+                <span>4. DFD Level 1 (Detailed)</span>
+                <span class="nav-badge nav-badge-app">App G</span>
+            </a>
+            <a href="#diagram-5" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-user-gear"></i>
+                <span>5. Use Case Diagram</span>
+                <span class="nav-badge nav-badge-app">App H</span>
+            </a>
+            <a href="#diagram-6" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-database"></i>
+                <span>6. Entity-Relationship (ERD)</span>
+                <span class="nav-badge nav-badge-app">App I</span>
+            </a>
+            <a href="#diagram-7" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-network-wired"></i>
+                <span>7. System Flowchart</span>
+                <span class="nav-badge nav-badge-app">App J</span>
+            </a>
+
+            <div class="nav-section-title">Software Engineering Models</div>
+            <a href="#diagram-8" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-server"></i>
+                <span>8. 3-Tier Architecture</span>
+                <span class="nav-badge nav-badge-sys">Arch</span>
+            </a>
+            <a href="#diagram-9" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-timeline"></i>
+                <span>9. UML Sequence Flows</span>
+                <span class="nav-badge nav-badge-sys">UML</span>
+            </a>
+            <a href="#diagram-10" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-route"></i>
+                <span>10. State Machine Lifecycle</span>
+                <span class="nav-badge nav-badge-sys">State</span>
+            </a>
+            <a href="#diagram-11" class="nav-item-link" onclick="setActiveNav(this)">
+                <i class="fa-solid fa-sitemap"></i>
+                <span>11. Component Hierarchy</span>
+                <span class="nav-badge nav-badge-sys">MVC</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- ══ MAIN CONTENT WRAPPER ════════════════════════════════ -->
+    <main class="app-main">
+
+        <!-- Top Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <button class="sidebar-toggle-btn" id="sidebarToggle" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="header-meta">
+                    <h1>Sharon Store 3.0 — Comprehensive System Blueprint</h1>
+                    <p>Pampang Public Market, Angeles City, Pampanga | BSIS Capstone Project</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn-action" onclick="toggleTheme()" id="themeBtn" title="Toggle Light/Dark Theme">
+                    <i class="fa-solid fa-moon"></i> <span>Dark Mode</span>
+                </button>
+                <button class="btn-action" onclick="window.print()" title="Print / Save to PDF">
+                    <i class="fa-solid fa-print"></i> <span>Print PDF</span>
+                </button>
+                <a href="dashboard.php" class="btn-action btn-primary-action" title="Back to Store Dashboard">
+                    <i class="fa-solid fa-arrow-left"></i> <span>Store App</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Body Container -->
+        <div class="content-body">
+
+            <!-- Executive Hero Summary -->
+            <section id="summary" class="hero-banner">
+                <div class="hero-badge"><i class="fa-solid fa-shield-halved"></i> Engineering & Capstone Documentation</div>
+                <h2 class="hero-title">A Web-Based Inventory and Sales Forecasting System with Business Intelligence Dashboard</h2>
+                <p class="hero-description">
+                    This comprehensive document contains all architectural, structural, data flow, behavioral, and database design diagrams for Sharon Store 3.0. Designed specifically to resolve pen-and-paper operational bottlenecks, stockouts, and spoilage at the Pampang Public Market locale via barcode-integrated POS, moving average forecasting (SMA & WMA), and real-time executive analytics.
+                </p>
+                <div class="hero-stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">11</span>
+                        <span class="stat-label">Complete System Diagrams</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">10</span>
+                        <span class="stat-label">Relational Database Tables</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">8</span>
+                        <span class="stat-label">Integrated Core Subsystems</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">2</span>
+                        <span class="stat-label">Demand Forecasting Algorithms</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Filter Bar -->
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filterDiagrams('all', this)">All Diagrams (11)</button>
+                <button class="filter-tab" onclick="filterDiagrams('academic', this)">Academic / Capstone (Appendices F-J & Figs)</button>
+                <button class="filter-tab" onclick="filterDiagrams('data', this)">Data Engineering (ERD & DFDs)</button>
+                <button class="filter-tab" onclick="filterDiagrams('behavioral', this)">Behavioral & Logic (Use Case & Flowcharts)</button>
+                <button class="filter-tab" onclick="filterDiagrams('structural', this)">System & Architecture (3-Tier & UML)</button>
+            </div>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 1: CONCEPTUAL FRAMEWORK (IPO MODEL)
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-1" data-category="academic">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-appendix">Figure 1</span>
+                            <span class="badge-tag badge-category">Conceptual Framework</span>
+                            <span class="badge-tag badge-system">Research Methodology</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-cubes-stacked text-success"></i> Conceptual Framework (IPO Model)</h3>
+                        <p class="diagram-subtitle">Input-Process-Output paradigm governing problem identification, development methodology, and target deliverables.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-1', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-1', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-1')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-1')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-1')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-1">
+                    <pre><code>flowchart LR
+    subgraph INPUT ["1. INPUT PHASE"]
+        direction TB
+        I1["<b>Problem Statement of Locale:</b><br/>• Inefficiencies of manual logbook tracking<br/>• Financial losses from overstocking & spoilage<br/>• Frequent stockouts of daily staple FMCG<br/>• Absence of predictive forecasting & BI"]
+        I2["<b>Knowledge Requirements:</b><br/>• Interviews with 2 Managing Owners & 8 Staff<br/>• Physical logbook documentary audit<br/>• Related Literature & Studies (2021-2026)"]
+        I3["<b>Software Requirements:</b><br/>• OS: Windows 10/11 Local Server<br/>• Stack: XAMPP (Apache, PHP 8.2, MySQL)<br/>• UI: HTML5, CSS3, JS, Bootstrap 5.3, Font Awesome"]
+        I4["<b>Hardware Requirements:</b><br/>• Laptop/Desktop Terminal (Core i3/i5, 8GB+ RAM)<br/>• USB/Bluetooth Handheld Barcode Scanner<br/>• Document Printer for financial reports"]
+        I5["<b>Sustainable Development Goals:</b><br/>• SDG 8: Decent Work & Economic Growth<br/>• SDG 9: Industry, Innovation & Infrastructure<br/>• SDG 12: Responsible Consumption & Production"]
+    end
+
+    subgraph PROCESS ["2. PROCESS PHASE"]
+        direction TB
+        P1["<b>Agile Development Methodology:</b><br/>Iterative 2-4 week sprint cycles"]
+        P2["<b>Planning & Needs Analysis:</b><br/>Translate market bottlenecks to functional user stories"]
+        P3["<b>System Design:</b><br/>ERD, DFD Level 0/1, Use Case, UI/UX Mockups"]
+        P4["<b>System Construction (Implementation):</b><br/>• POS Module with barcode scanner integration<br/>• Real-time Inventory & Expiration Tracking<br/>• Sales Forecasting Engine (SMA & WMA formulas)<br/>• Business Intelligence Dashboard"]
+        P5["<b>Multi-Tier Testing & Evaluation:</b><br/>• Unit Testing & Database Integrity Checks<br/>• User Acceptance Testing (UAT) at Pampang Locale<br/>• ISO/IEC 25010 Quality Model (Alpha/Beta, N=138)"]
+    end
+
+    subgraph OUTPUT ["3. OUTPUT PHASE"]
+        direction TB
+        O1["<b>A Fully Functional Web-Based Inventory and<br/>Sales Forecasting System with Business<br/>Intelligence Dashboard for Sharon Store</b><br/><br/><i>Key Operational Impact:</i><br/>✓ Sub-second barcode checkout processing<br/>✓ Automated real-time stock deduction<br/>✓ Data-driven wholesale purchasing guidance<br/>✓ Prevention of retail spoilage & expired losses<br/>✓ Tamper-evident user audit trail & database backups"]
+    end
+
+    INPUT ==> PROCESS ==> OUTPUT</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+flowchart LR
+    subgraph INPUT ["1. INPUT PHASE"]
+        direction TB
+        I1["<b>Problem Statement of Locale:</b><br/>• Manual logbook recording errors<br/>• Stockouts & product spoilage losses<br/>• Lack of predictive sales analytics"]
+        I2["<b>Knowledge & Requirements:</b><br/>• Interviews with 2 Owners & 8 Staff<br/>• Historical transaction data audit<br/>• Literature & Studies (2021-2026)"]
+        I3["<b>Technical Resources:</b><br/>• XAMPP Apache, PHP 8.2, MariaDB<br/>• Bootstrap 5.3, Vanilla JS ES6<br/>• USB/Bluetooth Barcode Scanner"]
+        I4["<b>United Nations SDGs:</b><br/>• SDG 8 (Economic Growth)<br/>• SDG 9 (Enterprise Innovation)<br/>• SDG 12 (Waste Reduction)"]
+    end
+
+    subgraph PROCESS ["2. PROCESS PHASE"]
+        direction TB
+        P1["<b>Agile Development Methodology:</b><br/>Iterative sprints & continuous feedback"]
+        P2["<b>System Design & Architecture:</b><br/>DFD L0/L1, ERD, Flowcharts, Wireframes"]
+        P3["<b>System Construction:</b><br/>• POS & Barcode Deductions<br/>• SMA & WMA Forecasting Engine<br/>• Real-Time BI Visualizations"]
+        P4["<b>System Evaluation (ISO/IEC 25010):</b><br/>• Alpha Testing (3 IT Experts)<br/>• Beta Testing (10 Staff + 125 Customers)"]
+    end
+
+    subgraph OUTPUT ["3. OUTPUT PHASE"]
+        direction TB
+        O1["<b>Web-Based Inventory & Sales Forecasting<br/>System for Sharon Store</b><br/><br/>✓ Automated barcode POS checkout<br/>✓ Real-time active inventory sync<br/>✓ Predictive restocking recommendations<br/>✓ Executive Business Intelligence charts<br/>✓ Secure shift drawer control & audit trail"]
+    end
+
+    INPUT ==> PROCESS ==> OUTPUT
+    style INPUT fill:#f0fdf4,stroke:#10b981,stroke-width:2px,color:#064e3b
+    style PROCESS fill:#eff6ff,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a
+    style OUTPUT fill:#faf5ff,stroke:#8b5cf6,stroke-width:2px,color:#4c1d95
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-spec-panel">
+                    <div class="spec-grid">
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-circle-check"></i> Inputs & Framework Foundations</h4>
+                            <ul class="spec-list">
+                                <li><strong>Research Design:</strong> Descriptive Research Design with Purposive and Convenient sampling.</li>
+                                <li><strong>Population Sample:</strong> N = 180 weekly customers evaluated via Slovin's Formula ($e=0.05 \implies n=125$ customers), plus 2 Owners, 8 Staff, and 3 IT Experts (Total: 138 respondents).</li>
+                                <li><strong>SDG Alignment:</strong> Direct contribution to UN SDG 9 (Technology Upgrade for MSMEs) and SDG 12 (Reduction of retail spoilage and food waste).</li>
+                            </ul>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-bullseye"></i> Operational Deliverables & Scope</h4>
+                            <ul class="spec-list">
+                                <li><strong>Included:</strong> Barcode scanning, automated stock deductions, moving average sales demand forecasting, shift cash float tracking, audit trail, mysqldump backups.</li>
+                                <li><strong>Explicitly Excluded:</strong> BIR tax generation, employee payroll computation, online customer e-commerce/delivery, proprietary cash drawer solenoids or receipt printers.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 2: AGILE DEVELOPMENT METHODOLOGY
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-2" data-category="academic">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-appendix">Figure 2</span>
+                            <span class="badge-tag badge-category">SDLC Framework</span>
+                            <span class="badge-tag badge-system">Methodology</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-arrows-spin text-primary"></i> Software Development Life Cycle (Agile Methodology)</h3>
+                        <p class="diagram-subtitle">Six-phase iterative sprint structure facilitating continuous stakeholder feedback from Sharon Store management.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-2', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-2', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-2')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-2')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-2')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-2">
+                    <pre><code>flowchart TD
+    S1["<b>1. Requirements & Needs Analysis</b><br/>• Structured interviews with 2 owners & 8 cashiers<br/>• Logbook documentary analysis<br/>• Definition of FMCG stockout & spoilage pain points"]
+    S2["<b>2. System & Database Design</b><br/>• Normalization of MySQL tables (tbl_inventory, tbl_transactions)<br/>• DFD Level 0 Context & Level 1 Subsystems<br/>• Crow's Foot ERD & User Interface Wireframes"]
+    S3["<b>3. System Construction (Development)</b><br/>• Front-end: Bootstrap 5.3 + Vanilla JS<br/>• Back-end: PHP 8.2 PDO & Barcode HID reader<br/>• Forecasting Engine (SMA & WMA algorithms)<br/>• Business Intelligence Dashboard charts"]
+    S4["<b>4. Multi-Tier Testing</b><br/>• Isolated Unit testing of calculation logic<br/>• Integration testing across transactions & stock decrement<br/>• User Acceptance Testing (UAT) in market environment"]
+    S5["<b>5. Deployment & Optimization</b><br/>• Local XAMPP Apache configuration<br/>• Database indexing & automated daily backup verification<br/>• Barcode scanner plug-and-play testing"]
+    S6["<b>6. Formal Review & Retrospective</b><br/>• ISO/IEC 25010 Quality Model evaluation<br/>• Alpha testing with 3 IT Experts<br/>• Beta testing with 10 internal staff & 125 customers"]
+
+    S1 --> S2 --> S3 --> S4 --> S5 --> S6
+    S6 -.->|Iterative Sprint Feedback Loop| S1</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+flowchart LR
+    P1["<b>1. Requirements</b><br/>• Interviews (10 staff)<br/>• Logbook audit<br/>• Problem baseline"]
+    P2["<b>2. Design</b><br/>• DFD L0 & L1<br/>• ERD 10 tables<br/>• UI Wireframes"]
+    P3["<b>3. Development</b><br/>• POS & Barcode<br/>• SMA / WMA Math<br/>• BI Dashboard"]
+    P4["<b>4. Testing</b><br/>• Unit tests<br/>• Stock sync check<br/>• Market UAT"]
+    P5["<b>5. Deployment</b><br/>• Local Apache<br/>• Database setup<br/>• Scanner hookup"]
+    P6["<b>6. Review</b><br/>• ISO 25010 eval<br/>• Alpha (3 Experts)<br/>• Beta (135 users)"]
+
+    P1 --> P2 --> P3 --> P4 --> P5 --> P6
+    P6 -.->|Sprint Cycle Feedback| P1
+
+    style P1 fill:#fee2e2,stroke:#ef4444,stroke-width:2.5px
+    style P2 fill:#ffedd5,stroke:#f97316,stroke-width:2.5px
+    style P3 fill:#fef3c7,stroke:#f59e0b,stroke-width:2.5px
+    style P4 fill:#dbeafe,stroke:#3b82f6,stroke-width:2.5px
+    style P5 fill:#d1fae5,stroke:#10b981,stroke-width:2.5px
+    style P6 fill:#e0e7ff,stroke:#6366f1,stroke-width:2.5px
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-spec-panel">
+                    <div class="spec-grid">
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-list-check"></i> Sprint Implementation Metrics</h4>
+                            <ul class="spec-list">
+                                <li><strong>Sprint Duration:</strong> Two-week iterative sprint increments.</li>
+                                <li><strong>Stakeholder Reviewers:</strong> Managing Owners (financial & purchasing parameters), Cashiers (checkout ergonomics & button touch-targets).</li>
+                                <li><strong>Environment:</strong> Local offline XAMPP stack eliminating dependency on volatile public market Wi-Fi connections.</li>
+                            </ul>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-award"></i> Quality Model Standard</h4>
+                            <ul class="spec-list">
+                                <li><strong>ISO/IEC 25010 Evaluated Characteristics:</strong> Functional Suitability, Performance Efficiency, Compatibility, Usability, Reliability, Security, Maintainability, and Portability.</li>
+                                <li><strong>Alpha Testing:</strong> Purposive selection of 3 independent IT Specialists.</li>
+                                <li><strong>Beta Testing:</strong> 135 respondents (2 Owners, 8 Staff, 125 Conveniently Sampled Customers).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 3: DFD LEVEL 0 (CONTEXT DIAGRAM)
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-3" data-category="data">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-appendix">Appendix F</span>
+                            <span class="badge-tag badge-category">Data Flow Diagram</span>
+                            <span class="badge-tag badge-system">Context Level 0</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-circle-nodes text-primary"></i> Data Flow Diagram (DFD) Level 0 — Context Diagram</h3>
+                        <p class="diagram-subtitle">Macro boundary model defining all external system entities and their respective input/output data trajectories.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-3', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-3', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-3')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-3')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-3')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-3">
+                    <pre><code>flowchart LR
+    CASHIER["<b>Staff (Cashier)</b><br/>Frontline operational employee"]
+    ADMIN["<b>System Admin (Owner)</b><br/>Managing store owners"]
+    SYSTEM(("<b>0.0<br/>Sharon Store<br/>Web-Based Inventory &<br/>Forecasting System</b>"))
+    SCANNER["<b>Hardware Input</b><br/>USB/Bluetooth Barcode Scanner"]
+
+    %% Cashier Data Flows
+    CASHIER -- "Login Credentials" --> SYSTEM
+    CASHIER -- "Starting Cash Float & Shift Close Count" --> SYSTEM
+    CASHIER -- "Checkout Cash Tendered & Item Qty" --> SYSTEM
+    SCANNER -- "Barcode String Emulation" --> SYSTEM
+    SYSTEM -- "Authentication Access & Session Token" --> CASHIER
+    SYSTEM -- "Item Name, Unit Price & Stock Subtotal" --> CASHIER
+    SYSTEM -- "Grand Total & Change Amount Calculation" --> CASHIER
+    SYSTEM -- "Real-Time Low-Stock Visual Badges" --> CASHIER
+    SYSTEM -- "On-Screen Digital Receipt Summary" --> CASHIER
+
+    %% Admin Data Flows
+    ADMIN -- "Admin Authentication Credentials" --> SYSTEM
+    ADMIN -- "Product Master Records (Name, Cost, Price, Expiry)" --> SYSTEM
+    ADMIN -- "Wholesale Stock Adjustments & Restock Batches" --> SYSTEM
+    ADMIN -- "Category Classifications & Low-Stock Limits" --> SYSTEM
+    ADMIN -- "Forecasting Horizon (3, 6, 12 Months Lookback)" --> SYSTEM
+    ADMIN -- "Cashier Account Profiles & Password Resets" --> SYSTEM
+    ADMIN -- "Database Backup Trigger Commands" --> SYSTEM
+
+    SYSTEM -- "Business Intelligence Charts & Analytics" --> ADMIN
+    SYSTEM -- "SMA & WMA Demand Restocking Recommendations" --> ADMIN
+    SYSTEM -- "Tamper-Evident System Audit Trail Logs" --> ADMIN
+    SYSTEM -- "Downloadable SQL Database Backup Archives" --> ADMIN
+    SYSTEM -- "Daily / Monthly Sales & Inventory Valuation Reports" --> ADMIN</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+flowchart LR
+    subgraph EXTERNAL_ENTITIES ["System Boundary & External Entities"]
+        CASHIER["<b>Staff (Cashier)</b><br/>Frontline Counter Staff"]
+        ADMIN["<b>System Admin (Owner)</b><br/>Managing Store Owners"]
+        SCANNER["<b>Barcode Scanner</b><br/>USB/BT HID Peripheral"]
+    end
+
+    SYSTEM(("<b>0.0<br/>Sharon Store 3.0<br/>Inventory, POS &<br/>Forecasting System</b>"))
+
+    %% Inbound Cashier
+    CASHIER --> |"1. Login Credentials"| SYSTEM
+    CASHIER --> |"2. Shift Starting Float & Daily PIN"| SYSTEM
+    CASHIER --> |"3. Cash Tendered & Sale Finalization"| SYSTEM
+    SCANNER --> |"4. Barcode String Input"| SYSTEM
+
+    %% Outbound Cashier
+    SYSTEM --> |"5. System Session Access"| CASHIER
+    SYSTEM --> |"6. Item Price & Subtotal Output"| CASHIER
+    SYSTEM --> |"7. Total & Change Calculation"| CASHIER
+    SYSTEM --> |"8. Real-time Low-Stock Badges"| CASHIER
+
+    %% Inbound Admin
+    ADMIN --> |"9. Master Item Catalog & Restock"| SYSTEM
+    ADMIN --> |"10. Lookback Period Selection (3/6/12 Mo)"| SYSTEM
+    ADMIN --> |"11. Cashier Account Management"| SYSTEM
+    ADMIN --> |"12. Backup Command Request"| SYSTEM
+
+    %% Outbound Admin
+    SYSTEM --> |"13. BI Dashboard Visuals & Revenue"| ADMIN
+    SYSTEM --> |"14. Restocking Quantity Forecasts"| ADMIN
+    SYSTEM --> |"15. Security Audit Trail Logs"| ADMIN
+    SYSTEM --> |"16. SQL Database Backup Files"| ADMIN
+
+    style SYSTEM fill:#0abf8a,stroke:#047857,stroke-width:3px,color:#ffffff
+    style CASHIER fill:#f0fdf4,stroke:#10b981,stroke-width:2px
+    style ADMIN fill:#eff6ff,stroke:#3b82f6,stroke-width:2px
+    style SCANNER fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-spec-panel">
+                    <div class="spec-table-responsive">
+                        <table class="spec-table">
+                            <thead>
+                                <tr>
+                                    <th>Flow ID</th>
+                                    <th>Source</th>
+                                    <th>Destination</th>
+                                    <th>Data Flow Description</th>
+                                    <th>Data Structure / Content</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>DF-01</td>
+                                    <td>Staff / Cashier</td>
+                                    <td>Process 0.0</td>
+                                    <td>Login Credentials</td>
+                                    <td><code>username</code>, <code>password</code> (BCRYPT hashed comparison)</td>
+                                </tr>
+                                <tr>
+                                    <td>DF-02</td>
+                                    <td>Hardware Scanner</td>
+                                    <td>Process 0.0</td>
+                                    <td>Scanned Barcode</td>
+                                    <td><code>barcode</code> (EAN-13, UPC, Code 128 string)</td>
+                                </tr>
+                                <tr>
+                                    <td>DF-03</td>
+                                    <td>Process 0.0</td>
+                                    <td>Staff / Cashier</td>
+                                    <td>Digital POS Receipt & Change</td>
+                                    <td><code>item_name</code>, <code>price</code>, <code>total_amount</code>, <code>change_amount</code></td>
+                                </tr>
+                                <tr>
+                                    <td>DF-04</td>
+                                    <td>Admin / Owner</td>
+                                    <td>Process 0.0</td>
+                                    <td>Wholesale Inventory Adjustments</td>
+                                    <td><code>item_id</code>, <code>stock_qty</code>, <code>cost_price</code>, <code>expiry_date</code></td>
+                                </tr>
+                                <tr>
+                                    <td>DF-05</td>
+                                    <td>Process 0.0</td>
+                                    <td>Admin / Owner</td>
+                                    <td>BI Visuals & Restock Forecasts</td>
+                                    <td>Revenue trends, Fast-moving top 10, SMA & WMA projected units</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 4: DFD LEVEL 1 (FUNCTIONAL DECOMPOSITION)
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-4" data-category="data">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-appendix">Appendix G</span>
+                            <span class="badge-tag badge-category">Data Flow Diagram</span>
+                            <span class="badge-tag badge-system">Level 1 Decomposition</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-diagram-project text-secondary"></i> Data Flow Diagram (DFD) Level 1 — Detailed Subsystems</h3>
+                        <p class="diagram-subtitle">Decomposition into 8 interconnected functional processes and 8 normalized database stores.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-4', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-4', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-4')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-4')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-4')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-4">
+                    <pre><code>flowchart TB
+    %% External Actors
+    ADMIN["System Admin (Owner)"]
+    CASHIER["Staff (Cashier)"]
+    SCANNER["Barcode Scanner (HID)"]
+
+    %% Processes
+    P1["1.0 Auth & Access Control"]
+    P2["2.0 Shift & Drawer Control"]
+    P3["3.0 Inventory & Expiration Management"]
+    P4["4.0 POS Checkout & Sales Processing"]
+    P5["5.0 Business Intelligence Dashboard"]
+    P6["6.0 Demand Forecasting (SMA/WMA)"]
+    P7["7.0 Wholesale Supplier Management"]
+    P8["8.0 Database Backup & Audit Trail"]
+
+    %% Data Stores
+    D1[("D1: tbl_users")]
+    D2[("D2: tbl_shifts")]
+    D3[("D3: tbl_inventory & tbl_categories")]
+    D4[("D4: tbl_transactions & details")]
+    D5[("D5: tbl_forecasts")]
+    D6[("D6: tbl_suppliers")]
+    D7[("D7: tbl_audit_logs")]
+    D8[("D8: tbl_settings")]
+
+    %% Inputs
+    ADMIN -->|Login Credentials| P1
+    ADMIN -->|Product Records & Restocks| P3
+    ADMIN -->|Lookback 3/6/12 Mo| P6
+    ADMIN -->|Supplier Details| P7
+    ADMIN -->|Trigger SQL Dump| P8
+
+    CASHIER -->|Login Credentials| P1
+    CASHIER -->|Daily PIN & Float| P2
+    CASHIER -->|Cash Tendered| P4
+    SCANNER -->|Scanned Barcode String| P4
+
+    %% Process & Store Flows
+    P1 -->|Verify Credentials| D1
+    D1 -->|Role & Permissions| P1
+    P1 -->|Log Auth Event| D7
+
+    P2 -->|Save Shift Record| D2
+    D2 -->|Shift Sales Totals| P2
+    D8 -->|Validate Daily PIN| P2
+
+    P3 -->|Save Product Details| D3
+    D3 -->|Stock Levels & Expiry| P3
+    P3 -->|Log Item Edits| D7
+
+    P4 -->|Barcode Lookup| D3
+    D3 -->|Item Price & Available Qty| P4
+    P4 -->|Atomic Stock Decrement| D3
+    P4 -->|Insert Transaction & Line Items| D4
+    P4 -->|Link Active Shift ID| D2
+    P4 -->|Log Completed Sale| D7
+
+    D4 -->|Query Transaction History| P5
+    D3 -->|Query Active Stock Status| P5
+    D4 -->|Query Monthly Sales History| P6
+    P6 -->|Store Demand Predictions| D5
+
+    P7 -->|Update Vendor Details| D6
+    D6 -->|Read Supplier Directory| P7
+
+    P8 -->|Execute mysqldump| D7
+    D7 -->|Read Audit Trails| P8
+
+    %% System Outputs
+    P1 -->|Grant Session Access| CASHIER
+    P1 -->|Grant Session Access| ADMIN
+    P4 -->|On-Screen Receipt & Change| CASHIER
+    P5 -->|BI Revenue & FMCG Visuals| ADMIN
+    P6 -->|Restock Recommendations| ADMIN
+    P8 -->|Download SQL Backup File| ADMIN</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+flowchart TB
+    %% External Entities
+    subgraph ACTORS ["External Actors & Peripherals"]
+        ADMIN["System Admin (Owner)"]
+        CASHIER["Staff (Cashier)"]
+        SCANNER["Barcode Scanner (HID)"]
+    end
+
+    %% Processes
+    subgraph PROCESSES ["Decomposed System Processes (Level 1)"]
+        P1["1.0 Auth & Access Control"]
+        P2["2.0 Shift & Drawer Control"]
+        P3["3.0 Inventory & Expiration"]
+        P4["4.0 POS Checkout Processing"]
+        P5["5.0 Business Intelligence Dashboard"]
+        P6["6.0 Demand Forecasting (SMA/WMA)"]
+        P7["7.0 Supplier Management"]
+        P8["8.0 Audit & Backup Service"]
+    end
+
+    %% Data Stores
+    subgraph STORES ["System Data Stores (MariaDB)"]
+        D1[("D1: tbl_users")]
+        D2[("D2: tbl_shifts")]
+        D3[("D3: tbl_inventory & tbl_categories")]
+        D4[("D4: tbl_transactions & details")]
+        D5[("D5: tbl_forecasts")]
+        D6[("D6: tbl_suppliers")]
+        D7[("D7: tbl_audit_logs")]
+        D8[("D8: tbl_settings")]
+    end
+
+    %% Actor Inflows
+    ADMIN -->|Login Credentials| P1
+    ADMIN -->|Product Records & Restocks| P3
+    ADMIN -->|Lookback 3/6/12 Mo| P6
+    ADMIN -->|Supplier Details| P7
+    ADMIN -->|Trigger SQL Dump| P8
+
+    CASHIER -->|Login Credentials| P1
+    CASHIER -->|Daily PIN & Float| P2
+    CASHIER -->|Cash Tendered| P4
+    SCANNER -->|Scanned Barcode String| P4
+
+    %% Process to Data Store Flows
+    P1 -->|Verify Credentials| D1
+    D1 -->|Role & Permissions| P1
+    P1 -->|Log Auth Event| D7
+
+    P2 -->|Save Shift Record| D2
+    D2 -->|Shift Sales Totals| P2
+    D8 -->|Validate Daily PIN| P2
+
+    P3 -->|Save Product Details| D3
+    D3 -->|Stock Levels & Expiry| P3
+    P3 -->|Log Item Edits| D7
+
+    P4 -->|Barcode Lookup| D3
+    D3 -->|Item Price & Available Qty| P4
+    P4 -->|Atomic Stock Decrement| D3
+    P4 -->|Insert Transaction & Line Items| D4
+    P4 -->|Link Active Shift ID| D2
+    P4 -->|Log Completed Sale| D7
+
+    D4 -->|Query Transaction History| P5
+    D3 -->|Query Active Stock Status| P5
+    D4 -->|Query Monthly Sales History| P6
+    P6 -->|Store Demand Predictions| D5
+
+    P7 -->|Update Vendor Details| D6
+    D6 -->|Read Supplier Directory| P7
+
+    P8 -->|Execute mysqldump| D7
+    D7 -->|Read Audit Trails| P8
+
+    %% Outflows to Actors
+    P1 -->|Grant Session Access| CASHIER
+    P1 -->|Grant Session Access| ADMIN
+    P4 -->|On-Screen Receipt & Change| CASHIER
+    P5 -->|BI Revenue & FMCG Visuals| ADMIN
+    P6 -->|Restock Recommendations| ADMIN
+    P8 -->|Download SQL Backup File| ADMIN
+
+    style P1 fill:#dbeafe,stroke:#2563eb,stroke-width:2.5px
+    style P2 fill:#fef3c7,stroke:#d97706,stroke-width:2.5px
+    style P3 fill:#d1fae5,stroke:#059669,stroke-width:2.5px
+    style P4 fill:#ccfbf1,stroke:#0d9488,stroke-width:2.5px
+    style P5 fill:#fae8ff,stroke:#a21caf,stroke-width:2.5px
+    style P6 fill:#ffe4e6,stroke:#e11d48,stroke-width:2.5px
+    style P7 fill:#f1f5f9,stroke:#475569,stroke-width:2.5px
+    style P8 fill:#ede9fe,stroke:#6d28d9,stroke-width:2.5px
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-spec-panel">
+                    <div class="spec-grid">
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-code-branch"></i> Process Execution Details</h4>
+                            <ul class="spec-list">
+                                <li><strong>Process 4.0 (POS Checkout):</strong> Performs dual verification: reads barcode, verifies available stock > 0, enforces atomic database transaction, inserts transaction code <code>TXN-YYYYMMDD-XXXX</code>, and decrements <code>stock_qty</code>.</li>
+                                <li><strong>Process 6.0 (Demand Forecasting):</strong> Queries transaction line items grouped by month, applies Single Moving Average (SMA) and Weighted Moving Average (WMA), and outputs the net restocking recommendation: $\max(0, \hat{Y} - S_{current})$.</li>
+                            </ul>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-database"></i> Database Isolation & Security</h4>
+                            <ul class="spec-list">
+                                <li><strong>Audit Automation:</strong> Processes 1.0, 3.0, 4.0, and 8.0 write asynchronously to <code>tbl_audit_logs</code> recording client IP address, action code, and target user ID.</li>
+                                <li><strong>Daily PIN Isolation:</strong> <code>tbl_settings</code> stores a daily generated manager PIN (refreshed at midnight via <code>getDailyManagerPIN()</code>) preventing unauthorized drawer open/close without owner validation.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 5: USE CASE DIAGRAM
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-5" data-category="behavioral">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-appendix">Appendix H</span>
+                            <span class="badge-tag badge-category">UML Behavioral</span>
+                            <span class="badge-tag badge-system">Use Case Diagram</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-user-gear text-info"></i> Comprehensive Use Case Diagram</h3>
+                        <p class="diagram-subtitle">Role-based functional interactions between System Administrator, Cashier, Barcode Scanner, and the POS system boundary.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-5', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-5', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-5')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-5')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-5')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-5">
+                    <pre><code>flowchart LR
+    ADMIN["System Administrator (Owner)"]
+    CASHIER["Staff (Cashier)"]
+    SCANNER["Barcode Scanner (Hardware Actor)"]
+
+    subgraph SYSTEM_BOUNDARY ["Sharon Store 3.0 System Boundary"]
+        UC_AUTH["Log into System"]
+        UC_LOGOUT["Sign Out"]
+        UC_SHIFT_START["Open Cashier Shift"]
+        UC_SHIFT_END["Close Shift & Reconcile Cash"]
+        UC_POS["Process Point of Sale (POS)"]
+        UC_BARCODE["Scan Product Barcode"]
+        UC_DEDUCT["Deduct Active Inventory"]
+        UC_STOCK_MON["View Stock Monitor (Read-Only)"]
+        UC_INV_CRUD["Manage Inventory (Add, Edit, Archive)"]
+        UC_DASHBOARD["View Business Intelligence Dashboard"]
+        UC_FORECAST["Generate Sales Demand Forecasting"]
+        UC_SUPPLIERS["Manage Wholesale Suppliers"]
+        UC_REPORTS["Generate Sales & Inventory Reports"]
+        UC_USERS["Manage User Accounts"]
+        UC_BACKUP["Perform Database Backup & Restore"]
+        UC_AUDIT["Inspect System Audit Trail"]
+    end
+
+    %% Role associations
+    ADMIN --> UC_AUTH
+    ADMIN --> UC_LOGOUT
+    ADMIN --> UC_DASHBOARD
+    ADMIN --> UC_INV_CRUD
+    ADMIN --> UC_FORECAST
+    ADMIN --> UC_SUPPLIERS
+    ADMIN --> UC_REPORTS
+    ADMIN --> UC_USERS
+    ADMIN --> UC_BACKUP
+    ADMIN --> UC_AUDIT
+    ADMIN --> UC_POS
+
+    CASHIER --> UC_AUTH
+    CASHIER --> UC_LOGOUT
+    CASHIER --> UC_SHIFT_START
+    CASHIER --> UC_SHIFT_END
+    CASHIER --> UC_POS
+    CASHIER --> UC_STOCK_MON
+
+    SCANNER --> UC_BARCODE
+
+    %% Stereotypes
+    UC_POS -.->|include| UC_BARCODE
+    UC_POS -.->|include| UC_DEDUCT
+    UC_FORECAST -.->|extend| UC_DASHBOARD</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+flowchart LR
+    ADMIN["Admin (Store Owner)"]
+    CASHIER["Staff (Store Cashier)"]
+    SCANNER["Barcode Scanner (Hardware)"]
+
+    subgraph SYSTEM_BOUNDARY ["Sharon Store 3.0 Platform"]
+        UC1(["Log into System"])
+        UC2(["Open / Close Shift with PIN"])
+        UC3(["Process POS Transaction"])
+        UC3a(["Scan Product Barcode"])
+        UC3b(["Deduct Active Inventory"])
+        UC4(["Stock Monitor (Read-Only)"])
+        UC5(["Manage Inventory Items"])
+        UC6(["Business Intelligence Dashboard"])
+        UC7(["Sales Demand Forecasting (SMA/WMA)"])
+        UC8(["Manage Wholesale Suppliers"])
+        UC9(["Sales & Valuation Reports"])
+        UC10(["Manage Cashier Accounts"])
+        UC11(["Database Backup (mysqldump)"])
+        UC12(["View Audit Security Trail"])
+    end
+
+    %% Cashier connections
+    CASHIER --> UC1
+    CASHIER --> UC2
+    CASHIER --> UC3
+    CASHIER --> UC4
+
+    %% Admin connections
+    ADMIN --> UC1
+    ADMIN --> UC3
+    ADMIN --> UC5
+    ADMIN --> UC6
+    ADMIN --> UC7
+    ADMIN --> UC8
+    ADMIN --> UC9
+    ADMIN --> UC10
+    ADMIN --> UC11
+    ADMIN --> UC12
+
+    %% Hardware
+    SCANNER --> UC3a
+
+    %% Includes & Extends
+    UC3 -.->|include| UC3a
+    UC3 -.->|include| UC3b
+    UC7 -.->|extend| UC6
+
+    style SYSTEM_BOUNDARY fill:#f8fafc,stroke:#64748b,stroke-width:2.5px
+    style ADMIN fill:#dbeafe,stroke:#2563eb,stroke-width:2.5px
+    style CASHIER fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px
+    style SCANNER fill:#fef9c3,stroke:#ca8a04,stroke-width:2.5px
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-spec-panel">
+                    <div class="spec-grid">
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-user-lock"></i> Role-Based Permissions Matrix</h4>
+                            <div class="spec-table-responsive">
+                                <table class="spec-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Feature / Module</th>
+                                            <th>System Admin</th>
+                                            <th>Staff (Cashier)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>POS Barcode Checkout</td>
+                                            <td><span class="badge bg-success">Full Access</span></td>
+                                            <td><span class="badge bg-success">Full Access</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Stock Monitoring</td>
+                                            <td><span class="badge bg-success">Full Access</span></td>
+                                            <td><span class="badge bg-info">Read-Only</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Inventory CRUD & Pricing</td>
+                                            <td><span class="badge bg-success">Full Access</span></td>
+                                            <td><span class="badge bg-danger">Restricted (403)</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sales Forecasting (SMA/WMA)</td>
+                                            <td><span class="badge bg-success">Full Access</span></td>
+                                            <td><span class="badge bg-danger">Restricted (403)</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>BI Executive Dashboard</td>
+                                            <td><span class="badge bg-success">Full Access</span></td>
+                                            <td><span class="badge bg-danger">Restricted (403)</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Database Backups & Audit Trail</td>
+                                            <td><span class="badge bg-success">Full Access</span></td>
+                                            <td><span class="badge bg-danger">Restricted (403)</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-link"></i> Use Case Relationships</h4>
+                            <ul class="spec-list">
+                                <li><strong>&lt;&lt;include&gt;&gt; Scan Barcode:</strong> Triggered whenever an item is added to the active cart using standard USB/Bluetooth barcode scanner HID keystroke events.</li>
+                                <li><strong>&lt;&lt;include&gt;&gt; Deduct Active Inventory:</strong> Executed immediately inside an ACID MySQL transaction upon payment receipt, decrementing <code>tbl_inventory.stock_qty</code>.</li>
+                                <li><strong>Shift Security Enclosure:</strong> Cashiers cannot access the POS interface unless an active shift has been opened with the store manager's daily four-digit PIN.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 6: ENTITY RELATIONSHIP DIAGRAM (ERD)
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-6" data-category="data">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-appendix">Appendix I</span>
+                            <span class="badge-tag badge-category">Database Schema</span>
+                            <span class="badge-tag badge-system">Crow's Foot ERD</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-database text-primary"></i> Complete Entity-Relationship Diagram (ERD)</h3>
+                        <p class="diagram-subtitle">Normalized relational blueprint covering all 10 MariaDB tables, primary/foreign keys, and exact column specifications.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-6', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-6', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-6')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-6')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-6')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-6">
+                    <pre><code>erDiagram
+    tbl_users ||--o{ tbl_transactions : "processes"
+    tbl_users ||--o{ tbl_shifts : "mans"
+    tbl_users ||--o{ tbl_audit_logs : "triggers"
+    tbl_categories ||--o{ tbl_inventory : "classifies"
+    tbl_inventory ||--o{ tbl_transaction_details : "sold_in"
+    tbl_inventory ||--o{ tbl_forecasts : "projected_for"
+    tbl_transactions ||--|{ tbl_transaction_details : "contains"
+    tbl_shifts ||--o{ tbl_transactions : "groups"
+
+    tbl_users {
+        int user_id PK "AUTO_INCREMENT"
+        varchar username UK "50 chars, Unique"
+        varchar password "255 chars BCRYPT hash"
+        varchar full_name "100 chars"
+        enum role "admin, cashier"
+        tinyint is_active "1=active, 0=inactive"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    tbl_categories {
+        int category_id PK "AUTO_INCREMENT"
+        varchar category_name "100 chars"
+        text description
+        timestamp created_at
+    }
+
+    tbl_inventory {
+        int item_id PK "AUTO_INCREMENT"
+        varchar barcode UK "50 chars, Unique"
+        varchar item_name "150 chars"
+        int category_id FK "References tbl_categories"
+        enum unit "pieces, packs, kg"
+        decimal price "10,2"
+        decimal cost_price "10,2"
+        decimal stock_qty "10,2"
+        int low_stock_threshold "Default 10"
+        date expiry_date
+        tinyint is_active "1=active, 0=soft deleted"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    tbl_transactions {
+        int transaction_id PK "AUTO_INCREMENT"
+        varchar transaction_code UK "30 chars Unique"
+        int user_id FK "References tbl_users"
+        decimal total_amount "10,2"
+        decimal amount_tendered "10,2"
+        decimal change_amount "10,2"
+        varchar status "completed, voided"
+        timestamp transaction_date
+        int shift_id FK "References tbl_shifts"
+    }
+
+    tbl_transaction_details {
+        int detail_id PK "AUTO_INCREMENT"
+        int transaction_id FK "References tbl_transactions"
+        int item_id FK "References tbl_inventory"
+        decimal quantity "10,2"
+        decimal unit_price "10,2"
+        decimal subtotal "10,2"
+    }
+
+    tbl_shifts {
+        int shift_id PK "AUTO_INCREMENT"
+        int cashier_id FK "References tbl_users"
+        decimal starting_cash "10,2"
+        datetime start_time
+        datetime end_time
+        decimal expected_cash "10,2"
+        decimal actual_cash "10,2"
+        decimal short_over "10,2"
+        enum status "open, closed"
+    }
+
+    tbl_forecasts {
+        int forecast_id PK "AUTO_INCREMENT"
+        int item_id FK "References tbl_inventory"
+        date forecast_period
+        decimal predicted_qty "10,2"
+        varchar method "SMA, WMA"
+        timestamp generated_at
+    }
+
+    tbl_suppliers {
+        int supplier_id PK "AUTO_INCREMENT"
+        varchar company_name "100 chars"
+        varchar contact_person "100 chars"
+        varchar phone "50 chars"
+        text address
+        datetime created_at
+        tinyint is_active "1=active, 0=inactive"
+    }
+
+    tbl_audit_logs {
+        int log_id PK "AUTO_INCREMENT"
+        int user_id FK "References tbl_users"
+        varchar action "100 chars"
+        varchar module "50 chars"
+        text description
+        varchar ip_address "45 chars IPv4/IPv6"
+        timestamp log_time
+    }
+
+    tbl_settings {
+        varchar setting_key PK "50 chars"
+        varchar setting_value "255 chars"
+    }</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+erDiagram
+    tbl_users ||--o{ tbl_transactions : "processes"
+    tbl_users ||--o{ tbl_shifts : "operates"
+    tbl_users ||--o{ tbl_audit_logs : "logs"
+    tbl_categories ||--o{ tbl_inventory : "categorizes"
+    tbl_inventory ||--o{ tbl_transaction_details : "includes"
+    tbl_inventory ||--o{ tbl_forecasts : "forecasts"
+    tbl_transactions ||--|{ tbl_transaction_details : "contains"
+    tbl_shifts ||--o{ tbl_transactions : "batches"
+
+    tbl_users {
+        int user_id PK
+        varchar username UK
+        varchar password
+        varchar full_name
+        enum role
+        tinyint is_active
+    }
+    tbl_categories {
+        int category_id PK
+        varchar category_name
+        text description
+    }
+    tbl_inventory {
+        int item_id PK
+        varchar barcode UK
+        varchar item_name
+        int category_id FK
+        enum unit
+        decimal price
+        decimal cost_price
+        decimal stock_qty
+        int low_stock_threshold
+        date expiry_date
+    }
+    tbl_transactions {
+        int transaction_id PK
+        varchar transaction_code UK
+        int user_id FK
+        int shift_id FK
+        decimal total_amount
+        decimal amount_tendered
+        decimal change_amount
+        timestamp transaction_date
+    }
+    tbl_transaction_details {
+        int detail_id PK
+        int transaction_id FK
+        int item_id FK
+        decimal quantity
+        decimal unit_price
+        decimal subtotal
+    }
+    tbl_shifts {
+        int shift_id PK
+        int cashier_id FK
+        decimal starting_cash
+        decimal expected_cash
+        decimal actual_cash
+        decimal short_over
+        enum status
+    }
+    tbl_forecasts {
+        int forecast_id PK
+        int item_id FK
+        date forecast_period
+        decimal predicted_qty
+        varchar method
+    }
+    tbl_audit_logs {
+        int log_id PK
+        int user_id FK
+        varchar action
+        varchar module
+        text description
+        varchar ip_address
+    }
+    tbl_suppliers {
+        int supplier_id PK
+        varchar company_name
+        varchar contact_person
+        varchar phone
+    }
+    tbl_settings {
+        varchar setting_key PK
+        varchar setting_value
+    }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-spec-panel">
+                    <div class="spec-grid">
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-key"></i> Key Constraints & Normalization</h4>
+                            <ul class="spec-list">
+                                <li><strong>Foreign Key Integrity:</strong> <code>tbl_inventory.category_id</code> ON UPDATE CASCADE; <code>tbl_transaction_details.transaction_id</code> ON DELETE CASCADE ON UPDATE CASCADE.</li>
+                                <li><strong>Atomic Shift Tracking:</strong> <code>tbl_transactions.shift_id</code> links each checkout to the cashier's active shift float for instant drawer reconciliation.</li>
+                                <li><strong>Unique Enforcements:</strong> <code>uq_barcode</code> on <code>tbl_inventory</code> prevents duplicate barcodes; <code>uq_txn_code</code> ensures uniqueness across daily transactions.</li>
+                            </ul>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-calculator"></i> Quantitative Field Precision</h4>
+                            <ul class="spec-list">
+                                <li><strong>Monetary Fields:</strong> <code>decimal(10,2)</code> used on all prices, tendered cash, and totals to completely eliminate floating-point rounding errors in retail currency.</li>
+                                <li><strong>Fractional Quantities:</strong> <code>quantity</code> and <code>stock_qty</code> defined as <code>decimal(10,2)</code> to support non-discrete consumer items sold in kilograms (e.g. sugar, rice).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 7: SYSTEM FLOWCHART
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-7" data-category="behavioral">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-appendix">Appendix J</span>
+                            <span class="badge-tag badge-category">Process Flowchart</span>
+                            <span class="badge-tag badge-system">End-to-End System Logic</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-network-wired text-success"></i> Comprehensive System Flowchart</h3>
+                        <p class="diagram-subtitle">Exhaustive end-to-end routing, decision gates, cashier checkout & PIN reconciliation, and granular administrative operations across all 10 core subsystems.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-7', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-7', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-7')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-7')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-7')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-7">
+                    <pre><code>%% ══════════════════════════════════════════════════════════
+%% VIEW 1: INTEGRATED END-TO-END SYSTEM FLOWCHART
+%% ══════════════════════════════════════════════════════════
+flowchart TD
+    START([START: User Access]) --> LOGIN[/Enter Username and Password/]
+    LOGIN --> V_AUTH{Valid Credentials and Active?}
+    V_AUTH -- No --> ERR_AUTH[Display Invalid Credentials Error] --> LOGIN
+    V_AUTH -- Yes --> V_ROLE{Evaluate User Role}
+
+    %% CASHIER WORKSTATION LIFECYCLE
+    subgraph CASHIER_FLOW ["1. CASHIER WORKSTATION LIFECYCLE"]
+        direction TB
+        C_START[Open Cashier Session] --> CHK_S{Active Open Shift in tbl_shifts?}
+        CHK_S -- No --> PIN_IN[/Enter Daily Manager PIN and Starting Float/]
+        PIN_IN --> V_PIN{PIN Matches tbl_settings?}
+        V_PIN -- No --> ERR_PIN[Invalid Manager PIN] --> PIN_IN
+        V_PIN -- Yes --> OPEN_S[Create Open Shift Record in tbl_shifts] --> POS_MAIN
+        CHK_S -- Yes --> POS_MAIN[Open POS Register Interface]
+
+        POS_MAIN --> SCAN_PROD[/Scan Barcode with HID Reader or Type Search/]
+        SCAN_PROD --> V_ITEM{Item Active and Exists in tbl_inventory?}
+        V_ITEM -- No --> ERR_ITEM[Item Not Found] --> POS_MAIN
+        V_ITEM -- Yes --> V_STK{Stock Available?}
+        V_STK -- No --> ERR_STK[Out of Stock Alert] --> POS_MAIN
+        V_STK -- Yes --> ADD_CART[Add Item to Active Cart and Compute Subtotal]
+
+        ADD_CART --> MORE_ITEMS{Ring Up More Items?}
+        MORE_ITEMS -- Yes --> SCAN_PROD
+        MORE_ITEMS -- No --> TENDER_IN[/Enter Cash Tendered by Customer/]
+
+        TENDER_IN --> V_TEND{Tendered Sufficient?}
+        V_TEND -- No --> ERR_TEND[Insufficient Cash Tendered] --> TENDER_IN
+        V_TEND -- Yes --> CHANGE_CALC[Calculate Customer Change]
+
+        CHANGE_CALC --> ATOMIC_COMMIT[Execute Atomic PDO Transaction:<br/>1. Generate TXN-YYYYMMDD-####<br/>2. Insert tbl_transactions and details<br/>3. Decrement stock_qty in tbl_inventory<br/>4. Write Audit Log and COMMIT]
+        ATOMIC_COMMIT --> DISP_RCPT[/Display Digital On-Screen Receipt/]
+
+        DISP_RCPT --> C_NEXT{Next Cashier Action?}
+        C_NEXT -- Next Sale --> POS_MAIN
+        C_NEXT -- Live Shift Monitor --> LIVE_SHIFT[/View Running Shift Totals and Cash In Drawer/] --> POS_MAIN
+        C_NEXT -- End Shift --> CLOSE_PROMPT[/Enter Daily Manager PIN and Actual Counted Cash/]
+
+        CLOSE_PROMPT --> V_PIN_CLOSE{PIN Valid?}
+        V_PIN_CLOSE -- No --> ERR_PIN_CLOSE[Invalid Manager PIN] --> CLOSE_PROMPT
+        V_PIN_CLOSE -- Yes --> RECON_CALC[Reconcile Cash Drawer:<br/>Expected = Float + Total Cash Sales<br/>Over/Short = Actual Cash - Expected]
+        RECON_CALC --> CLOSE_S_REC[Update tbl_shifts status='closed' and Record Variance]
+        CLOSE_S_REC --> DISP_S_MODAL[/Display Shift Reconciliation Summary Modal/]
+        DISP_S_MODAL --> C_LOGOUT[Destroy PHP Session and Sign Out]
+    end
+
+    %% ADMINISTRATIVE OPERATIONS & GOVERNANCE
+    subgraph ADMIN_FLOW ["2. ADMINISTRATIVE OPERATIONS & GOVERNANCE"]
+        direction TB
+        ADM_START[Admin Control Center] --> ADM_ROUTER{Select Operational Pillar}
+
+        %% Pillar A: Inventory & Wholesale Catalog
+        subgraph PIL_INV ["Pillar A: Inventory & Catalog Control"]
+            direction TB
+            INV_MENU{Inventory Tasks}
+            INV_MENU -- Add Product --> INV_ADD[Open itemModal: Barcode, Price, Threshold, Expiry -> Save tbl_inventory]
+            INV_MENU -- Edit Product --> INV_EDIT[Update Selling Prices, Alert Thresholds, or Supplier ID]
+            INV_MENU -- Stock Adjust --> INV_ADJ[Open adjustModal: Restock (+) vs Spoilage/Damaged (-) with Audit Reason]
+            INV_MENU -- Categories --> INV_CAT[Open manageCatsModal: Add or Delete Category verifying 0 linked items]
+            INV_MENU -- Soft-Delete --> INV_DEL[Archive Item setting is_active=0 to preserve historical sales]
+            INV_MENU -- Suppliers --> SUPP_OPS[Manage Wholesale Suppliers: Add, Edit Contacts, or Detach]
+            INV_ADD & INV_EDIT & INV_ADJ & INV_CAT & INV_DEL & SUPP_OPS --> INV_DONE[Log Audit Trail and Return to Hub]
+        end
+
+        %% Pillar B: POS Override & 24h Voiding
+        subgraph PIL_POS ["Pillar B: Sales Register & 24h Voiding"]
+            direction TB
+            POS_MENU{Sales Operations}
+            POS_MENU -- Direct POS --> ADM_POS_DIRECT[Access Cashier Register for Direct Transactions]
+            POS_MENU -- Void Transaction --> VOID_CHK[/Search Transaction Code within Last 24 Hours/]
+            VOID_CHK --> V_VOID{Eligible and within 24h?}
+            V_VOID -- No --> ERR_VOID[Cannot Void: Older than 24h or Already Voided]
+            V_VOID -- Yes --> EXEC_VOID[Atomic Void Procedure:<br/>1. Set tbl_transactions status='voided'<br/>2. Re-increment item quantities in tbl_inventory<br/>3. Record VOID_TRANSACTION in tbl_audit_logs]
+            ADM_POS_DIRECT & ERR_VOID & EXEC_VOID --> POS_DONE[Return to Hub]
+        end
+
+        %% Pillar C: Shift Governance & Financial Reports
+        subgraph PIL_FIN ["Pillar C: Shift Auditing & Financial Analytics"]
+            direction TB
+            FIN_MENU{Governance Tasks}
+            FIN_MENU -- Shift History --> SHIFTS_AUDIT[Inspect Cashier Shift Logs, Float, Sales, and Over/Short Variance]
+            FIN_MENU -- Manager PIN --> PIN_MGT[View / Rotate Daily 4-Digit Authorization PIN in tbl_settings]
+            FIN_MENU -- Sales Reports --> REP_GEN[Generate Daily, Weekly, or Monthly Reports: Revenue, COGS, Profit Margin %]
+            FIN_MENU -- Item Breakdown --> REP_ITEMS[Inspect breakdownModal: Itemized Quantities Sold and Subtotals]
+            FIN_MENU -- Asset Valuation --> REP_VALU[Calculate Store Inventory Valuation: Cost Basis vs Retail Market Value]
+            SHIFTS_AUDIT & PIN_MGT & REP_GEN & REP_ITEMS & REP_VALU --> FIN_DONE[Export PDF/CSV, Print, or Return to Hub]
+        end
+
+        %% Pillar D: Predictive Intelligence & System Administration
+        subgraph PIL_SYS ["Pillar D: BI, Forecasting & System Admin"]
+            direction TB
+            SYS_MENU{Analytics & Security}
+            SYS_MENU -- BI Dashboard --> BI_VIEW[Real-Time KPIs, 30-Day Sales Trend, Category Doughnut, Low Stock & Expiry Alerts]
+            SYS_MENU -- Forecasting --> FCST_RUN[Select 3/6/12 Mo Lookback -> Run SMA / WMA -> Calculate Demand and Restock Gap]
+            SYS_MENU -- User Accounts --> ACC_MGT[Create Users with Bcrypt Hash, Toggle Active Status, Reset Passwords]
+            SYS_MENU -- Database Backup --> BAK_MGT[Trigger mysqldump / PHP PDO Fallback -> Download .sql or Purge Old Backups]
+            SYS_MENU -- Audit Trail --> AUD_MGT[Inspect Immutable Action Logs by User, Action Type, Date, or IP Address]
+            BI_VIEW & FCST_RUN & ACC_MGT & BAK_MGT & AUD_MGT --> SYS_DONE[Return to Hub]
+        end
+
+        ADM_ROUTER --> PIL_INV
+        ADM_ROUTER --> PIL_POS
+        ADM_ROUTER --> PIL_FIN
+        ADM_ROUTER --> PIL_SYS
+
+        INV_DONE & POS_DONE & FIN_DONE & SYS_DONE --> ADM_CYCLE{Admin Next Action?}
+        ADM_CYCLE -- Select Another Task --> ADM_START
+        ADM_CYCLE -- Sign Out --> ADM_LOGOUT[Destroy PHP Session and Log LOGOUT]
+    end
+
+    %% Role Connections
+    V_ROLE -- Cashier --> C_START
+    V_ROLE -- Admin --> ADM_START
+
+    C_LOGOUT --> END_TERM([END: Session Terminated])
+    ADM_LOGOUT --> END_TERM
+
+    %% Visual Styling
+    style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
+    style END_TERM fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
+    style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    style V_ROLE fill:#dbeafe,stroke:#2563eb,stroke-width:2.5px
+    style ATOMIC_COMMIT fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style EXEC_VOID fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+    style FCST_RUN fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
+    style RECON_CALC fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+    style CASHIER_FLOW fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
+    style ADMIN_FLOW fill:#eff6ff,stroke:#2563eb,stroke-width:2px
+    style PIL_INV fill:#ffffff,stroke:#64748b,stroke-width:1.5px
+    style PIL_POS fill:#ffffff,stroke:#64748b,stroke-width:1.5px
+    style PIL_FIN fill:#ffffff,stroke:#64748b,stroke-width:1.5px
+    style PIL_SYS fill:#ffffff,stroke:#64748b,stroke-width:1.5px</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <!-- Multi-Perspective View Tabs -->
+                    <div class="flowchart-tabs">
+                        <button class="flowchart-tab-btn active" onclick="switchFlowchartTab('flowchart-integrated', this)"><i class="fa-solid fa-diagram-project"></i> All-in-One Integrated Flowchart</button>
+                        <button class="flowchart-tab-btn" onclick="switchFlowchartTab('flowchart-cashier', this)"><i class="fa-solid fa-cash-register"></i> Cashier POS & Shift Lifecycle</button>
+                        <button class="flowchart-tab-btn" onclick="switchFlowchartTab('flowchart-admin', this)"><i class="fa-solid fa-user-shield"></i> Admin Decision Architecture (10 Modules)</button>
+                    </div>
+
+                    <!-- VIEW 1: All-in-One Integrated Flowchart -->
+                    <div class="flowchart-view active" id="flowchart-integrated">
+                        <div class="mermaid-wrapper">
+                            <div class="mermaid">
+flowchart TD
+    START([START: User Access]) --> LOGIN[/Enter Username and Password/]
+    LOGIN --> V_AUTH{Valid Credentials and Active?}
+    V_AUTH -- No --> ERR_AUTH[Display Invalid Credentials Error] --> LOGIN
+    V_AUTH -- Yes --> V_ROLE{Evaluate User Role}
+
+    %% CASHIER WORKSTATION LIFECYCLE
+    subgraph CASHIER_FLOW ["1. CASHIER WORKSTATION LIFECYCLE"]
+        direction TB
+        C_START[Open Cashier Session] --> CHK_S{Active Open Shift in tbl_shifts?}
+        CHK_S -- No --> PIN_IN[/Enter Daily Manager PIN and Starting Float/]
+        PIN_IN --> V_PIN{PIN Matches tbl_settings?}
+        V_PIN -- No --> ERR_PIN[Invalid Manager PIN] --> PIN_IN
+        V_PIN -- Yes --> OPEN_S[Create Open Shift Record in tbl_shifts] --> POS_MAIN
+        CHK_S -- Yes --> POS_MAIN[Open POS Register Interface]
+
+        POS_MAIN --> SCAN_PROD[/Scan Barcode with HID Reader or Type Search/]
+        SCAN_PROD --> V_ITEM{Item Active and Exists in tbl_inventory?}
+        V_ITEM -- No --> ERR_ITEM[Item Not Found] --> POS_MAIN
+        V_ITEM -- Yes --> V_STK{Stock Available?}
+        V_STK -- No --> ERR_STK[Out of Stock Alert] --> POS_MAIN
+        V_STK -- Yes --> ADD_CART[Add Item to Active Cart and Compute Subtotal]
+
+        ADD_CART --> MORE_ITEMS{Ring Up More Items?}
+        MORE_ITEMS -- Yes --> SCAN_PROD
+        MORE_ITEMS -- No --> TENDER_IN[/Enter Cash Tendered by Customer/]
+
+        TENDER_IN --> V_TEND{Tendered Sufficient?}
+        V_TEND -- No --> ERR_TEND[Insufficient Cash Tendered] --> TENDER_IN
+        V_TEND -- Yes --> CHANGE_CALC[Calculate Customer Change]
+
+        CHANGE_CALC --> ATOMIC_COMMIT[Execute Atomic PDO Transaction:<br/>1. Generate TXN-YYYYMMDD-####<br/>2. Insert tbl_transactions and details<br/>3. Decrement stock_qty in tbl_inventory<br/>4. Write Audit Log and COMMIT]
+        ATOMIC_COMMIT --> DISP_RCPT[/Display Digital On-Screen Receipt/]
+
+        DISP_RCPT --> C_NEXT{Next Cashier Action?}
+        C_NEXT -- Next Sale --> POS_MAIN
+        C_NEXT -- Live Shift Monitor --> LIVE_SHIFT[/View Running Shift Totals and Cash In Drawer/] --> POS_MAIN
+        C_NEXT -- End Shift --> CLOSE_PROMPT[/Enter Daily Manager PIN and Actual Counted Cash/]
+
+        CLOSE_PROMPT --> V_PIN_CLOSE{PIN Valid?}
+        V_PIN_CLOSE -- No --> ERR_PIN_CLOSE[Invalid Manager PIN] --> CLOSE_PROMPT
+        V_PIN_CLOSE -- Yes --> RECON_CALC[Reconcile Cash Drawer:<br/>Expected = Float + Total Cash Sales<br/>Over/Short = Actual Cash - Expected]
+        RECON_CALC --> CLOSE_S_REC[Update tbl_shifts status='closed' and Record Variance]
+        CLOSE_S_REC --> DISP_S_MODAL[/Display Shift Reconciliation Summary Modal/]
+        DISP_S_MODAL --> C_LOGOUT[Destroy PHP Session and Sign Out]
+    end
+
+    %% ADMINISTRATIVE OPERATIONS & GOVERNANCE
+    subgraph ADMIN_FLOW ["2. ADMINISTRATIVE OPERATIONS & GOVERNANCE"]
+        direction TB
+        ADM_START[Admin Control Center] --> ADM_ROUTER{Select Operational Pillar}
+
+        %% Pillar A: Inventory & Wholesale Catalog
+        subgraph PIL_INV ["Pillar A: Inventory & Catalog Control"]
+            direction TB
+            INV_MENU{Inventory Tasks}
+            INV_MENU -- Add Product --> INV_ADD[Open itemModal: Barcode, Price, Threshold, Expiry -> Save tbl_inventory]
+            INV_MENU -- Edit Product --> INV_EDIT[Update Selling Prices, Alert Thresholds, or Supplier ID]
+            INV_MENU -- Stock Adjust --> INV_ADJ[Open adjustModal: Restock (+) vs Spoilage/Damaged (-) with Audit Reason]
+            INV_MENU -- Categories --> INV_CAT[Open manageCatsModal: Add or Delete Category verifying 0 linked items]
+            INV_MENU -- Soft-Delete --> INV_DEL[Archive Item setting is_active=0 to preserve historical sales]
+            INV_MENU -- Suppliers --> SUPP_OPS[Manage Wholesale Suppliers: Add, Edit Contacts, or Detach]
+            INV_ADD & INV_EDIT & INV_ADJ & INV_CAT & INV_DEL & SUPP_OPS --> INV_DONE[Log Audit Trail and Return to Hub]
+        end
+
+        %% Pillar B: POS Override & 24h Voiding
+        subgraph PIL_POS ["Pillar B: Sales Register & 24h Voiding"]
+            direction TB
+            POS_MENU{Sales Operations}
+            POS_MENU -- Direct POS --> ADM_POS_DIRECT[Access Cashier Register for Direct Transactions]
+            POS_MENU -- Void Transaction --> VOID_CHK[/Search Transaction Code within Last 24 Hours/]
+            VOID_CHK --> V_VOID{Eligible and within 24h?}
+            V_VOID -- No --> ERR_VOID[Cannot Void: Older than 24h or Already Voided]
+            V_VOID -- Yes --> EXEC_VOID[Atomic Void Procedure:<br/>1. Set tbl_transactions status='voided'<br/>2. Re-increment item quantities in tbl_inventory<br/>3. Record VOID_TRANSACTION in tbl_audit_logs]
+            ADM_POS_DIRECT & ERR_VOID & EXEC_VOID --> POS_DONE[Return to Hub]
+        end
+
+        %% Pillar C: Shift Governance & Financial Reports
+        subgraph PIL_FIN ["Pillar C: Shift Auditing & Financial Analytics"]
+            direction TB
+            FIN_MENU{Governance Tasks}
+            FIN_MENU -- Shift History --> SHIFTS_AUDIT[Inspect Cashier Shift Logs, Float, Sales, and Over/Short Variance]
+            FIN_MENU -- Manager PIN --> PIN_MGT[View / Rotate Daily 4-Digit Authorization PIN in tbl_settings]
+            FIN_MENU -- Sales Reports --> REP_GEN[Generate Daily, Weekly, or Monthly Reports: Revenue, COGS, Profit Margin %]
+            FIN_MENU -- Item Breakdown --> REP_ITEMS[Inspect breakdownModal: Itemized Quantities Sold and Subtotals]
+            FIN_MENU -- Asset Valuation --> REP_VALU[Calculate Store Inventory Valuation: Cost Basis vs Retail Market Value]
+            SHIFTS_AUDIT & PIN_MGT & REP_GEN & REP_ITEMS & REP_VALU --> FIN_DONE[Export PDF/CSV, Print, or Return to Hub]
+        end
+
+        %% Pillar D: Predictive Intelligence & System Administration
+        subgraph PIL_SYS ["Pillar D: BI, Forecasting & System Admin"]
+            direction TB
+            SYS_MENU{Analytics & Security}
+            SYS_MENU -- BI Dashboard --> BI_VIEW[Real-Time KPIs, 30-Day Sales Trend, Category Doughnut, Low Stock & Expiry Alerts]
+            SYS_MENU -- Forecasting --> FCST_RUN[Select 3/6/12 Mo Lookback -> Run SMA / WMA -> Calculate Demand and Restock Gap]
+            SYS_MENU -- User Accounts --> ACC_MGT[Create Users with Bcrypt Hash, Toggle Active Status, Reset Passwords]
+            SYS_MENU -- Database Backup --> BAK_MGT[Trigger mysqldump / PHP PDO Fallback -> Download .sql or Purge Old Backups]
+            SYS_MENU -- Audit Trail --> AUD_MGT[Inspect Immutable Action Logs by User, Action Type, Date, or IP Address]
+            BI_VIEW & FCST_RUN & ACC_MGT & BAK_MGT & AUD_MGT --> SYS_DONE[Return to Hub]
+        end
+
+        ADM_ROUTER --> PIL_INV
+        ADM_ROUTER --> PIL_POS
+        ADM_ROUTER --> PIL_FIN
+        ADM_ROUTER --> PIL_SYS
+
+        INV_DONE & POS_DONE & FIN_DONE & SYS_DONE --> ADM_CYCLE{Admin Next Action?}
+        ADM_CYCLE -- Select Another Task --> ADM_START
+        ADM_CYCLE -- Sign Out --> ADM_LOGOUT[Destroy PHP Session and Log LOGOUT]
+    end
+
+    %% Role Connections
+    V_ROLE -- Cashier --> C_START
+    V_ROLE -- Admin --> ADM_START
+
+    C_LOGOUT --> END_TERM([END: Session Terminated])
+    ADM_LOGOUT --> END_TERM
+
+    %% Visual Styling
+    style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
+    style END_TERM fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
+    style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    style V_ROLE fill:#dbeafe,stroke:#2563eb,stroke-width:2.5px
+    style ATOMIC_COMMIT fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style EXEC_VOID fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+    style FCST_RUN fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
+    style RECON_CALC fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+    style CASHIER_FLOW fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
+    style ADMIN_FLOW fill:#eff6ff,stroke:#2563eb,stroke-width:2px
+    style PIL_INV fill:#ffffff,stroke:#64748b,stroke-width:1.5px
+    style PIL_POS fill:#ffffff,stroke:#64748b,stroke-width:1.5px
+    style PIL_FIN fill:#ffffff,stroke:#64748b,stroke-width:1.5px
+    style PIL_SYS fill:#ffffff,stroke:#64748b,stroke-width:1.5px
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 2: Cashier POS & Shift Lifecycle -->
+                    <div class="flowchart-view" id="flowchart-cashier">
+                        <div class="mermaid-wrapper">
+                            <div class="mermaid">
+flowchart TD
+    START([START: User Access]) --> LOGIN[/Enter Cashier Username and Password/]
+    LOGIN --> V_AUTH{Valid Credentials and Active?}
+    V_AUTH -- No --> ERR_AUTH[Display Error: Invalid Credentials] --> LOGIN
+    V_AUTH -- Yes --> CHK_S{Active Open Shift in tbl_shifts?}
+
+    CHK_S -- No --> PIN_IN[/Prompt Daily Manager PIN and Starting Cash Float/]
+    PIN_IN --> V_PIN{PIN Matches tbl_settings?}
+    V_PIN -- No --> ERR_PIN[Invalid Manager Authorization PIN] --> PIN_IN
+    V_PIN -- Yes --> OPEN_S[Insert Open Record into tbl_shifts] --> POS_MAIN
+    CHK_S -- Yes --> POS_MAIN[Load POS Cashier Register Workspace]
+
+    POS_MAIN --> SCAN_PROD[/Scan Product Barcode with Reader or Type Name/]
+    SCAN_PROD --> V_ITEM{Item Active and Exists in tbl_inventory?}
+    V_ITEM -- No --> ERR_ITEM[Alert: Product Not Found in Catalog] --> POS_MAIN
+    V_ITEM -- Yes --> V_STK{Is Stock Available in tbl_inventory?}
+    V_STK -- No --> ERR_STK[Alert: Out of Stock] --> POS_MAIN
+    V_STK -- Yes --> ADD_CART[Add Item to Active Cart and Update Subtotal]
+
+    ADD_CART --> MORE_ITEMS{Ring Up More Products?}
+    MORE_ITEMS -- Yes --> SCAN_PROD
+    MORE_ITEMS -- No --> TENDER_IN[/Enter Customer Cash Tendered/]
+
+    TENDER_IN --> V_TEND{Tendered Cash Sufficient?}
+    V_TEND -- No --> ERR_TEND[Warning: Insufficient Cash Tendered] --> TENDER_IN
+    V_TEND -- Yes --> CHANGE_CALC[Calculate Customer Change Amount]
+
+    CHANGE_CALC --> ATOMIC_COMMIT[Atomic PDO SQL Transaction:<br/>1. Generate TXN-YYYYMMDD-####<br/>2. Insert tbl_transactions<br/>3. Insert tbl_transaction_details<br/>4. Decrement tbl_inventory.stock_qty<br/>5. Log Completed Sale to tbl_audit_logs<br/>6. COMMIT TRANSACTION]
+    ATOMIC_COMMIT --> DISP_RCPT[/Display Digital On-Screen Receipt and Prompt Thermal Print/]
+
+    DISP_RCPT --> C_NEXT{Next Cashier Operation?}
+    C_NEXT -- Next Sale --> POS_MAIN
+    C_NEXT -- Live Shift Monitor --> LIVE_SHIFT[/View Running Shift Sales and Expected Cash/] --> POS_MAIN
+    C_NEXT -- Close Shift --> CLOSE_PROMPT[/Enter Daily Manager PIN and Counted Drawer Cash/]
+
+    CLOSE_PROMPT --> V_PIN_CLOSE{Manager PIN Valid?}
+    V_PIN_CLOSE -- No --> ERR_PIN_CLOSE[Invalid Manager PIN] --> CLOSE_PROMPT
+    V_PIN_CLOSE -- Yes --> RECON_CALC[Reconcile Cash Drawer:<br/>Expected Cash = Starting Float + Cash Sales<br/>Over/Short = Actual Counted Cash - Expected Cash]
+    RECON_CALC --> CLOSE_S_REC[Update tbl_shifts status='closed' and Record Variance]
+    CLOSE_S_REC --> DISP_S_MODAL[/Display Shift Reconciliation Summary Modal/]
+    DISP_S_MODAL --> C_LOGOUT[Destroy PHP Session and Sign Out] --> END_NODE([END: Session Terminated])
+
+    style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
+    style END_NODE fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
+    style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    style ATOMIC_COMMIT fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px
+    style RECON_CALC fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 3: Administrative Control Hub (10 Subsystems) -->
+                    <div class="flowchart-view" id="flowchart-admin">
+                        <div class="mermaid-wrapper">
+                            <div class="mermaid">
+flowchart TD
+    START([START: Admin Access]) --> LOGIN[/Enter Administrator Username and Password/]
+    LOGIN --> V_AUTH{Valid Credentials and Active?}
+    V_AUTH -- No --> ERR_AUTH[Display Invalid Credentials Alert] --> LOGIN
+    V_AUTH -- Yes --> ADM_HUB[Open Administrator Control Center]
+
+    ADM_HUB --> ADM_ROUTER{Select Administrative Subsystem}
+
+    %% 1. Inventory & Catalog
+    subgraph SUB_INV ["1. Inventory & Catalog Operations"]
+        direction TB
+        INV_OP{Inventory Task}
+        INV_OP -- Add Item --> I_ADD[Open itemModal: Enter Barcode, Name, Cost, Price, Threshold, Expiry -> Save tbl_inventory]
+        INV_OP -- Edit Item --> I_EDIT[Modify Selling Prices, Alert Thresholds, or Supplier ID]
+        INV_OP -- Stock Adjust --> I_ADJ[Open adjustModal: Restock (+) or Spoilage (-) with Mandatory Reason]
+        INV_OP -- Categories --> I_CAT[Open manageCatsModal: Add or Delete Categories verifying 0 linked items]
+        INV_OP -- Archive --> I_DEL[Soft-Delete Item: Set is_active=0 to preserve historical sales]
+        INV_OP -- Suppliers --> I_SUPP[Open supplierModal: Add/Edit Wholesale Suppliers and Terms]
+        I_ADD & I_EDIT & I_ADJ & I_CAT & I_DEL & I_SUPP --> INV_LOG[Write Audit Log to tbl_audit_logs]
+    end
+
+    %% 2. Sales & 24h Voiding
+    subgraph SUB_SALES ["2. POS Register & 24h Voiding"]
+        direction TB
+        SALES_OP{Sales Task}
+        SALES_OP -- Direct POS --> S_POS[Open Cashier POS Register for Direct Sales]
+        SALES_OP -- Void Sale --> S_LOOKUP[/Search Transaction Code within Last 24 Hours/]
+        S_LOOKUP --> V_ELIGIBLE{Eligible and within 24h?}
+        V_ELIGIBLE -- No --> ERR_VOID[Cannot Void: Older than 24h or Already Voided]
+        V_ELIGIBLE -- Yes --> S_VOID[Atomic Void Procedure:<br/>1. Set tbl_transactions status='voided'<br/>2. Restore stock_qty in tbl_inventory<br/>3. Log VOID_TRANSACTION to tbl_audit_logs]
+    end
+
+    %% 3. Shifts & Financial Governance
+    subgraph SUB_FIN ["3. Shift Auditing & Financial Analytics"]
+        direction TB
+        FIN_OP{Financial Task}
+        FIN_OP -- Shift History --> F_SHIFTS[Inspect Cashier Shift Logs, Float, Sales, and Over/Short Variance]
+        FIN_OP -- Manager PIN --> F_PIN[View / Rotate Daily 4-Digit Manager PIN in tbl_settings]
+        FIN_OP -- Sales Reports --> F_REP[Generate Daily, Weekly, or Monthly Reports: Revenue, COGS, Profit Margin %]
+        FIN_OP -- Item Breakdown --> F_ITEMS[Open breakdownModal: Line-Item Quantities Sold and Subtotals]
+        FIN_OP -- Valuation --> F_VAL[Calculate Total Asset Inventory Valuation: Cost Basis vs Retail Worth]
+        F_SHIFTS & F_PIN & F_REP & F_ITEMS & F_VAL --> F_EXPORT[Export to PDF/CSV, Print, or Return]
+    end
+
+    %% 4. Predictive Intelligence & Security
+    subgraph SUB_SYS ["4. Predictive Analytics & System Governance"]
+        direction TB
+        SYS_OP{Analytics & Security}
+        SYS_OP -- BI Dashboard --> Y_BI[Real-Time KPIs, 30-Day Trend, Category Doughnut, Low Stock & Expiry Alerts]
+        SYS_OP -- Forecasting --> Y_FCST[Select 3/6/12 Mo Lookback -> Run SMA / WMA -> Calculate Projected Demand and Restock Gap]
+        SYS_OP -- Accounts --> Y_ACC[Manage Users with Bcrypt Passwords, Toggle Active Status, Reset Passwords]
+        SYS_OP -- Backup --> Y_BAK[Trigger mysqldump / PHP PDO Fallback -> Download .sql or Purge Old Backups]
+        SYS_OP -- Audit Trail --> Y_AUD[Inspect Immutable System Action Logs by User, Action, Date, or IP Address]
+    end
+
+    ADM_ROUTER --> SUB_INV
+    ADM_ROUTER --> SUB_SALES
+    ADM_ROUTER --> SUB_FIN
+    ADM_ROUTER --> SUB_SYS
+
+    INV_LOG & S_POS & ERR_VOID & S_VOID & F_EXPORT & Y_BI & Y_FCST & Y_ACC & Y_BAK & Y_AUD --> ADM_DECIDE{Admin Action}
+    ADM_DECIDE -- Perform Another Task --> ADM_HUB
+    ADM_DECIDE -- Sign Out --> ADM_EXIT[Destroy PHP Session and Log LOGOUT] --> END_TERM([END: Session Terminated])
+
+    style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
+    style END_TERM fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
+    style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    style S_VOID fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+    style Y_FCST fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
+    style SUB_INV fill:#f8fafc,stroke:#64748b,stroke-width:1.5px
+    style SUB_SALES fill:#f8fafc,stroke:#64748b,stroke-width:1.5px
+    style SUB_FIN fill:#f8fafc,stroke:#64748b,stroke-width:1.5px
+    style SUB_SYS fill:#f8fafc,stroke:#64748b,stroke-width:1.5px
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="diagram-spec-panel">
+                    <div class="spec-grid">
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-cash-register"></i> Cash Reconciliation Mathematics</h4>
+                            <div class="math-formula-box">
+                                <div class="math-formula-title">Cash Drawer Reconciliation Formula</div>
+                                <div class="math-formula-content">Expected Cash = Starting Float + &Sigma;(Cash Sales During Shift)</div>
+                                <div class="math-formula-content">Short / Over = Actual Cash Counted &minus; Expected Cash</div>
+                                <div class="math-formula-note">Where Short &lt; 0 indicates a register cash shortage, and Over &gt; 0 indicates an overage. Recorded in <code>tbl_shifts.short_over</code>.</div>
+                            </div>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-bolt"></i> Atomic Checkout Safeguards</h4>
+                            <ul class="spec-list">
+                                <li><strong>Race Condition Prevention:</strong> <code>handleCompleteSale()</code> executes within a PDO transaction wrapper (<code>beginTransaction</code> and <code>commit</code>) ensuring that both transaction details and stock decrements are atomic.</li>
+                                <li><strong>Negative Stock Lockdown:</strong> If two cashiers attempt to ring up the last unit simultaneously, row-level verification halts the second sale with HTTP 409 Conflict.</li>
+                            </ul>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-user-shield"></i> Specific Administrative Subsystems</h4>
+                            <ul class="spec-list">
+                                <li><strong>BI Dashboard:</strong> Real-time KPIs, dynamic date filters (7d/30d/YTD), 30-day sales trend line charts, category distribution doughnut charts, and fast-moving FMCG alerts.</li>
+                                <li><strong>Inventory Operations:</strong> Add new items with barcode generation, edit selling prices, restock deliveries, write off damaged/expired stock, manage categories, and soft-delete (<code>is_active=0</code>).</li>
+                                <li><strong>Demand Forecasting:</strong> Run SMA and WMA models across 3, 6, or 12 month lookback horizons to calculate projected demand ($\hat{Y}$) and suggested restocking gaps.</li>
+                                <li><strong>Shift Governance:</strong> Review cash discrepancy reports, inspect starting floats vs actual cash, rotate daily manager PINs, and force-close abandoned cashier shifts.</li>
+                            </ul>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-database"></i> Governance, Voiding & Disaster Recovery</h4>
+                            <ul class="spec-list">
+                                <li><strong>Sale Voiding Authority:</strong> Admins can void erroneous sales within 24 hours via <code>handleVoidTransaction()</code>, atomically restoring stock to inventory and recording a <code>VOID_TRANSACTION</code> audit event.</li>
+                                <li><strong>User Security:</strong> Bcrypt password hashing, role-based session isolation, and non-destructive deactivation (preserving historical cashier links).</li>
+                                <li><strong>Database Backups:</strong> Automated <code>mysqldump</code> execution with standalone PHP PDO fallback creating portable, timestamped <code>.sql</code> files in <code>backups/</code>.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 8: 3-TIER SYSTEM ARCHITECTURE & DEPLOYMENT
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-8" data-category="structural">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-system">Architecture</span>
+                            <span class="badge-tag badge-category">3-Tier Deployment</span>
+                            <span class="badge-tag badge-appendix">Hardware Topology</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-server text-secondary"></i> System Architecture & Deployment Topology</h3>
+                        <p class="diagram-subtitle">Three-tier physical and software distribution running on offline-first local XAMPP infrastructure.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-8', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-8', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-8')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-8')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-8')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-8">
+                    <pre><code>flowchart TB
+    subgraph PRESENTATION_TIER ["1. PRESENTATION TIER (Client Devices)"]
+        direction LR
+        BROWSER["Modern Web Browser<br/>(Chrome / Edge / Firefox)"]
+        UI_FRAMEWORK["UI & Client Stack:<br/>• Bootstrap 5.3 Responsive Grid<br/>• Font Awesome 6.5 Icons<br/>• Vanilla JavaScript ES6 (Fetch API)<br/>• Chart.js (Dashboard Visuals)<br/>• Custom CSS (style.css, pos.css)"]
+    end
+
+    subgraph HARDWARE_LAYER ["Hardware Peripherals Layer"]
+        BARCODE["USB / Bluetooth Barcode Scanner<br/>(HID Keyboard Emulation)"]
+        PRINTER["Document / Receipt Printer<br/>(Sales Reports & Invoices)"]
+        TERMINAL["Cashier & Admin Workstation<br/>(Intel Core i3/i5, 8-16GB RAM)"]
+    end
+
+    subgraph APPLICATION_TIER ["2. APPLICATION / LOGIC TIER (Local Server)"]
+        APACHE["Apache Web Server 2.4<br/>(XAMPP Local Deployment)"]
+        PHP_RUNTIME["PHP 8.2 Runtime Engine"]
+        API_ENDPOINTS["RESTful JSON Endpoints (/api/):<br/>• transactions.php (POS Checkout & Stock sync)<br/>• forecasting.php (SMA & WMA Algorithms)<br/>• inventory.php (Product CRUD & Categories)<br/>• shifts.php (Daily PIN & Cash Drawer)<br/>• dashboard.php (BI Aggregates & Charts)<br/>• backup.php (mysqldump Wrapper)"]
+        CORE_SERVICES["Core Services (/includes/):<br/>• auth_check.php (Session RBAC Middleware)<br/>• db.php (PDO Singleton Connection)<br/>• audit.php (Security & IP Audit Logger)"]
+    end
+
+    subgraph DATA_TIER ["3. DATA STORAGE TIER (Database Server)"]
+        MYSQL["MariaDB 10.4 / MySQL Server<br/>(Database: sharonstore_db)"]
+        TABLES["InnoDB Relational Tables:<br/>tbl_users | tbl_inventory | tbl_categories<br/>tbl_transactions | tbl_transaction_details<br/>tbl_shifts | tbl_forecasts | tbl_suppliers<br/>tbl_audit_logs | tbl_settings"]
+        BACKUPS["Local Backup Storage:<br/>/backups/*.sql (Automated & Manual Dumps)"]
+    end
+
+    BARCODE --> BROWSER
+    BROWSER -->|HTTP Requests| APACHE
+    APACHE -->|HTML & JSON Assets| BROWSER
+    APACHE --> PHP_RUNTIME
+    PHP_RUNTIME --> API_ENDPOINTS & CORE_SERVICES
+    API_ENDPOINTS & CORE_SERVICES -->|PDO Queries| MYSQL
+    MYSQL -->|Record Sets| API_ENDPOINTS & CORE_SERVICES
+    MYSQL --> TABLES
+    API_ENDPOINTS -.->|mysqldump| BACKUPS
+    BROWSER -.->|window.print| PRINTER</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+flowchart TB
+    subgraph PRESENTATION ["1. Presentation Layer (Workstations & UI)"]
+        C_TERM["Cashier Terminal<br/>(POS Interface)"]
+        A_TERM["Admin Terminal<br/>(BI Dashboard & Inventory)"]
+        SCAN["Barcode Scanner<br/>(HID Input)"]
+        SCAN --> C_TERM
+    end
+
+    subgraph APPLICATION ["2. Application Layer (XAMPP Server)"]
+        APACHE["Apache 2.4 Web Server"]
+        PHP["PHP 8.2 Backend Engine"]
+        AUTH["auth_check.php<br/>(RBAC Security)"]
+        FCST_ENG["Forecasting Engine<br/>(SMA & WMA)"]
+        POS_ENG["POS Transaction Handler<br/>(Stock Deduction)"]
+        AUDIT_ENG["Audit Logger<br/>(IP & Activity)"]
+
+        APACHE --> PHP
+        PHP --> AUTH & FCST_ENG & POS_ENG & AUDIT_ENG
+    end
+
+    subgraph DATA ["3. Data Storage Layer (MariaDB)"]
+        MARIADB[("MariaDB 10.4 Server<br/>sharonstore_db")]
+        DUMPS[("Local SQL Backups<br/>/backups/*.sql")]
+        MARIADB -.->|Export| DUMPS
+    end
+
+    C_TERM -->|HTTP / JSON Requests| APACHE
+    A_TERM -->|HTTP / JSON Requests| APACHE
+    APACHE -->|Response Payloads| C_TERM
+    APACHE -->|Response Payloads| A_TERM
+    PHP -->|PDO Prepared Statements| MARIADB
+    MARIADB -->|Result Sets| PHP
+
+    style PRESENTATION fill:#f0fdf4,stroke:#10b981,stroke-width:2.5px
+    style APPLICATION fill:#eff6ff,stroke:#3b82f6,stroke-width:2.5px
+    style DATA fill:#faf5ff,stroke:#8b5cf6,stroke-width:2.5px
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-spec-panel">
+                    <div class="spec-grid">
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-microchip"></i> Hardware Deployment Specifications</h4>
+                            <ul class="spec-list">
+                                <li><strong>Processor:</strong> Intel Core i3 @ 2.30 GHz minimum (Core i5 recommended).</li>
+                                <li><strong>Memory:</strong> 8GB RAM minimum (16GB recommended for heavy BI chart queries).</li>
+                                <li><strong>Input Scanner:</strong> Plug-and-play USB/Bluetooth handheld barcode scanner operating in Human Interface Device (HID) keyboard emulation mode.</li>
+                            </ul>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-shield-virus"></i> Offline Operational Stability</h4>
+                            <ul class="spec-list">
+                                <li><strong>Zero External Cloud Dependency:</strong> All core checkout and inventory functions run on the local Apache/MariaDB instance, ensuring 100% operational continuity during market power or internet interruptions.</li>
+                                <li><strong>Backup Redundancy:</strong> The <code>api/backup.php</code> endpoint invokes <code>mysqldump.exe</code> directly into the secure <code>/backups/</code> directory with timestamped SQL filenames.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 9: UML SEQUENCE DIAGRAMS
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-9" data-category="structural">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-system">UML Behavioral</span>
+                            <span class="badge-tag badge-category">Sequence Diagrams</span>
+                            <span class="badge-tag badge-appendix">Core Workflows</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-timeline text-warning"></i> Key Workflow Sequence Diagrams</h3>
+                        <p class="diagram-subtitle">Temporal message flows for Point-of-Sale checkout, sales demand forecasting computation, and shift cash float reconciliation.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-9', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-9', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-9')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-9')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-9')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-9">
+                    <pre><code>sequenceDiagram
+    autonumber
+    actor Cashier
+    participant Scanner as Barcode Scanner
+    participant POS_UI as POS Client (pos.js)
+    participant API as transactions.php
+    participant DB as MariaDB (InnoDB)
+    participant Audit as audit.php
+
+    Cashier->>Scanner: Scans grocery item barcode
+    Scanner->>POS_UI: Emulates keyboard scan string
+    POS_UI->>API: GET ?action=barcode_lookup&barcode=X
+    API->>DB: SELECT item_id, stock_qty, price FROM tbl_inventory
+    DB-->>API: Item Record (stock_qty = 120, price = 18.00)
+    API-->>POS_UI: JSON {success: true, item: {...}}
+    POS_UI->>POS_UI: Update Cart Table & Total Amount
+
+    Cashier->>POS_UI: Enters Cash Tendered (₱500.00) & Submits
+    POS_UI->>API: POST complete_sale {items, amount_tendered}
+    API->>DB: beginTransaction()
+    API->>DB: SELECT stock_qty FROM tbl_inventory FOR UPDATE
+    API->>DB: INSERT INTO tbl_transactions (code, total, shift_id)
+    API->>DB: INSERT INTO tbl_transaction_details (txn_id, item_id, qty)
+    API->>DB: UPDATE tbl_inventory SET stock_qty = stock_qty - qty
+    API->>Audit: logAudit(user_id, 'COMPLETE_SALE', 'POS', 'TXN-xxx')
+    Audit->>DB: INSERT INTO tbl_audit_logs
+    API->>DB: commit()
+    API-->>POS_UI: JSON {success: true, change: ₱323.00, txn_code: '...'}
+    POS_UI->>Cashier: Render Digital Receipt & Change Display</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Cashier
+    participant UI as POS Interface
+    participant API as transactions.php
+    participant DB as Database (MySQL)
+
+    Cashier->>UI: 1. Scans Barcode or Searches Item
+    UI->>API: 2. GET ?action=barcode_lookup
+    API->>DB: 3. Query tbl_inventory by Barcode
+    DB-->>API: 4. Returns Item Name, Price, Stock
+    API-->>UI: 5. Displays Item in Cart & Computes Total
+
+    Cashier->>UI: 6. Enters Cash Tendered & Clicks Pay
+    UI->>API: 7. POST complete_sale (Cart Payload)
+    API->>DB: 8. BEGIN TRANSACTION
+    API->>DB: 9. Insert into tbl_transactions & details
+    API->>DB: 10. Deduct Stock: UPDATE tbl_inventory
+    API->>DB: 11. Write Audit Log & COMMIT
+    API-->>UI: 12. Return Success, TXN Code & Change
+    UI->>Cashier: 13. Displays Final Receipt Summary
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-spec-panel">
+                    <div class="spec-grid">
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-calculator"></i> Forecasting Engine Math Flow</h4>
+                            <div class="math-formula-box">
+                                <div class="math-formula-title">1. Simple Moving Average (SMA)</div>
+                                <div class="math-formula-content">SMA = (&Sigma; Qty_sold) / n</div>
+                                <div class="math-formula-note">Where <i>n</i> is 3, 6, or 12 historical months. Gives equal weight to each month.</div>
+                            </div>
+                            <div class="math-formula-box">
+                                <div class="math-formula-title">2. Weighted Moving Average (WMA)</div>
+                                <div class="math-formula-content">WMA = &Sigma;(w_i &times; Qty_i) / &Sigma; w_i</div>
+                                <div class="math-formula-note">Where weight $w_i = i + 1$ (1 to $n$), prioritizing recent consumer demand trends in the Pampang Public Market.</div>
+                            </div>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-boxes-packing"></i> Restock Recommendation Formula</h4>
+                            <div class="math-formula-box">
+                                <div class="math-formula-title">Recommended Restock Quantity</div>
+                                <div class="math-formula-content">Restock_Qty = max(0, Predicted_Qty &minus; Current_Stock_Qty)</div>
+                                <div class="math-formula-note">If current stock exceeds forecasted demand, restock recommendation evaluates to 0, completely preventing retail overstocking and financial spoilage.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 10: STATE MACHINE LIFECYCLES
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-10" data-category="behavioral">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-system">UML Behavioral</span>
+                            <span class="badge-tag badge-category">State Machine</span>
+                            <span class="badge-tag badge-appendix">Lifecycle Logic</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-route text-danger"></i> State Machine & Item Lifecycles</h3>
+                        <p class="diagram-subtitle">State transitions for Inventory FMCG stock levels and Cashier Shift drawer operational lifecycles.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-10', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-10', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-10')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-10')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-10')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-10">
+                    <pre><code>stateDiagram-v2
+    [*] --> InStock : Wholesale Delivery Received (stock_qty > threshold)
+    
+    InStock --> InStock : Normal POS Checkout Sale
+    InStock --> LowStock : stock_qty <= low_stock_threshold
+    LowStock --> InStock : Wholesale Restock Added
+    LowStock --> OutOfStock : stock_qty = 0
+    OutOfStock --> InStock : Wholesale Restock Added
+    
+    InStock --> ExpiringSoon : Current Date >= (expiry_date - 30 days)
+    LowStock --> ExpiringSoon : Current Date >= (expiry_date - 30 days)
+    
+    ExpiringSoon --> Expired : Current Date > expiry_date
+    Expired --> Disposed : Removed & Documented
+    
+    InStock --> Archived : Admin Soft Delete (is_active = 0)
+    LowStock --> Archived : Admin Soft Delete (is_active = 0)
+    OutOfStock --> Archived : Admin Soft Delete (is_active = 0)
+    Disposed --> Archived : Admin Soft Delete (is_active = 0)
+    Archived --> [*]</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+stateDiagram-v2
+    [*] --> InStock : Item Delivered & Stock Added
+    
+    state InStock {
+        [*] --> Healthy : stock_qty > threshold
+    }
+
+    InStock --> LowStockAlert : stock_qty <= threshold
+    LowStockAlert --> OutOfStock : stock_qty = 0
+    OutOfStock --> InStock : Wholesale Restock Recorded
+    LowStockAlert --> InStock : Wholesale Restock Recorded
+
+    InStock --> ExpiringSoon : <= 30 Days to Expiry
+    LowStockAlert --> ExpiringSoon : <= 30 Days to Expiry
+    ExpiringSoon --> Expired : Past Expiration Date
+    Expired --> Archived : Disposed (is_active = 0)
+
+    InStock --> Archived : Soft Delete
+    OutOfStock --> Archived : Soft Delete
+    Archived --> [*]
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-spec-panel">
+                    <div class="spec-grid">
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-triangle-exclamation"></i> Low-Stock Trigger Parameters</h4>
+                            <ul class="spec-list">
+                                <li><strong>Healthy State:</strong> <code>stock_qty > low_stock_threshold</code>. Displayed with an emerald green badge.</li>
+                                <li><strong>Low-Stock Warning:</strong> <code>0 < stock_qty <= low_stock_threshold</code>. Displayed with an amber warning badge on POS and Dashboard.</li>
+                                <li><strong>Out of Stock:</strong> <code>stock_qty <= 0</code>. POS prevents ringing up with instant error notification.</li>
+                            </ul>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-calendar-xmark"></i> Expiration Monitoring Thresholds</h4>
+                            <ul class="spec-list">
+                                <li><strong>Expiring Soon State:</strong> Triggered when <code>expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)</code>. Highlighted on dashboard to enable clearance price promotions.</li>
+                                <li><strong>Soft Delete Architecture:</strong> Items are never physically dropped from MySQL; <code>is_active = 0</code> preserves referential integrity for historical transaction reports.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ═════════════════════════════════════════════════════
+                 DIAGRAM 11: COMPONENT & MODULE ARCHITECTURE
+            ══════════════════════════════════════════════════════ -->
+            <article class="diagram-card" id="diagram-11" data-category="structural">
+                <div class="diagram-card-header">
+                    <div class="diagram-header-info">
+                        <div class="diagram-badges">
+                            <span class="badge-tag badge-system">Software Architecture</span>
+                            <span class="badge-tag badge-category">Component Hierarchy</span>
+                            <span class="badge-tag badge-appendix">MVC Layout</span>
+                        </div>
+                        <h3 class="diagram-title"><i class="fa-solid fa-sitemap text-primary"></i> System Component & Software Architecture</h3>
+                        <p class="diagram-subtitle">Directory decomposition, modular dependencies, API controllers, and core library services.</p>
+                    </div>
+                    <div class="diagram-header-actions">
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-11', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="tool-btn" onclick="zoomDiagram('diagram-11', -0.25)" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button class="tool-btn" onclick="resetZoom('diagram-11')" title="Reset Zoom (100%)"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="tool-btn" onclick="toggleFullscreen('diagram-11')" title="Fullscreen Mode"><i class="fa-solid fa-expand"></i></button>
+                        <button class="tool-btn" onclick="toggleSource('src-diag-11')" title="View Mermaid Code"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                </div>
+                
+                <div class="diagram-source-drawer" id="src-diag-11">
+                    <pre><code>graph TD
+    subgraph VIEW_LAYER ["User Interface / View Layer"]
+        V_LOGIN["index.php<br/>(Authentication)"]
+        V_DASH["dashboard.php<br/>(BI Visualizations)"]
+        V_POS["pos.php<br/>(Point of Sale)"]
+        V_INV["inventory.php<br/>(FMCG Catalog)"]
+        V_FCST["forecasting.php<br/>(Demand Prediction)"]
+        V_SHIFTS["shifts.php<br/>(Cash Drawer)"]
+        V_SUPP["suppliers.php<br/>(Vendor Directory)"]
+        V_REP["reports.php<br/>(Financial Analytics)"]
+        V_ACC["accounts.php<br/>(Cashier Accounts)"]
+        V_BAK["backup.php<br/>(DB Archive)"]
+        V_AUD["audit.php<br/>(Activity Logs)"]
+    end
+
+    subgraph API_CONTROLLERS ["RESTful API Controller Layer (/api/)"]
+        A_TXN["transactions.php"]
+        A_FCST["forecasting.php"]
+        A_INV["inventory.php"]
+        A_SHIFTS["shifts.php"]
+        A_DASH["dashboard.php"]
+        A_REPS["reports.php"]
+        A_ACCS["accounts.php"]
+        A_BAK["backup.php"]
+        A_AUD["audit_logs.php"]
+        A_SUPP["suppliers.php"]
+    end
+
+    subgraph CORE_INCLUDES ["Core Services & Middleware (/includes/)"]
+        I_AUTH["auth_check.php<br/>(RBAC Security)"]
+        I_DB["db.php<br/>(PDO Database Connection & Daily PIN)"]
+        I_AUD["audit.php<br/>(logAudit Service)"]
+        I_HEAD["header.php<br/>(Topbar & Initials)"]
+        I_SIDE["sidebar.php<br/>(Responsive Navigation)"]
+    end
+
+    subgraph DATABASE_LAYER ["Database Storage Layer (sharonstore_db)"]
+        DB_USERS[("tbl_users")]
+        DB_INV[("tbl_inventory & categories")]
+        DB_TXN[("tbl_transactions & details")]
+        DB_SHIFTS[("tbl_shifts")]
+        DB_FCST[("tbl_forecasts")]
+        DB_AUD[("tbl_audit_logs")]
+        DB_SUPP[("tbl_suppliers")]
+        DB_SET[("tbl_settings")]
+    end
+
+    V_POS --> A_TXN
+    V_FCST --> A_FCST
+    V_INV --> A_INV
+    V_SHIFTS --> A_SHIFTS
+    V_DASH --> A_DASH
+    V_REP --> A_REPS
+    V_ACC --> A_ACCS
+    V_BAK --> A_BAK
+    V_AUD --> A_AUD
+    V_SUPP --> A_SUPP
+
+    VIEW_LAYER --> I_AUTH & I_HEAD & I_SIDE
+    API_CONTROLLERS --> I_AUTH & I_DB & I_AUD
+
+    I_DB --> DATABASE_LAYER</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+graph TD
+    subgraph UI ["1. Presentation Views (PHP & HTML5)"]
+        V1["index.php (Login)"]
+        V2["dashboard.php (BI Visuals)"]
+        V3["pos.php (Barcode Checkout)"]
+        V4["inventory.php (Product Management)"]
+        V5["forecasting.php (SMA/WMA Analytics)"]
+        V6["shifts.php (Cash Drawer Floating)"]
+        V7["reports.php, backup.php, accounts.php"]
+    end
+
+    subgraph API ["2. API Controller Layer (/api/)"]
+        C1["transactions.php"]
+        C2["forecasting.php"]
+        C3["inventory.php"]
+        C4["shifts.php"]
+        C5["dashboard.php"]
+        C6["backup.php & audit_logs.php"]
+    end
+
+    subgraph INCLUDES ["3. Core Library Services (/includes/)"]
+        S1["auth_check.php (Session RBAC)"]
+        S2["db.php (PDO Connection & Daily PIN)"]
+        S3["audit.php (Activity Logger)"]
+    end
+
+    subgraph DB ["4. MySQL Database (sharonstore_db)"]
+        M1[("10 Relational Tables")]
+    end
+
+    UI --> |AJAX Fetch API| API
+    UI --> |Security Guard| S1
+    API --> S1 & S2 & S3
+    S2 --> DB
+
+    style UI fill:#f0fdf4,stroke:#10b981,stroke-width:2px
+    style API fill:#eff6ff,stroke:#3b82f6,stroke-width:2px
+    style INCLUDES fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
+    style DB fill:#faf5ff,stroke:#8b5cf6,stroke-width:2px
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-spec-panel">
+                    <div class="spec-grid">
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-folder-tree"></i> Directory Topology</h4>
+                            <ul class="spec-list">
+                                <li><strong>Root Directory:</strong> Contains main page entry points, including <code>pos.php</code>, <code>dashboard.php</code>, and <code>inventory.php</code>.</li>
+                                <li><strong>/api/ Directory:</strong> Contains all JSON-responding RESTful controller scripts handling async requests from Vanilla JS Fetch calls.</li>
+                                <li><strong>/includes/ Directory:</strong> Contains security enforcement scripts, PDO singletons, and audit helper functions.</li>
+                            </ul>
+                        </div>
+                        <div class="spec-block">
+                            <h4 class="spec-block-title"><i class="fa-solid fa-code"></i> Engineering Design Decisions</h4>
+                            <ul class="spec-list">
+                                <li><strong>Vanilla JavaScript ES6:</strong> Avoids heavy bloated frontend node-module frameworks, ensuring ultra-fast load times on low-power store market terminals.</li>
+                                <li><strong>PDO Prepared Statements:</strong> 100% parameterization across all SQL queries completely mitigates SQL injection vulnerabilities.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+        </div> <!-- /content-body -->
+    </main>
+
+</div> <!-- /app-layout -->
+
+<!-- Interactive Scripts for Diagram Controls -->
+<script>
+    // Theme Toggle Function
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        
+        const themeBtn = document.getElementById('themeBtn');
+        if (newTheme === 'dark') {
+            themeBtn.innerHTML = '<i class="fa-solid fa-sun text-warning"></i> <span>Light Mode</span>';
+        } else {
+            themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i> <span>Dark Mode</span>';
+        }
+    }
+
+    // Mobile Sidebar Toggle
+    function toggleSidebar() {
+        document.getElementById('appSidebar').classList.toggle('open');
+    }
+
+    // Active Navigation Highlight
+    function setActiveNav(element) {
+        document.querySelectorAll('.nav-item-link').forEach(link => link.classList.remove('active'));
+        element.classList.add('active');
+        if (window.innerWidth <= 991) {
+            document.getElementById('appSidebar').classList.remove('open');
+        }
+    }
+
+    // Toggle Source Code Drawer
+    function toggleSource(drawerId) {
+        const drawer = document.getElementById(drawerId);
+        if (drawer) {
+            drawer.classList.toggle('show');
+        }
+    }
+
+    // Filter Diagrams
+    function filterDiagrams(category, button) {
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        button.classList.add('active');
+
+        const cards = document.querySelectorAll('.diagram-card');
+        cards.forEach(card => {
+            if (category === 'all') {
+                card.style.display = 'block';
+            } else {
+                const cardCat = card.getAttribute('data-category');
+                card.style.display = (cardCat === category) ? 'block' : 'none';
+            }
+        });
+    }
+
+    // Zoom and Pan Controls
+    const zoomLevels = {};
+
+    function zoomDiagram(id, delta) {
+        if (!zoomLevels[id]) zoomLevels[id] = 1.0;
+        zoomLevels[id] = Math.max(0.6, Math.min(2.5, Math.round((zoomLevels[id] + delta) * 100) / 100));
+        const wrapper = document.querySelector('#' + id + ' .mermaid-wrapper');
+        if (wrapper) {
+            wrapper.style.transform = `scale(${zoomLevels[id]})`;
+            wrapper.style.transformOrigin = 'top center';
+        }
+    }
+
+    function resetZoom(id) {
+        zoomLevels[id] = 1.0;
+        const wrapper = document.querySelector('#' + id + ' .mermaid-wrapper');
+        if (wrapper) {
+            wrapper.style.transform = 'scale(1.0)';
+        }
+    }
+
+    function toggleFullscreen(id) {
+        const card = document.getElementById(id);
+        if (!card) return;
+        if (!document.fullscreenElement) {
+            card.requestFullscreen().catch(err => {
+                console.warn(`Fullscreen error: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    // Switch Multi-Perspective Flowchart Views
+    function switchFlowchartTab(viewId, btn) {
+        document.querySelectorAll('.flowchart-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        document.querySelectorAll('#diagram-7 .flowchart-view').forEach(v => v.classList.remove('active'));
+        const targetView = document.getElementById(viewId);
+        if (targetView) {
+            targetView.classList.add('active');
+            setTimeout(makeDiagramsReadable, 60);
+        }
+    }
+
+    // Mathematical SVG scaling: guarantees rendered width >= native viewBox width so fonts are NEVER compressed
+    function makeDiagramsReadable() {
+        document.querySelectorAll('.mermaid svg').forEach(svg => {
+            const vb = svg.getAttribute('viewBox');
+            if (vb) {
+                const parts = vb.trim().split(/[\s,]+/);
+                if (parts.length === 4) {
+                    const vbWidth = parseFloat(parts[2]);
+                    if (vbWidth > 0) {
+                        const targetWidth = Math.max(Math.round(vbWidth * 1.05), 1150);
+                        svg.style.width = targetWidth + 'px';
+                        svg.style.minWidth = targetWidth + 'px';
+                        svg.style.maxWidth = 'none';
+                        svg.style.height = 'auto';
+                    }
+                }
+            } else {
+                svg.style.minWidth = '1150px';
+                svg.style.maxWidth = 'none';
+                svg.style.height = 'auto';
+            }
+        });
+    }
+
+    window.addEventListener('load', () => {
+        setTimeout(makeDiagramsReadable, 400);
+        setTimeout(makeDiagramsReadable, 1200);
+    });
+</script>
+
+</body>
+</html>
