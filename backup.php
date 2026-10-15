@@ -110,6 +110,33 @@
                     </div>
                 </div>
 
+                <!-- Import & Restore Card -->
+                <div class="card shadow-sm border-0" style="border-radius: 14px; overflow: hidden;">
+                    <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left fa-lg" style="color: #f59e0b;"></i>
+                            <h5 class="mb-0 fw-bold" style="font-size: 0.95rem; color: #1e293b;">Import &amp; Restore Database</h5>
+                        </div>
+                        <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.68rem;">Admin Only</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted small mb-3">
+                            Restore database tables from an external <code>.sql</code> backup file (downloaded from Google Drive or copied from a flash drive).
+                        </p>
+
+                        <form id="uploadRestoreForm" onsubmit="event.preventDefault(); handleUploadRestorePrompt();">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">Select .sql Backup File</label>
+                                <input type="file" id="importSqlFile" accept=".sql" class="form-control form-control-sm" required style="border-radius: 8px;">
+                            </div>
+                            <button type="submit" class="btn btn-outline-warning w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2" id="btnUploadRestore" style="border-radius: 9px; color: #b45309; border-color: #f59e0b;">
+                                <i class="fa-solid fa-file-import"></i>
+                                <span>Upload &amp; Restore Backup</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Right Column: Backup Files List -->
@@ -235,6 +262,45 @@ function doPost(e) {
     </div>
 </div>
 
+<!-- ══ RESTORE BACKUP CONFIRMATION MODAL ═══════════════════════ -->
+<div class="modal fade" id="restoreBackupModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content border-0 shadow-lg text-center" style="border-radius: 16px; overflow: hidden; background: #ffffff;">
+            <div class="modal-body p-4 pt-4">
+                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+                     style="width: 68px; height: 68px; border-radius: 50%; background: #fef3c7; color: #d97706; font-size: 28px; box-shadow: 0 4px 14px rgba(217,119,6,0.18);">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </div>
+                <h5 class="fw-bold mb-1" style="color: #1e293b; font-size: 1.25rem;">Restore Database?</h5>
+                <p class="text-muted small mb-3" style="line-height: 1.5;">
+                    Restoring will overwrite current tables and return the database to this backup snapshot.
+                </p>
+
+                <div class="p-2 mb-3 bg-light rounded text-truncate text-start d-flex align-items-center justify-content-between" style="border: 1px solid #e2e8f0;">
+                    <div class="text-truncate me-2" style="font-family: monospace; font-size: 0.8rem; color: #334155;">
+                        <i class="fa-solid fa-file-code me-1 text-warning"></i><span id="restoreTargetFilename"></span>
+                    </div>
+                    <span class="badge bg-secondary" id="restoreSourceBadge" style="font-size: 0.68rem;"></span>
+                </div>
+
+                <div class="alert alert-info py-2 px-3 small text-start mb-3 border-0" style="background:#eff6ff; color:#1e40af; border-left:4px solid #3b82f6 !important; border-radius: 8px;">
+                    <i class="fa-solid fa-shield-halved me-1"></i>
+                    <strong>Automatic Safety Snapshot:</strong> A full backup of your current database will be automatically created before restoring, so you never lose any data.
+                </div>
+
+                <div id="restoreStatusAlert" class="d-none alert py-2 small mb-3"></div>
+
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-secondary flex-fill fw-bold py-2" data-bs-dismiss="modal" id="btnCancelRestore" style="border-radius: 8px;">Cancel</button>
+                    <button type="button" class="btn btn-warning flex-fill fw-bold py-2" id="btnConfirmRestore" style="border-radius: 8px; color: #78350f;">
+                        <i class="fa-solid fa-rotate-left me-1"></i>Restore Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ══ DELETE BACKUP CONFIRMATION MODAL ═══════════════════════ -->
 <div class="modal fade" id="deleteBackupModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
@@ -261,8 +327,13 @@ function doPost(e) {
 <script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
 <script>
 let deleteTargetFilename = null;
-const configModal = new bootstrap.Modal(document.getElementById('gdriveConfigModal'));
-const deleteModal = new bootstrap.Modal(document.getElementById('deleteBackupModal'));
+let restoreTargetFilename = null;
+let restoreTargetSource = 'history';
+let restoreUploadFile = null;
+
+const configModal  = new bootstrap.Modal(document.getElementById('gdriveConfigModal'));
+const deleteModal  = new bootstrap.Modal(document.getElementById('deleteBackupModal'));
+const restoreModal = new bootstrap.Modal(document.getElementById('restoreBackupModal'));
 
 // ── Load Backups ──────────────────────────────────────────────
 async function loadBackups() {
@@ -274,7 +345,7 @@ async function loadBackups() {
             container.innerHTML = '<div class="empty-state p-5 text-center"><i class="fa-solid fa-box-open fa-2x text-muted mb-3"></i><p class="text-muted">No backups yet. Click "Download Backup to PC" or "Upload to Google Drive" to create your first backup.</p></div>';
             return;
         }
-        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th>Filename</th><th>Size</th><th>Created</th><th style="width:130px;">Actions</th></tr></thead><tbody>';
+        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th>Filename</th><th>Size</th><th>Created</th><th style="width:160px;">Actions</th></tr></thead><tbody>';
         j.data.forEach(f => {
             html += `<tr>
                 <td><i class="fa-solid fa-file-code me-2 text-emerald"></i><span style="font-family:monospace; font-size:0.8rem;">${esc(f.filename)}</span></td>
@@ -287,6 +358,9 @@ async function loadBackups() {
                         </a>
                         <button class="btn btn-sm btn-outline-info" onclick="uploadSpecificToGdrive('${esc(f.filename)}')" title="Upload this backup to Google Drive">
                             <i class="fa-brands fa-google-drive"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="openRestoreModal('${esc(f.filename)}', 'history')" title="Restore Database to this snapshot">
+                            <i class="fa-solid fa-rotate-left"></i>
                         </button>
                         <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('${esc(f.filename)}')" title="Delete">
                             <i class="fa-solid fa-trash"></i>
@@ -503,6 +577,88 @@ document.getElementById('btnConfirmDelete').addEventListener('click', async func
     }
     this.disabled = false;
     this.innerHTML = 'Delete';
+});
+
+// ── Restore Backup Handlers ───────────────────────────────────
+function openRestoreModal(filename, source = 'history', fileObj = null) {
+    restoreTargetFilename = filename;
+    restoreTargetSource = source;
+    restoreUploadFile = fileObj;
+
+    document.getElementById('restoreTargetFilename').textContent = filename;
+    document.getElementById('restoreStatusAlert').classList.add('d-none');
+    document.getElementById('restoreSourceBadge').textContent = source === 'upload' ? 'Local Upload' : 'Server Snapshot';
+
+    const btn = document.getElementById('btnConfirmRestore');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-rotate-left me-1"></i>Restore Now';
+
+    restoreModal.show();
+}
+
+function handleUploadRestorePrompt() {
+    const fileInput = document.getElementById('importSqlFile');
+    if (!fileInput.files || !fileInput.files[0]) {
+        showToast('Please select a .sql backup file.', 'warning');
+        return;
+    }
+    const file = fileInput.files[0];
+    if (!file.name.toLowerCase().endsWith('.sql')) {
+        showToast('Only .sql files can be restored.', 'error');
+        return;
+    }
+    openRestoreModal(file.name, 'upload', file);
+}
+
+document.getElementById('btnConfirmRestore').addEventListener('click', async function () {
+    this.disabled = true;
+    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Restoring Database...';
+
+    const statusBox = document.getElementById('restoreStatusAlert');
+    statusBox.className = 'alert alert-info py-2 small mb-3';
+    statusBox.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating automatic safety snapshot &amp; importing tables... Please wait.';
+    statusBox.classList.remove('d-none');
+
+    const fd = new FormData();
+    fd.append('action', 'restore');
+    fd.append('source', restoreTargetSource);
+
+    if (restoreTargetSource === 'upload') {
+        fd.append('backup_file', restoreUploadFile);
+    } else {
+        fd.append('filename', restoreTargetFilename);
+    }
+
+    try {
+        const r = await fetch('/sharonstore3.0/api/backup.php', { method: 'POST', body: fd });
+        const j = await r.json();
+
+        if (j.success) {
+            statusBox.className = 'alert alert-success py-2 small mb-3';
+            statusBox.innerHTML = `<i class="fa-solid fa-circle-check me-1"></i><strong>${esc(j.message)}</strong><br><span style="font-size:0.75rem;">Automatic safety snapshot created: <code>${esc(j.safety_backup)}</code></span>`;
+            showToast('Database successfully restored!', 'success');
+
+            const fileInput = document.getElementById('importSqlFile');
+            if (fileInput) fileInput.value = '';
+
+            setTimeout(() => {
+                restoreModal.hide();
+                loadBackups();
+            }, 2500);
+        } else {
+            statusBox.className = 'alert alert-danger py-2 small mb-3';
+            statusBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-1"></i>${esc(j.message)}`;
+            showToast(j.message || 'Restoration failed.', 'error');
+            this.disabled = false;
+            this.innerHTML = '<i class="fa-solid fa-rotate-left me-1"></i>Retry Restore';
+        }
+    } catch (e) {
+        statusBox.className = 'alert alert-danger py-2 small mb-3';
+        statusBox.textContent = 'Server or network error during restoration.';
+        showToast('Restoration network error.', 'error');
+        this.disabled = false;
+        this.innerHTML = '<i class="fa-solid fa-rotate-left me-1"></i>Retry Restore';
+    }
 });
 
 // ── Copy Script Helper ────────────────────────────────────────

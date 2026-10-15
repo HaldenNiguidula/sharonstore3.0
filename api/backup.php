@@ -35,12 +35,13 @@ function setSetting(PDO $db, string $key, string $value): void {
 }
 
 // ── Generator Helper ──────────────────────────────────────────
-function generateBackupFile(string $backupDir, PDO $db): string {
-    $filename = 'sharonstore_backup_' . date('Y-m-d_H-i-s') . '.sql';
+function generateBackupFile(string $backupDir, PDO $db, string $prefix = 'sharonstore_backup_'): string {
+    $filename = $prefix . date('Y-m-d_H-i-s') . '.sql';
     $filepath = $backupDir . $filename;
 
     // Try mysqldump first
-    $cmd = "mysqldump -u root --no-tablespaces sharonstore_db > " . escapeshellarg($filepath) . " 2>&1";
+    $mysqldumpBin = file_exists('C:\\xampp\\mysql\\bin\\mysqldump.exe') ? 'C:\\xampp\\mysql\\bin\\mysqldump.exe' : 'mysqldump';
+    $cmd = "\"{$mysqldumpBin}\" -u root --no-tablespaces sharonstore_db > " . escapeshellarg($filepath) . " 2>&1";
     $output = [];
     exec($cmd, $output, $code);
 
@@ -72,6 +73,46 @@ function generateBackupFile(string $backupDir, PDO $db): string {
     }
 
     return $filepath;
+}
+
+// ── Restore Helper ────────────────────────────────────────────
+function restoreDatabaseFromFile(string $filepath, PDO $db): array {
+    if (!file_exists($filepath) || filesize($filepath) === 0) {
+        return ['success' => false, 'message' => 'SQL backup file not found or empty.'];
+    }
+
+    // Attempt 1: MySQL CLI binary execution (fastest and most reliable)
+    $mysqlBin = file_exists('C:\\xampp\\mysql\\bin\\mysql.exe') ? 'C:\\xampp\\mysql\\bin\\mysql.exe' : 'mysql';
+    $cmd = "\"{$mysqlBin}\" -u root sharonstore_db < " . escapeshellarg($filepath) . " 2>&1";
+    $output = [];
+    $code = 1;
+    exec($cmd, $output, $code);
+
+    if ($code === 0) {
+        return ['success' => true, 'message' => 'Database successfully restored.'];
+    }
+
+    // Attempt 2: PDO multi-query execution fallback
+    try {
+        $sql = file_get_contents($filepath);
+        if ($sql === false || trim($sql) === '') {
+            return ['success' => false, 'message' => 'Could not read SQL file contents.'];
+        }
+
+        $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+        $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
+        $db->exec("SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';");
+        $db->exec($sql);
+        $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
+
+        return ['success' => true, 'message' => 'Database successfully restored.'];
+    } catch (\Throwable $e) {
+        try { $db->exec("SET FOREIGN_KEY_CHECKS = 1;"); } catch (\Throwable $ignore) {}
+        return [
+            'success' => false,
+            'message' => 'Restoration error: ' . $e->getMessage()
+        ];
+    }
 }
 
 // ── Google Drive Webhook Helper ───────────────────────────────
@@ -227,6 +268,82 @@ if ($action === 'delete') {
         echo json_encode(['success' => true, 'message' => 'Backup deleted.']);
     } else {
         echo json_encode(['success' => false, 'message' => 'File not found.']);
+    }
+    exit();
+}
+
+// ── Restore / Import Backup ───────────────────────────────────
+if ($action === 'restore') {
+    header('Content-Type: application/json');
+
+    $source = $_POST['source'] ?? 'history';
+    $targetFilepath = '';
+    $originalName   = '';
+
+    if ($source === 'upload') {
+        if (!isset($_FILES['backup_file']) || $_FILES['backup_file']['error'] !== UPLOAD_ERR_OK) {
+            echo json_encode(['success' => false, 'message' => 'Please select a valid .sql backup file to upload.']);
+            exit();
+        }
+
+        $uploadName = $_FILES['backup_file']['name'];
+        if (!str_ends_with(strtolower($uploadName), '.sql')) {
+            echo json_encode(['success' => false, 'message' => 'Only .sql files are allowed for database import.']);
+            exit();
+        }
+
+        if ($_FILES['backup_file']['size'] > 100 * 1024 * 1024) {
+            echo json_encode(['success' => false, 'message' => 'Uploaded file is too large (max 100MB).']);
+            exit();
+        }
+
+        $cleanBase = preg_replace('/[^a-zA-Z0-9_\.-]/', '_', pathinfo($uploadName, PATHINFO_FILENAME));
+        $destFilename = 'imported_' . date('Y-m-d_H-i-s') . '_' . $cleanBase . '.sql';
+        $targetFilepath = $backupDir . $destFilename;
+
+        if (!move_uploaded_file($_FILES['backup_file']['tmp_name'], $targetFilepath)) {
+            echo json_encode(['success' => false, 'message' => 'Failed to save uploaded backup file on server.']);
+            exit();
+        }
+        $originalName = $destFilename;
+    } else {
+        // Restoring from server backup history
+        $fn = basename($_POST['filename'] ?? '');
+        if (!$fn || !str_ends_with($fn, '.sql')) {
+            echo json_encode(['success' => false, 'message' => 'Invalid backup filename.']);
+            exit();
+        }
+        $targetFilepath = $backupDir . $fn;
+        $originalName   = $fn;
+
+        if (!file_exists($targetFilepath)) {
+            echo json_encode(['success' => false, 'message' => 'Selected backup file does not exist on server.']);
+            exit();
+        }
+    }
+
+    // 1. Automatic Safety Snapshot before restoring
+    $safetyPath = generateBackupFile($backupDir, $db, 'sharonstore_safety_pre_restore_');
+    $safetyFilename = basename($safetyPath);
+
+    // 2. Perform restoration
+    $restoreResult = restoreDatabaseFromFile($targetFilepath, $db);
+
+    if ($restoreResult['success']) {
+        logAudit($userId, 'RESTORE_DATABASE', 'Backup', "Database restored from: {$originalName}. Safety backup created: {$safetyFilename}");
+        echo json_encode([
+            'success'       => true,
+            'message'       => "Database successfully restored from {$originalName}!",
+            'safety_backup' => $safetyFilename,
+            'restored_file' => $originalName
+        ]);
+    } else {
+        logAudit($userId, 'RESTORE_FAILED', 'Backup', "Database restore failed for: {$originalName}. Error: " . $restoreResult['message']);
+        echo json_encode([
+            'success'       => false,
+            'message'       => $restoreResult['message'],
+            'safety_backup' => $safetyFilename
+        ]);
     }
     exit();
 }
