@@ -198,7 +198,7 @@
                                 <div id="newCatMsg" class="mt-1" style="font-size:0.78rem;"></div>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Unit <span class="text-danger">*</span></label>
                             <select id="fUnit" class="form-select" required>
                                 <option value="pieces">Pieces</option>
@@ -206,13 +206,9 @@
                                 <option value="kg">Kilograms (kg)</option>
                             </select>
                         </div>
-                        <div class="col-6 col-md-4">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Selling Price (&#8369;) <span class="text-danger">*</span></label>
                             <input type="number" id="fPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <label class="form-label">Cost Price (&#8369;) <span class="text-danger">*</span></label>
-                            <input type="number" id="fCostPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
                         </div>
                         <div class="col-6 col-md-4">
                             <label class="form-label">Stock Quantity <span class="text-danger">*</span></label>
@@ -589,7 +585,6 @@ async function openEdit(id) {
     document.getElementById('fCategory').value  = d.category_id;
     document.getElementById('fUnit').value      = d.unit;
     document.getElementById('fPrice').value     = d.price;
-    document.getElementById('fCostPrice').value = d.cost_price;
     document.getElementById('fStockQty').value  = d.stock_qty;
     document.getElementById('fThreshold').value = d.low_stock_threshold;
     document.getElementById('fExpiry').value    = d.expiry_date || '';
@@ -612,7 +607,6 @@ document.getElementById('itemForm').addEventListener('submit', async function(e)
     body.append('category_id',         document.getElementById('fCategory').value);
     body.append('unit',                document.getElementById('fUnit').value);
     body.append('price',               document.getElementById('fPrice').value);
-    body.append('cost_price',          document.getElementById('fCostPrice').value);
     body.append('stock_qty',           document.getElementById('fStockQty').value);
     body.append('low_stock_threshold', document.getElementById('fThreshold').value);
     body.append('expiry_date',         document.getElementById('fExpiry').value);
@@ -702,7 +696,6 @@ async function lookupBarcode() {
             // Auto-fill fields from existing product (EXCEPT price and expiry)
             document.getElementById('fItemName').value  = d.item_name  || '';
             document.getElementById('fUnit').value      = d.unit       || 'pieces';
-            document.getElementById('fCostPrice').value = d.cost_price || '';
             document.getElementById('fStockQty').value  = d.stock_qty  || '';
             document.getElementById('fThreshold').value = d.low_stock_threshold || '10';
 

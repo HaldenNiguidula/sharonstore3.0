@@ -41,6 +41,16 @@ if (in_array($action, $readOnlyActions)) {
 $db     = getDB();
 $userId = currentUserId();
 
+// Cashier Shift Lock Enforcement:
+// Cashiers cannot query stock monitoring records unless their shift is currently open
+if (currentRole() === 'cashier' && in_array($action, ['list', 'stats', 'low_stock', 'expiring_soon'])) {
+    $shiftStmt = $db->prepare("SELECT shift_id FROM tbl_shifts WHERE cashier_id = ? AND status = 'open' LIMIT 1");
+    $shiftStmt->execute([$userId]);
+    if (!$shiftStmt->fetch()) {
+        respond(false, 'Shift not started. Manager authorization is required to access stock monitoring.', null, 403);
+    }
+}
+
 // ══════════════════════════════════════════════════════════════
 // action = list
 // ══════════════════════════════════════════════════════════════
@@ -150,7 +160,7 @@ if ($action === 'add') {
     $categoryId       = intval_or_null($_POST['category_id']       ?? '');
     $unit             = trim($_POST['unit']                ?? 'pieces');
     $price            = floatval_or_null($_POST['price']           ?? '');
-    $costPrice        = floatval_or_null($_POST['cost_price']      ?? '');
+    $costPrice        = floatval_or_null($_POST['cost_price']      ?? '') ?? 0.00;
     $stockQty         = floatval_or_null($_POST['stock_qty']       ?? '');
     $lowStockThresh   = intval_or_null($_POST['low_stock_threshold'] ?? '');
     $expiryDate       = trim($_POST['expiry_date']         ?? '');
@@ -160,7 +170,7 @@ if ($action === 'add') {
     if ($itemName === '')    $errors[] = 'Item name is required.';
     if ($categoryId === null) $errors[] = 'Category is required.';
     if ($price === null || $price < 0) $errors[] = 'Valid selling price is required.';
-    if ($costPrice === null || $costPrice < 0) $errors[] = 'Valid cost price is required.';
+    if ($costPrice < 0) $errors[] = 'Cost price cannot be negative.';
     if ($stockQty === null || $stockQty < 0) $errors[] = 'Valid stock quantity is required.';
     if ($lowStockThresh === null || $lowStockThresh < 0) $errors[] = 'Valid low stock threshold is required.';
     if (!in_array($unit, ['pieces','packs','kg'], true)) $errors[] = 'Invalid unit.';
@@ -210,6 +220,11 @@ if ($action === 'update') {
     $unit             = trim($_POST['unit']                ?? 'pieces');
     $price            = floatval_or_null($_POST['price']           ?? '');
     $costPrice        = floatval_or_null($_POST['cost_price']      ?? '');
+    if ($costPrice === null && $itemId) {
+        $existingCost = $db->prepare("SELECT cost_price FROM tbl_inventory WHERE item_id = :id");
+        $existingCost->execute([':id' => $itemId]);
+        $costPrice = (float)($existingCost->fetchColumn() ?: 0.00);
+    }
     $stockQty         = floatval_or_null($_POST['stock_qty']       ?? '');
     $lowStockThresh   = intval_or_null($_POST['low_stock_threshold'] ?? '');
     $expiryDate       = trim($_POST['expiry_date']         ?? '');
@@ -219,7 +234,7 @@ if ($action === 'update') {
     if ($itemName === '') $errors[] = 'Item name is required.';
     if ($categoryId === null) $errors[] = 'Category is required.';
     if ($price === null || $price < 0)     $errors[] = 'Valid selling price is required.';
-    if ($costPrice === null || $costPrice < 0) $errors[] = 'Valid cost price is required.';
+    if ($costPrice < 0) $errors[] = 'Cost price cannot be negative.';
     if ($stockQty === null || $stockQty < 0)   $errors[] = 'Valid stock quantity is required.';
     if ($lowStockThresh === null || $lowStockThresh < 0) $errors[] = 'Valid low stock threshold is required.';
     if (!in_array($unit, ['pieces','packs','kg'], true)) $errors[] = 'Invalid unit.';

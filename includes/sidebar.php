@@ -13,6 +13,19 @@ $__initials    = implode('', array_map(fn($w) => strtoupper($w[0]), array_filter
 $__initials    = substr($__initials, 0, 2);
 $__currentPage = basename($_SERVER['PHP_SELF']);
 
+$__hasOpenShift = true;
+if ($__role === 'cashier') {
+    require_once __DIR__ . '/db.php';
+    try {
+        $__db = getDB();
+        $__stmt = $__db->prepare("SELECT shift_id FROM tbl_shifts WHERE cashier_id = ? AND status = 'open' LIMIT 1");
+        $__stmt->execute([currentUserId()]);
+        $__hasOpenShift = (bool)$__stmt->fetch();
+    } catch (\Throwable $e) {
+        $__hasOpenShift = false;
+    }
+}
+
 function sidebarActive(string $page, string $current): string {
     return ($page === $current) ? 'active' : '';
 }
@@ -164,7 +177,9 @@ function sidebarActive(string $page, string $current): string {
                    class="ss-nav-item <?= sidebarActive('pos.php', $__currentPage) ?>">
                     <span class="ss-nav-icon"><i class="fa-solid fa-cash-register"></i></span>
                     <span class="ss-nav-label">Point of Sale</span>
-                    <?php if ($__currentPage === 'pos.php'): ?>
+                    <?php if (!$__hasOpenShift): ?>
+                    <i class="fa-solid fa-lock text-muted ms-auto" style="font-size:0.75rem;" title="Shift not started"></i>
+                    <?php elseif ($__currentPage === 'pos.php'): ?>
                     <span class="ss-nav-active-dot ms-auto"></span>
                     <?php endif; ?>
                 </a>
@@ -175,7 +190,9 @@ function sidebarActive(string $page, string $current): string {
                    class="ss-nav-item <?= sidebarActive('stock-monitor.php', $__currentPage) ?>">
                     <span class="ss-nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span>
                     <span class="ss-nav-label">Stock Monitor</span>
-                    <?php if ($__currentPage === 'stock-monitor.php'): ?>
+                    <?php if (!$__hasOpenShift): ?>
+                    <i class="fa-solid fa-lock text-muted ms-auto" style="font-size:0.75rem;" title="Shift not started"></i>
+                    <?php elseif ($__currentPage === 'stock-monitor.php'): ?>
                     <span class="ss-nav-active-dot ms-auto"></span>
                     <?php endif; ?>
                 </a>

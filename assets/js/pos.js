@@ -176,10 +176,14 @@ function bindEvents() {
     document.getElementById('btnCheckout').addEventListener('click', completeSale);
     document.getElementById('btnNewSale').addEventListener('click', function () {
         receiptM.hide();
-        cart = []; renderCart(); saveCart();
-        document.getElementById('amountTendered').value = '';
-        calcChange(); updateTxnCode(); loadAllItems(); focusScanner();
+        focusScanner();
     });
+    var receiptEl = document.getElementById('receiptModal');
+    if (receiptEl) {
+        receiptEl.addEventListener('hidden.bs.modal', function () {
+            focusScanner();
+        });
+    }
     document.addEventListener('keydown', function (e) {
         if (e.key === 'F2')  { e.preventDefault(); switchTab('barcode'); }
         if (e.key === 'F3')  { e.preventDefault(); switchTab('manual'); }
@@ -335,7 +339,22 @@ function completeSale() {
             items: cart.map(function(c){ return {item_id:c.item_id, quantity:c.quantity, unit_price:parseFloat(c.price)}; }) })
     })
     .then(function (r) { if (r.status === 401) throw new Error('session'); return r.json(); })
-    .then(function (j) { if (j.success) { showReceipt(j); loadDailySummary(); } else { _toast(j.message || 'Sale failed.', 'error'); } })
+    .then(function (j) {
+        if (j.success) {
+            showReceipt(j);
+            loadDailySummary();
+            // Automatically clear cart immediately so POS is ready for another transaction
+            cart = [];
+            renderCart();
+            saveCart();
+            document.getElementById('amountTendered').value = '';
+            calcChange();
+            updateTxnCode();
+            loadAllItems();
+        } else {
+            _toast(j.message || 'Sale failed.', 'error');
+        }
+    })
     .catch(function (err) { if (err.message === 'session') _toast('Session expired.', 'error'); else _toast('Connection error. Try again.', 'error'); })
     .finally(function () {
         btn.disabled  = false;
