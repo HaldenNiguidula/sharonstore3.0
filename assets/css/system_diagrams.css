@@ -639,12 +639,24 @@ body {
 }
 
 .flowchart-view {
-  display: none;
+  position: absolute;
+  left: -99999px;
+  top: -99999px;
   width: 100%;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .flowchart-view.active {
-  display: block;
+  position: static;
+  left: auto;
+  top: auto;
+  height: auto;
+  overflow: visible;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Mermaid Wrapper & Expanded High-Legibility Sizing */
