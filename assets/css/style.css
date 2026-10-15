@@ -306,6 +306,14 @@ a { text-decoration: none; color: inherit; }
   border-color: var(--accent-bd) !important;
   background: var(--accent-lt) !important;
 }
+.ss-user-btn:disabled,
+.ss-user-btn[disabled] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  border-color: var(--bd) !important;
+  background: var(--surface-2) !important;
+}
 .ss-user-name {
   font-size: 0.8rem; font-weight: 700; color: var(--txt); line-height: 1;
 }

@@ -186,7 +186,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
 <script>
 // -- Palette --------------------------------------------------
 const EMERALD   = '#10b981';

@@ -194,10 +194,10 @@ function sidebarActive(string $page, string $current): string {
                 <div class="ss-footer-name text-truncate"><?= htmlspecialchars($__fullName) ?></div>
                 <div class="ss-footer-role"><?= ucfirst(htmlspecialchars($__role)) ?></div>
             </div>
-            <a href="/sharonstore3.0/logout.php" class="ss-logout-btn"
-               title="Sign Out" onclick="return confirm('Sign out?')">
+            <button type="button" class="ss-logout-btn border-0"
+                    data-bs-toggle="modal" data-bs-target="#logoutModal" title="Sign Out">
                 <i class="fa-solid fa-right-from-bracket"></i>
-            </a>
+            </button>
         </div>
     </div>
 

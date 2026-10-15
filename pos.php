@@ -19,7 +19,7 @@ $userRole     = currentRole();
     <title>POS - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=17">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=18">
 <style>
 /* ============================================================
    POS-specific styles  Light Theme aligned to system design
@@ -487,11 +487,25 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
         <div class="pos-body" style="flex:1;min-height:0;position:relative;">
             
             <!-- Shift Lock Overlay -->
-            <div id="shiftOverlay" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(240,244,248,0.95); z-index:100; flex-direction:column; align-items:center; justify-content:center;">
-                <i class="fa-solid fa-lock text-danger fa-4x mb-3"></i>
-                <h2 class="fw-bold text-dark mb-2">POS Locked</h2>
-                <p class="text-muted mb-4 text-center">Your shift has not been started or has ended.<br>Manager authorization is required.</p>
-                <button class="btn btn-primary btn-lg" onclick="shiftModals.start.show()"><i class="fa-solid fa-key me-2"></i>Start Shift (Manager)</button>
+            <div id="shiftOverlay" style="<?= ($userRole === 'cashier' && !$__hasOpenShift) ? 'display:flex;' : 'display:none;' ?> position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(240,244,248,0.96); z-index:100; flex-direction:column; align-items:center; justify-content:center;">
+                <div class="card border-0 shadow text-center p-4" style="max-width: 420px; width: 90%; border-radius: 16px; background: #ffffff;">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+                         style="width: 72px; height: 72px; border-radius: 50%; background: #fee2e2; color: #ef4444; font-size: 30px;">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-2">POS Locked</h3>
+                    <p class="text-muted mb-4" style="font-size: 0.92rem; line-height: 1.5;">
+                        Your shift has not been started or has ended.<br>Manager authorization is required to access the register.
+                    </p>
+                    <div class="d-flex flex-column gap-2 w-100">
+                        <button class="btn btn-primary btn-lg fw-bold w-100 py-2" onclick="shiftModals.start.show()" style="border-radius: 10px;">
+                            <i class="fa-solid fa-key me-2"></i>Start Shift (Manager)
+                        </button>
+                        <button type="button" class="btn btn-outline-danger fw-bold w-100 py-2 mt-1" data-bs-toggle="modal" data-bs-target="#logoutModal" style="border-radius: 10px;">
+                            <i class="fa-solid fa-right-from-bracket me-2"></i>Sign Out
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- --- LEFT: Cart Panel --- -->
@@ -874,7 +888,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
 <script src="/sharonstore3.0/assets/js/pos.js"></script>
 <script>
 const shiftModals = {
@@ -887,9 +901,42 @@ const shiftModals = {
 let currentShiftId = null;
 const isAdmin = <?= isAdmin() ? 'true' : 'false' ?>;
 
+function updateProfileAccess(hasShift) {
+    const userProfileBtn = document.getElementById('userProfileBtn');
+    const endShiftItem   = document.getElementById('headerEndShiftItem');
+    const endShiftDiv    = document.getElementById('headerEndShiftDivider');
+
+    if (!isAdmin) {
+        if (userProfileBtn) {
+            if (hasShift) {
+                userProfileBtn.disabled = false;
+                userProfileBtn.style.pointerEvents = 'auto';
+                userProfileBtn.style.opacity = '1';
+                userProfileBtn.style.cursor = 'pointer';
+                userProfileBtn.setAttribute('data-bs-toggle', 'dropdown');
+                userProfileBtn.removeAttribute('title');
+            } else {
+                userProfileBtn.disabled = true;
+                userProfileBtn.style.pointerEvents = 'none';
+                userProfileBtn.style.opacity = '0.55';
+                userProfileBtn.style.cursor = 'not-allowed';
+                userProfileBtn.removeAttribute('data-bs-toggle');
+                userProfileBtn.setAttribute('title', 'Shift not started — Manager authorization required');
+                if (window.bootstrap) {
+                    const dd = bootstrap.Dropdown.getInstance(userProfileBtn);
+                    if (dd) dd.hide();
+                }
+            }
+        }
+        if (endShiftItem) endShiftItem.style.display = hasShift ? '' : 'none';
+        if (endShiftDiv)  endShiftDiv.style.display  = hasShift ? '' : 'none';
+    }
+}
+
 async function checkShiftStatus() {
     if (isAdmin) {
         document.getElementById('shiftOverlay').style.display = 'none';
+        updateProfileAccess(true);
         return; // Admins don't need a shift to operate the POS
     }
 
@@ -899,12 +946,15 @@ async function checkShiftStatus() {
         if (json.success) {
             currentShiftId = json.data.shift_id;
             document.getElementById('shiftOverlay').style.display = 'none';
+            updateProfileAccess(true);
         } else {
             currentShiftId = null;
             document.getElementById('shiftOverlay').style.display = 'flex';
+            updateProfileAccess(false);
         }
     } catch (e) {
         console.error('Failed to check shift status', e);
+        updateProfileAccess(false);
     }
 }
 
@@ -930,6 +980,7 @@ document.getElementById('startShiftForm').addEventListener('submit', async (e) =
             currentShiftId = json.data.shift_id;
             shiftModals.start.hide();
             document.getElementById('shiftOverlay').style.display = 'none';
+            updateProfileAccess(true);
             showToast('Shift opened successfully.', 'success');
         } else {
             showToast(json.message, 'error');
@@ -955,6 +1006,9 @@ document.getElementById('endShiftForm').addEventListener('submit', async (e) => 
         const json = await res.json();
         if (json.success) {
             shiftModals.end.hide();
+            currentShiftId = null;
+            document.getElementById('shiftOverlay').style.display = 'flex';
+            updateProfileAccess(false);
             
             document.getElementById('sumExpected').textContent = '₱' + parseFloat(json.data.expected_cash).toLocaleString('en-US', {minimumFractionDigits:2});
             document.getElementById('sumActual').textContent = '₱' + parseFloat(json.data.actual_cash).toLocaleString('en-US', {minimumFractionDigits:2});

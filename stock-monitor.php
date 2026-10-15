@@ -1,3 +1,11 @@
+<?php
+require_once __DIR__ . '/includes/auth_check.php';
+requireLogin();
+$pageTitle = 'Stock Monitoring';
+$isAdmin   = isAdmin();
+$currentUser = currentUserName();
+$currentRole = currentRole();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,19 +15,238 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=17">
-    <?php
-    require_once __DIR__ . '/includes/auth_check.php';
-    requireLogin();
-    $pageTitle = 'Stock Monitoring';
-    $isAdmin   = isAdmin();
-    ?>
 <style>
+/* Screen adjustments */
 @media(max-width:767px){
   .page-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;}
   .page-header .btn{width:100%;}
   .d-flex.gap-2,.d-flex.gap-3{flex-wrap:wrap!important;}
   .row > [class*='col-md-'],[class*='col-lg-']{width:100%!important;}
   .stat-value{font-size:1.15rem!important;}
+}
+
+.print-only-block {
+    display: none !important;
+}
+
+/* ============================================================
+   OFFICIAL PRINT TABLE REPORT STYLING
+   ============================================================ */
+@media print {
+    @page {
+        size: auto;
+        margin: 12mm 15mm 15mm 15mm;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #111827 !important;
+        font-family: 'Nunito', Arial, sans-serif !important;
+        font-size: 10pt !important;
+        line-height: 1.4 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Hide website UI chrome and on-screen cards */
+    .ss-sidebar,
+    .ss-topbar,
+    .btn,
+    .breadcrumb-custom,
+    .page-header,
+    #statCardsRow,
+    #alertsRow,
+    .no-print,
+    .toast-container {
+        display: none !important;
+    }
+
+    .app-wrapper,
+    .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        display: block !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+    }
+
+    .card-header {
+        display: none !important;
+    }
+
+    .card-body {
+        padding: 0 !important;
+    }
+
+    .table-responsive {
+        overflow: visible !important;
+    }
+
+    /* Show Print Sections */
+    .print-only-block {
+        display: block !important;
+    }
+
+    /* Document Letterhead */
+    .print-header {
+        text-align: center;
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    .print-store-title {
+        font-size: 18pt;
+        font-weight: 900;
+        letter-spacing: 1px;
+        color: #0f172a;
+        margin: 0 0 2px 0;
+        text-transform: uppercase;
+    }
+
+    .print-store-sub {
+        font-size: 9pt;
+        color: #475569;
+        margin: 0;
+    }
+
+    .print-report-title {
+        margin-top: 10px;
+        font-size: 13pt;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #047857;
+    }
+
+    /* Report Metadata */
+    .print-meta-grid {
+        width: 100%;
+        margin-bottom: 14px;
+        font-size: 9pt;
+    }
+
+    .print-meta-grid td {
+        padding: 3px 0;
+        border: none !important;
+    }
+
+    /* Summary KPI Strip */
+    .print-kpi-strip {
+        display: flex !important;
+        justify-content: space-between;
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px;
+        padding: 8px 14px;
+        margin-bottom: 16px;
+    }
+
+    .print-kpi-item {
+        text-align: center;
+        flex: 1;
+    }
+
+    .print-kpi-item:not(:last-child) {
+        border-right: 1px solid #cbd5e1;
+    }
+
+    .print-kpi-label {
+        font-size: 7.5pt;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .print-kpi-val {
+        font-size: 11pt;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    /* Official Table */
+    .table-report {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 20px !important;
+    }
+
+    .table-report th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1.5px solid #0f172a !important;
+        padding: 7px 10px !important;
+        font-size: 9pt !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+    }
+
+    .table-report td {
+        border: 1px solid #cbd5e1 !important;
+        padding: 6px 10px !important;
+        font-size: 9pt !important;
+        color: #1e293b !important;
+    }
+
+    .table-report tbody tr:nth-child(even) {
+        background-color: #f8fafc !important;
+    }
+
+    .badge {
+        border: 1px solid #94a3b8 !important;
+        background: transparent !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }
+
+    /* Signatures Section */
+    .print-signatures {
+        margin-top: 36px !important;
+        padding-top: 10px !important;
+        page-break-inside: avoid !important;
+        width: 100%;
+    }
+
+    .sig-col {
+        display: inline-block;
+        width: 48%;
+        vertical-align: top;
+    }
+
+    .sig-line {
+        border-bottom: 1.5px solid #0f172a;
+        width: 220px;
+        margin-bottom: 6px;
+    }
+
+    .sig-name {
+        font-size: 9.5pt;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .sig-role {
+        font-size: 8.5pt;
+        color: #64748b;
+    }
+
+    .print-footer-note {
+        margin-top: 24px;
+        padding-top: 8px;
+        border-top: 1px dashed #cbd5e1;
+        font-size: 8pt;
+        color: #94a3b8;
+        text-align: center;
+    }
 }
 </style>
 </head>
@@ -33,16 +260,57 @@
             <div>
                 <ul class="breadcrumb-custom"><li><a href="/sharonstore3.0/dashboard.php">Home</a></li><li class="active">Stock Monitoring</li></ul>
                 <h1 class="page-header-title"><i class="fa-solid fa-magnifying-glass-chart me-2 text-emerald"></i>Stock Monitoring</h1>
-                <p class="page-header-subtitle">View-only stock overview  current levels, low stock alerts, and expiring items.</p>
+                <p class="page-header-subtitle">View-only stock overview — current levels, low stock alerts, and expiring items.</p>
             </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-secondary" onclick="loadAll()"><i class="fa-solid fa-rotate-right me-1"></i>Refresh</button>
-                <button class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print</button>
+                <button class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print Report</button>
             </div>
         </div>
 
-        <!-- Stat Cards -->
-        <div class="row g-3 mb-4">
+        <!-- PRINT-ONLY OFFICIAL DOCUMENT HEADER -->
+        <div class="print-only-block print-header">
+            <div class="print-store-title">Sharon Store</div>
+            <div class="print-store-sub">Pampang Public Market, Angeles City, Pampanga</div>
+            <div class="print-store-sub">Point of Sale &amp; Inventory Management System</div>
+            <div class="print-report-title">Official Stock Inventory Report</div>
+            
+            <table class="print-meta-grid mt-3">
+                <tr>
+                    <td style="width:50%; text-align:left;">
+                        <strong>Date &amp; Time Generated:</strong> <?= date('F d, Y h:i A') ?><br>
+                        <strong>Report Scope:</strong> Full Stock &amp; Inventory Level Overview
+                    </td>
+                    <td style="width:50%; text-align:right;">
+                        <strong>Generated By:</strong> <?= htmlspecialchars($currentUser) ?> (<?= ucfirst(htmlspecialchars($currentRole)) ?>)<br>
+                        <strong>Classification:</strong> Inventory Audit Document
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Mini KPI Summary Strip -->
+            <div class="print-kpi-strip">
+                <div class="print-kpi-item">
+                    <span class="print-kpi-label">Total Products</span>
+                    <span class="print-kpi-val" id="pTotal">0</span>
+                </div>
+                <div class="print-kpi-item">
+                    <span class="print-kpi-label">In Stock</span>
+                    <span class="print-kpi-val" id="pOk">0</span>
+                </div>
+                <div class="print-kpi-item">
+                    <span class="print-kpi-label">Low Stock</span>
+                    <span class="print-kpi-val" id="pLow">0</span>
+                </div>
+                <div class="print-kpi-item">
+                    <span class="print-kpi-label">Out of Stock</span>
+                    <span class="print-kpi-val" id="pOut">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stat Cards Row (Screen Only) -->
+        <div class="row g-3 mb-4" id="statCardsRow">
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon emerald"><i class="fa-solid fa-boxes-stacked"></i></div>
@@ -73,8 +341,8 @@
             </div>
         </div>
 
-        <!-- Critical Alerts -->
-        <div class="row g-3 mb-4">
+        <!-- Critical Alerts (Screen Only) -->
+        <div class="row g-3 mb-4" id="alertsRow">
             <div class="col-12 col-lg-6">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -99,9 +367,9 @@
             </div>
         </div>
 
-        <!-- Full Inventory (view-only) -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+        <!-- Full Inventory Table -->
+        <div class="card" id="stockCard">
+            <div class="card-header d-flex justify-content-between align-items-center no-print">
                 <h5><i class="fa-solid fa-table me-2 text-emerald"></i>Full Stock List</h5>
                 <div class="d-flex gap-2 flex-nowrap">
                     <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search..." style="width:180px;">
@@ -115,24 +383,44 @@
                 </div>
             </div>
             <div class="card-body p-0">
-                <div style="overflow-x:auto;">
-                    <table class="table table-custom mb-0">
+                <div class="table-responsive">
+                    <table class="table table-custom table-report mb-0">
                         <thead>
                             <tr>
+                                <th style="width: 50px;" class="text-center">#</th>
                                 <th>Item Name</th>
                                 <th>Category</th>
-                                <th>Unit</th>
-                                <th class="text-center">Stock</th>
-                                <th class="text-center">Threshold</th>
-                                <th>Expiry</th>
-                                <th class="text-center">Status</th>
+                                <th class="text-center" style="width: 80px;">Unit</th>
+                                <th class="text-center" style="width: 100px;">Stock</th>
+                                <th class="text-center" style="width: 90px;">Threshold</th>
+                                <th style="width: 120px;">Expiry</th>
+                                <th class="text-center" style="width: 110px;">Status</th>
                             </tr>
                         </thead>
                         <tbody id="stockBody">
-                            <tr><td colspan="7" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading</td></tr>
+                            <tr><td colspan="8" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading</td></tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- PRINT-ONLY OFFICIAL SIGNATURES & AUDIT FOOTER -->
+        <div class="print-only-block print-signatures">
+            <div style="display:flex; justify-content:space-between;">
+                <div class="sig-col" style="text-align:left;">
+                    <div class="sig-line"></div>
+                    <div class="sig-name"><?= htmlspecialchars($currentUser) ?></div>
+                    <div class="sig-role">Prepared By (<?= ucfirst(htmlspecialchars($currentRole)) ?>)</div>
+                </div>
+                <div class="sig-col" style="text-align:right;">
+                    <div class="sig-line" style="margin-left:auto;"></div>
+                    <div class="sig-name">Sharon Dela Cruz</div>
+                    <div class="sig-role">Approved By (Store Owner)</div>
+                </div>
+            </div>
+            <div class="print-footer-note">
+                Confidential &bull; Generated from Sharon Store POS &amp; Inventory Management System &bull; <?= date('Y-m-d H:i:s') ?>
             </div>
         </div>
 
@@ -140,7 +428,7 @@
 </div>
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
 <script>
 async function loadAll() { await Promise.all([loadStats(), loadLowStock(), loadExpiring(), loadFullList()]); }
 
@@ -149,10 +437,21 @@ async function loadStats() {
         const r = await fetch('/sharonstore3.0/api/inventory.php?action=stats');
         const j = await r.json();
         if (!j.success) return;
-        document.getElementById('sTotal').textContent = j.data.total_items;
-        document.getElementById('sOk').textContent    = parseInt(j.data.total_items) - parseInt(j.data.low_stock) - parseInt(j.data.out_of_stock);
-        document.getElementById('sLow').textContent   = j.data.low_stock;
-        document.getElementById('sOut').textContent   = j.data.out_of_stock;
+        const total = parseInt(j.data.total_items) || 0;
+        const low = parseInt(j.data.low_stock) || 0;
+        const out = parseInt(j.data.out_of_stock) || 0;
+        const ok = total - low - out;
+
+        document.getElementById('sTotal').textContent = total;
+        document.getElementById('sOk').textContent    = ok;
+        document.getElementById('sLow').textContent   = low;
+        document.getElementById('sOut').textContent   = out;
+
+        // Also update print KPI strip
+        document.getElementById('pTotal').textContent = total;
+        document.getElementById('pOk').textContent    = ok;
+        document.getElementById('pLow').textContent   = low;
+        document.getElementById('pOut').textContent   = out;
     } catch (err) {
         console.error('loadStats error:', err);
         showToast('Failed to load stats. Please refresh.', 'danger');
@@ -160,43 +459,48 @@ async function loadStats() {
 }
 
 async function loadLowStock() {
+    const el = document.getElementById('lowStockList');
     try {
-        const r = await fetch('/sharonstore3.0/api/inventory.php?action=list&status=low&limit=50');
+        const r = await fetch('/sharonstore3.0/api/inventory.php?action=low_stock');
         const j = await r.json();
-        const el = document.getElementById('lowStockList');
-        const items = (j.data?.items || []).filter(i => i.stock_status === 'low' || i.stock_status === 'out');
+        if (!j.success) {
+            el.innerHTML = '<div class="p-3 text-muted text-center">No data available.</div>';
+            return;
+        }
+        const items = (j.data && j.data.items) ? j.data.items : (Array.isArray(j.data) ? j.data : []);
         document.getElementById('lowCount').textContent = items.length;
         if (!items.length) {
-            el.innerHTML = '<div class="empty-state p-4 text-center"><i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i><p class="text-muted mb-0">All items are sufficiently stocked.</p></div>';
+            el.innerHTML = '<div class="empty-state p-4 text-center"><i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i><p class="text-muted mb-0">All stock levels are healthy.</p></div>';
             return;
         }
         let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th>Item</th><th>Stock</th><th>Status</th></tr></thead><tbody>';
         items.forEach(row => {
-            const rowCls = row.stock_status==='out'?'table-row-danger':'table-row-warning';
-            const badge  = row.stock_status==='out'?'<span class="badge badge-danger">Out</span>':'<span class="badge badge-warning">Low</span>';
-            html += `<tr class="${rowCls}"><td style="font-weight:600;">${esc(row.item_name)}<br><small style="color:#555657;">${esc(row.category_name)}</small></td><td style="font-weight:700;">${parseFloat(row.stock_qty)} ${row.unit}</td><td>${badge}</td></tr>`;
+            const isOut = parseFloat(row.stock_qty) <= 0;
+            html += `<tr class="${isOut ? 'table-row-danger' : 'table-row-warning'}">
+                <td><div style="font-weight:600;">${esc(row.item_name)}</div><div class="text-muted" style="font-size:0.75rem;">${esc(row.category_name)}</div></td>
+                <td><span style="font-weight:700;">${parseFloat(row.stock_qty)}</span> <span class="text-muted" style="font-size:0.75rem;">${row.unit}</span></td>
+                <td><span class="badge ${isOut ? 'badge-danger' : 'badge-warning'}">${isOut ? 'Out' : 'Low'}</span></td>
+            </tr>`;
         });
         html += '</tbody></table></div>';
         el.innerHTML = html;
     } catch(err) {
         console.error('loadLowStock:', err);
+        el.innerHTML = '<div class="p-3 text-danger text-center">Failed to load low stock items.</div>';
     }
 }
 
 async function loadExpiring() {
+    const el = document.getElementById('expiringList');
     try {
-        const r = await fetch('/sharonstore3.0/api/inventory.php?action=list&limit=500');
+        const r = await fetch('/sharonstore3.0/api/inventory.php?action=expiring_soon');
         const j = await r.json();
-        const el = document.getElementById('expiringList');
-        const today = new Date(); today.setHours(0,0,0,0);
-        const in30  = new Date(); in30.setDate(in30.getDate()+30);
-
-        const expiring = (j.data?.items || []).filter(i => {
-            if (!i.expiry_date) return false;
-            const [ey,em,ed] = i.expiry_date.split('-').map(Number);
-            const d = new Date(ey, em-1, ed);
-            return d <= in30;
-        }).sort((a,b) => a.expiry_date.localeCompare(b.expiry_date));
+        if (!j.success) {
+            el.innerHTML = '<div class="p-3 text-muted text-center">No data available.</div>';
+            return;
+        }
+        const expiring = (j.data && j.data.items) ? j.data.items : (Array.isArray(j.data) ? j.data : []);
+        const today    = new Date();
 
         document.getElementById('expCount').textContent = expiring.length;
         if (!expiring.length) {
@@ -205,6 +509,7 @@ async function loadExpiring() {
         }
         let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th>Item</th><th>Expiry</th><th>Days Left</th></tr></thead><tbody>';
         expiring.forEach(row => {
+            if (!row.expiry_date) return;
             const [ey,em,ed] = row.expiry_date.split('-').map(Number);
             const expDate = new Date(ey, em-1, ed);
             const days = Math.ceil((expDate - today) / 86400000);
@@ -215,6 +520,7 @@ async function loadExpiring() {
         el.innerHTML = html;
     } catch(err) {
         console.error('loadExpiring:', err);
+        el.innerHTML = '<div class="p-3 text-danger text-center">Failed to load expiring items.</div>';
     }
 }
 
@@ -235,7 +541,7 @@ async function loadFullList() {
     } catch (err) {
         console.error('loadFullList error:', err);
         showToast('Failed to load stock list. Please refresh.', 'danger');
-        document.getElementById('stockBody').innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Failed to load data.</td></tr>`;
+        document.getElementById('stockBody').innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Failed to load data.</td></tr>`;
     }
 }
 
@@ -250,27 +556,28 @@ function renderList(items) {
     );
 
     let html = '';
-    filtered.forEach(item => {
+    filtered.forEach((item, index) => {
         const rowCls  = item.stock_status==='expired'?'table-row-danger':item.stock_status==='out'?'table-row-danger':item.stock_status==='low'?'table-row-warning':'';
         const sBadge  = item.stock_status==='expired'?'<span class="badge badge-danger">Expired</span>':item.stock_status==='out'?'<span class="badge badge-danger">Out</span>':item.stock_status==='low'?'<span class="badge badge-warning">Low</span>':'<span class="badge badge-success">OK</span>';
         const expHtml = item.expiry_date ? (() => {
-            // Safe date parse: treat YYYY-MM-DD as local date, not UTC
             const [ey, em, ed] = item.expiry_date.split('-').map(Number);
             const expDate = new Date(ey, em - 1, ed);
             const days = Math.ceil((expDate - new Date()) / 86400000);
             return `<span class="${days<=0?'text-danger fw-700':days<=30?'text-warning':'text-muted'}">${item.expiry_date}${days<=30?' ('+days+'d)':''}</span>`;
-        })() : '<span class="text-muted"></span>';
+        })() : '<span class="text-muted">—</span>';
+        
         html += `<tr class="${rowCls}">
+            <td class="text-center text-muted fw-bold">${index + 1}</td>
             <td class="fw-600">${esc(item.item_name)}</td>
             <td><span class="badge badge-secondary">${esc(item.category_name)}</span></td>
-            <td>${item.unit}</td>
+            <td class="text-center">${item.unit}</td>
             <td class="text-center fw-700">${parseFloat(item.stock_qty)}</td>
             <td class="text-center text-muted">${item.low_stock_threshold}</td>
             <td>${expHtml}</td>
             <td class="text-center">${sBadge}</td>
         </tr>`;
     });
-    document.getElementById('stockBody').innerHTML = html || `<tr><td colspan="7" class="text-center py-4 text-muted">No items match.</td></tr>`;
+    document.getElementById('stockBody').innerHTML = html || `<tr><td colspan="8" class="text-center py-4 text-muted">No items match.</td></tr>`;
 }
 
 let searchTimer;
@@ -278,8 +585,6 @@ document.getElementById('searchInput').addEventListener('input', () => { clearTi
 document.getElementById('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { clearTimeout(searchTimer); renderList(allItems); } });
 document.getElementById('catFilter').addEventListener('change', () => renderList(allItems));
 document.getElementById('statusFilterStock').addEventListener('change', () => renderList(allItems));
-
-
 
 loadAll();
 </script>

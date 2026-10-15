@@ -19,6 +19,8 @@ $totalShifts = count($shifts);
 $openShifts = 0;
 $closedShifts = 0;
 $totalStartingCash = 0.0;
+$totalExpectedCash = 0.0;
+$totalActualCash = 0.0;
 $totalVariance = 0.0;
 
 foreach ($shifts as $s) {
@@ -28,10 +30,18 @@ foreach ($shifts as $s) {
         $closedShifts++;
     }
     $totalStartingCash += (float)($s['starting_cash'] ?? 0);
+    if ($s['expected_cash'] !== null) {
+        $totalExpectedCash += (float)$s['expected_cash'];
+    }
+    if ($s['actual_cash'] !== null) {
+        $totalActualCash += (float)$s['actual_cash'];
+    }
     if ($s['short_over'] !== null) {
         $totalVariance += (float)$s['short_over'];
     }
 }
+$currentUser = currentUserName();
+$currentRole = currentRole();
 $dailyPin = getDailyManagerPIN($db);
 ?>
 <!DOCTYPE html>
@@ -137,23 +147,252 @@ $dailyPin = getDailyManagerPIN($db);
     color: var(--txt);
 }
 
+.print-only-block {
+    display: none !important;
+}
+
+/* ============================================================
+   OFFICIAL PRINT TABLE REPORT STYLING
+   ============================================================ */
 @media print {
-    .ss-sidebar, .ss-topbar, .btn, .breadcrumb-custom, #filterCard, #statCards, .modal {
+    @page {
+        size: auto;
+        margin: 12mm 15mm 15mm 15mm;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #111827 !important;
+        font-family: 'Nunito', Arial, sans-serif !important;
+        font-size: 10pt !important;
+        line-height: 1.4 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Hide website UI chrome and on-screen cards */
+    .ss-sidebar,
+    .ss-topbar,
+    .btn,
+    .breadcrumb-custom,
+    .page-header,
+    #statCards,
+    #filterCard,
+    .modal,
+    .toast-container,
+    .no-print,
+    #shiftsTable th:last-child,
+    #shiftsTable td:last-child {
         display: none !important;
     }
-    .app-wrapper { display: block !important; }
+
+    .app-wrapper,
     .main-content {
-        margin-left: 0 !important;
-        width: 100% !important;
+        margin: 0 !important;
         padding: 0 !important;
+        width: 100% !important;
+        display: block !important;
     }
+
     .card {
         box-shadow: none !important;
-        border: 1px solid #ccc !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
     }
-    .page-header {
-        padding-top: 0 !important;
-        margin-bottom: 16px !important;
+
+    .card-header {
+        display: none !important;
+    }
+
+    .card-body {
+        padding: 0 !important;
+    }
+
+    .table-responsive {
+        overflow: visible !important;
+    }
+
+    /* Show Print Sections */
+    .print-only-block {
+        display: block !important;
+    }
+
+    /* Document Letterhead */
+    .print-header {
+        text-align: center;
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    .print-store-title {
+        font-size: 18pt;
+        font-weight: 900;
+        letter-spacing: 1px;
+        color: #0f172a;
+        margin: 0 0 2px 0;
+        text-transform: uppercase;
+    }
+
+    .print-store-sub {
+        font-size: 9pt;
+        color: #475569;
+        margin: 0;
+    }
+
+    .print-report-title {
+        margin-top: 10px;
+        font-size: 13pt;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #047857;
+    }
+
+    /* Report Metadata */
+    .print-meta-grid {
+        width: 100%;
+        margin-bottom: 14px;
+        font-size: 9pt;
+    }
+
+    .print-meta-grid td {
+        padding: 3px 0;
+        border: none !important;
+    }
+
+    /* Summary KPI Strip */
+    .print-kpi-strip {
+        display: flex !important;
+        justify-content: space-between;
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px;
+        padding: 8px 14px;
+        margin-bottom: 16px;
+    }
+
+    .print-kpi-item {
+        text-align: center;
+        flex: 1;
+    }
+
+    .print-kpi-item:not(:last-child) {
+        border-right: 1px solid #cbd5e1;
+    }
+
+    .print-kpi-label {
+        font-size: 7.5pt;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .print-kpi-val {
+        font-size: 11pt;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    /* Official Table */
+    .table-report {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 20px !important;
+    }
+
+    .table-report th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1.5px solid #0f172a !important;
+        padding: 7px 10px !important;
+        font-size: 8.5pt !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+    }
+
+    .table-report td {
+        border: 1px solid #cbd5e1 !important;
+        padding: 6px 10px !important;
+        font-size: 8.5pt !important;
+        color: #1e293b !important;
+    }
+
+    .table-report tbody tr:nth-child(even) {
+        background-color: #f8fafc !important;
+    }
+
+    .table-report tfoot tr td {
+        background-color: #f1f5f9 !important;
+        font-weight: 800 !important;
+        border-top: 2px solid #0f172a !important;
+        border-bottom: 2px solid #0f172a !important;
+        color: #0f172a !important;
+        font-size: 9pt !important;
+    }
+
+    .shift-id-tag {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }
+
+    .cashier-avatar {
+        display: none !important;
+    }
+
+    .badge-variance {
+        border: 1px solid #94a3b8 !important;
+        background: transparent !important;
+        color: #0f172a !important;
+        padding: 2px 4px !important;
+        font-size: 8pt !important;
+    }
+
+    /* Signatures Section */
+    .print-signatures {
+        margin-top: 36px !important;
+        padding-top: 10px !important;
+        page-break-inside: avoid !important;
+        width: 100%;
+    }
+
+    .sig-col {
+        display: inline-block;
+        width: 48%;
+        vertical-align: top;
+    }
+
+    .sig-line {
+        border-bottom: 1.5px solid #0f172a;
+        width: 220px;
+        margin-bottom: 6px;
+    }
+
+    .sig-name {
+        font-size: 9.5pt;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .sig-role {
+        font-size: 8.5pt;
+        color: #64748b;
+    }
+
+    .print-footer-note {
+        margin-top: 24px;
+        padding-top: 8px;
+        border-top: 1px dashed #cbd5e1;
+        font-size: 8pt;
+        color: #94a3b8;
+        text-align: center;
     }
 }
 
@@ -265,9 +504,52 @@ $dailyPin = getDailyManagerPIN($db);
             </div>
         </div>
 
+        <!-- PRINT-ONLY OFFICIAL DOCUMENT HEADER -->
+        <div class="print-only-block print-header">
+            <div class="print-store-title">Sharon Store</div>
+            <div class="print-store-sub">Pampang Public Market, Angeles City, Pampanga</div>
+            <div class="print-store-sub">Point of Sale &amp; Inventory Management System</div>
+            <div class="print-report-title">Official Cashier Shift &amp; Drawer Reconciliation Report</div>
+            
+            <table class="print-meta-grid mt-3">
+                <tr>
+                    <td style="width:50%; text-align:left;">
+                        <strong>Date &amp; Time Generated:</strong> <?= date('F d, Y h:i A') ?><br>
+                        <strong>Report Classification:</strong> Cash Reconciliation &amp; Audit Log
+                    </td>
+                    <td style="width:50%; text-align:right;">
+                        <strong>Generated By:</strong> <?= htmlspecialchars($currentUser) ?> (<?= ucfirst(htmlspecialchars($currentRole)) ?>)<br>
+                        <strong>Reconciliation Status:</strong> System Audited
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Mini KPI Summary Strip -->
+            <div class="print-kpi-strip">
+                <div class="print-kpi-item">
+                    <span class="print-kpi-label">Total Shifts</span>
+                    <span class="print-kpi-val"><?= number_format($totalShifts) ?></span>
+                </div>
+                <div class="print-kpi-item">
+                    <span class="print-kpi-label">Starting Cash</span>
+                    <span class="print-kpi-val">₱<?= number_format($totalStartingCash, 2) ?></span>
+                </div>
+                <div class="print-kpi-item">
+                    <span class="print-kpi-label">Expected Cash</span>
+                    <span class="print-kpi-val">₱<?= number_format($totalExpectedCash, 2) ?></span>
+                </div>
+                <div class="print-kpi-item">
+                    <span class="print-kpi-label">Net Discrepancy</span>
+                    <span class="print-kpi-val <?= $totalVariance < 0 ? 'text-danger' : ($totalVariance > 0 ? 'text-success' : '') ?>">
+                        <?= ($totalVariance < 0 ? '-₱' : ($totalVariance > 0 ? '+₱' : '₱')) . number_format(abs($totalVariance), 2) ?>
+                    </span>
+                </div>
+            </div>
+        </div>
+
         <!-- Shift History Records Table -->
         <div class="card shadow-sm border-0">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center no-print">
                 <h5 class="mb-0">
                     <i class="fa-solid fa-clock-rotate-left me-2 text-emerald"></i>Shift Log Records
                 </h5>
@@ -277,10 +559,10 @@ $dailyPin = getDailyManagerPIN($db);
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-custom align-middle mb-0" id="shiftsTable">
+                    <table class="table table-custom table-report align-middle mb-0" id="shiftsTable">
                         <thead>
                             <tr>
-                                <th style="width: 90px;">Shift ID</th>
+                                <th style="width: 80px;">Shift ID</th>
                                 <th>Cashier</th>
                                 <th>Start Time</th>
                                 <th>End Time</th>
@@ -401,8 +683,40 @@ $dailyPin = getDailyManagerPIN($db);
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </tbody>
+                        <tfoot id="shiftsTfoot">
+                            <tr style="background:#f8fafc; font-weight:800;">
+                                <td colspan="4" class="text-uppercase text-dark">Total Summary</td>
+                                <td class="text-end">₱<?= number_format($totalStartingCash, 2) ?></td>
+                                <td class="text-end">₱<?= number_format($totalExpectedCash, 2) ?></td>
+                                <td class="text-end">₱<?= number_format($totalActualCash, 2) ?></td>
+                                <td class="text-end <?= $totalVariance < 0 ? 'text-danger' : ($totalVariance > 0 ? 'text-success' : '') ?>">
+                                    <?= ($totalVariance < 0 ? '-₱' : ($totalVariance > 0 ? '+₱' : '₱')) . number_format(abs($totalVariance), 2) ?>
+                                </td>
+                                <td class="text-center"><?= $totalShifts ?> Shifts</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- PRINT-ONLY OFFICIAL SIGNATURES & AUDIT FOOTER -->
+        <div class="print-only-block print-signatures">
+            <div style="display:flex; justify-content:space-between;">
+                <div class="sig-col" style="text-align:left;">
+                    <div class="sig-line"></div>
+                    <div class="sig-name"><?= htmlspecialchars($currentUser) ?></div>
+                    <div class="sig-role">Prepared By (<?= ucfirst(htmlspecialchars($currentRole)) ?>)</div>
+                </div>
+                <div class="sig-col" style="text-align:right;">
+                    <div class="sig-line" style="margin-left:auto;"></div>
+                    <div class="sig-name">Sharon Dela Cruz</div>
+                    <div class="sig-role">Approved By (Store Owner)</div>
+                </div>
+            </div>
+            <div class="print-footer-note">
+                Confidential &bull; Generated from Sharon Store POS &amp; Inventory Management System &bull; <?= date('Y-m-d H:i:s') ?>
             </div>
         </div>
 
@@ -433,7 +747,7 @@ $dailyPin = getDailyManagerPIN($db);
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // Copy PIN to clipboard

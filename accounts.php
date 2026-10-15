@@ -150,7 +150,7 @@
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
 <script>
 const CURRENT_USER_ID = <?= $currentUserId ?>;
 const userModal  = new bootstrap.Modal('#userModal');

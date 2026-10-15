@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    app.js — Shared Utilities — Sharon Store System
    ============================================================ */
 
@@ -118,13 +118,18 @@ async function apiFetch(url, options = {}) {
     setInterval(tick, 1000);
 })();
 
-/* ── Logout Confirmation ────────────────────────────────────── */
+/* ── Logout Confirmation (Modal) ────────────────────────────── */
 function confirmLogout(e) {
-    if (!confirm('Are you sure you want to sign out?')) {
+    if (e) {
         e.preventDefault();
-        return false;
+        e.stopPropagation();
     }
-    return true;
+    const modalEl = document.getElementById('logoutModal');
+    if (modalEl && window.bootstrap) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    }
+    return false;
 }
 
 /* ── Sidebar Toggle (mobile) ────────────────────────────────── */

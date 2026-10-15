@@ -31,7 +31,7 @@ function floatval_or_null(mixed $v): ?float {
 $action = trim($_POST['action'] ?? $_GET['action'] ?? '');
 
 // Read-only actions: cashiers may access these
-$readOnlyActions = ['barcode_lookup', 'list', 'get', 'stats', 'categories', 'search'];
+$readOnlyActions = ['barcode_lookup', 'list', 'get', 'stats', 'categories', 'search', 'low_stock', 'expiring_soon'];
 if (in_array($action, $readOnlyActions)) {
     requireLogin();
 } else {
@@ -528,6 +528,39 @@ if ($action === 'stats') {
         SUM(CASE WHEN stock_qty > 0 AND stock_qty <= low_stock_threshold THEN 1 ELSE 0 END) AS low_stock
         FROM tbl_inventory WHERE is_active = 1")->fetch();
     respond(true, 'OK', $row);
+}
+
+// ══════════════════════════════════════════════════════════════
+// action = low_stock (items at or below threshold)
+// ══════════════════════════════════════════════════════════════
+if ($action === 'low_stock') {
+    $stmt = $db->query("
+        SELECT i.item_id, i.item_name, i.stock_qty, i.low_stock_threshold,
+               i.unit, c.category_name,
+               CASE WHEN i.stock_qty <= 0 THEN 'out' ELSE 'low' END AS status
+        FROM tbl_inventory i
+        JOIN tbl_categories c ON c.category_id = i.category_id
+        WHERE i.is_active = 1 AND i.stock_qty <= i.low_stock_threshold
+        ORDER BY i.stock_qty ASC
+    ");
+    respond(true, 'OK', ['items' => $stmt->fetchAll()]);
+}
+
+// ══════════════════════════════════════════════════════════════
+// action = expiring_soon (items expiring within 30 days)
+// ══════════════════════════════════════════════════════════════
+if ($action === 'expiring_soon') {
+    $stmt = $db->query("
+        SELECT i.item_id, i.item_name, i.expiry_date, i.stock_qty, i.unit, c.category_name,
+               DATEDIFF(i.expiry_date, CURDATE()) AS days_left
+        FROM tbl_inventory i
+        JOIN tbl_categories c ON c.category_id = i.category_id
+        WHERE i.is_active = 1
+          AND i.expiry_date IS NOT NULL
+          AND i.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+        ORDER BY i.expiry_date ASC
+    ");
+    respond(true, 'OK', ['items' => $stmt->fetchAll()]);
 }
 
 // Unknown action
