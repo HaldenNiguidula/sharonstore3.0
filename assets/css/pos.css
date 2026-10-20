@@ -443,58 +443,82 @@ body.pos-mode {
     margin: 0mm !important;
   }
   html, body {
-    width: 58mm !important;
+    width: 100% !important;
     max-width: 58mm !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     background: #ffffff !important;
     height: auto !important;
     min-height: 0 !important;
     overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+  body.modal-open {
+    overflow: visible !important;
+    padding-right: 0 !important;
+    margin: 0 auto !important;
   }
   body > *:not(.receipt-modal):not(#receiptModal) { display: none !important; }
   .modal-backdrop, .no-print { display: none !important; }
   .receipt-modal, #receiptModal {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
     position: static !important;
-    width: 58mm !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
     max-width: 58mm !important;
     height: auto !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     overflow: visible !important;
     background: #ffffff !important;
     transform: none !important;
     box-shadow: none !important;
+    border: none !important;
   }
   .modal-dialog {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
     position: static !important;
-    width: 58mm !important;
+    width: 100% !important;
     max-width: 58mm !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     transform: none !important;
     border: none !important;
     box-shadow: none !important;
   }
   .modal-content {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
     position: static !important;
-    width: 58mm !important;
+    width: 100% !important;
     max-width: 58mm !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     background: #ffffff !important;
     padding: 0 !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
   }
   .modal-header, .modal-footer, .btn-close { display: none !important; }
   .modal-body {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
     padding: 0 !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 58mm !important;
     background: #ffffff !important;
     overflow: visible !important;
     max-height: none !important;
@@ -504,33 +528,35 @@ body.pos-mode {
     position: static !important;
     visibility: visible !important;
     box-sizing: border-box !important;
-    width: 41mm !important;
-    max-width: 41mm !important;
-    min-width: 41mm !important;
-    margin: 0 0 0 5mm !important;
-    padding: 1mm 1mm 8mm 1mm !important;
+    width: 48mm !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 2mm 1mm 6mm 1mm !important;
     background: #ffffff !important;
     border: none !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
     overflow: visible !important;
     max-height: none !important;
     height: auto !important;
     color: #000000 !important;
     font-family: 'Consolas', 'Courier New', monospace !important;
-    font-size: 7.5pt !important;
+    font-size: 8.5pt !important;
     font-weight: 700 !important;
     line-height: 1.25 !important;
-    letter-spacing: -0.15px !important;
-    -webkit-text-stroke: 0.25px #000000 !important;
-    text-shadow: 0 0 0.35px #000000, 0 0 0.35px #000000 !important;
+    letter-spacing: -0.1px !important;
+    -webkit-text-stroke: 0.15px #000000 !important;
+    text-shadow: none !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
   #receiptContent * {
     color: #000000 !important;
+    visibility: visible !important;
     box-sizing: border-box !important;
-    -webkit-text-stroke: 0.2px #000000 !important;
+    background: transparent !important;
+    -webkit-text-stroke: 0.15px #000000 !important;
   }
 }
 

@@ -312,6 +312,8 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
     padding: 16px !important;
     max-height: 70vh !important;
     overflow-y: auto !important;
+    display: flex !important;
+    justify-content: center !important;
 }
 .receipt-modal .modal-footer{
     background:#ffffff !important;
@@ -319,19 +321,19 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
     padding:12px 16px !important;
 }
 #receiptContent{
-    width: 58mm !important;
+    width: 48mm !important;
     max-width: 100% !important;
     margin: 0 auto !important;
-    padding: 10px 4mm !important; /* 4mm side margins simulates physical 58mm roll */
+    padding: 12px 2mm !important;
     background: #ffffff !important;
     color: #000000 !important;
     border: 1px dashed #cbd5e1 !important;
     border-radius: 4px !important;
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06) !important;
     font-family:'Consolas','Courier New',monospace !important;
-    font-size: 8pt !important;
+    font-size: 8.5pt !important;
     font-weight: 700 !important;
-    line-height: 1.3 !important;
+    line-height: 1.25 !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
@@ -353,9 +355,9 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
     }
 
     html, body {
-        width: 58mm !important;
+        width: 100% !important;
         max-width: 58mm !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         padding: 0 !important;
         background: #ffffff !important;
         height: auto !important;
@@ -363,10 +365,16 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
         overflow: visible !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
     }
 
     body.modal-open {
         overflow: visible !important;
+        padding-right: 0 !important;
+        margin: 0 auto !important;
     }
 
     /* Completely isolate and remove all POS screen elements from print layout */
@@ -378,16 +386,18 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
         display: none !important;
     }
 
-    /* Reset modal wrapper into clean static flow */
+    /* Center modal wrapper into clean static flow */
     #receiptModal {
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
         position: static !important;
         visibility: visible !important;
         opacity: 1 !important;
-        width: 58mm !important;
+        width: 100% !important;
         max-width: 58mm !important;
         height: auto !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         padding: 0 !important;
         overflow: visible !important;
         background: #ffffff !important;
@@ -396,27 +406,31 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
         border: none !important;
     }
     #receiptModal .modal-dialog {
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
         position: static !important;
-        width: 58mm !important;
+        width: 100% !important;
         max-width: 58mm !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         padding: 0 !important;
         transform: none !important;
         border: none !important;
         box-shadow: none !important;
     }
     #receiptModal .modal-content {
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
         position: static !important;
-        width: 58mm !important;
+        width: 100% !important;
         max-width: 58mm !important;
         border: none !important;
         border-radius: 0 !important;
         box-shadow: none !important;
         background: #ffffff !important;
         padding: 0 !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
     }
     #receiptModal .modal-header,
     #receiptModal .modal-footer,
@@ -424,25 +438,28 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
         display: none !important;
     }
     #receiptModal .modal-body {
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
         padding: 0 !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        max-width: 58mm !important;
         background: #ffffff !important;
         overflow: visible !important;
         max-height: none !important;
     }
 
-    /* 41mm safe printable width with 5mm left margin (eliminates both left and right cutoffs on 58mm roll) */
+    /* Centered printable receipt: fitted for 58mm thermal printer roll (48mm standard head width) */
     #receiptContent {
         display: block !important;
         position: static !important;
         visibility: visible !important;
         box-sizing: border-box !important;
-        width: 41mm !important;
-        max-width: 41mm !important;
-        min-width: 41mm !important;
-        margin: 0 0 0 5mm !important;
-        padding: 1mm 1mm 8mm 1mm !important; /* 8mm bottom paper feed clearance for auto-cutter */
+        width: 48mm !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+        padding: 2mm 1mm 6mm 1mm !important; /* 6mm bottom feed clearance for manual tear bar/cutter */
         background: #ffffff !important;
         border: none !important;
         border-radius: 0 !important;
@@ -452,12 +469,12 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
         height: auto !important;
         color: #000000 !important;
         font-family: 'Consolas', 'Courier New', monospace !important;
-        font-size: 7.5pt !important;
+        font-size: 8.5pt !important;
         font-weight: 700 !important;
         line-height: 1.25 !important;
-        letter-spacing: -0.15px !important;
-        -webkit-text-stroke: 0.25px #000000 !important;
-        text-shadow: 0 0 0.35px #000000, 0 0 0.35px #000000 !important;
+        letter-spacing: -0.1px !important;
+        -webkit-text-stroke: 0.15px #000000 !important;
+        text-shadow: none !important;
         page-break-after: avoid !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
@@ -467,7 +484,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
         visibility: visible !important;
         box-sizing: border-box !important;
         background: transparent !important;
-        -webkit-text-stroke: 0.2px #000000 !important;
+        -webkit-text-stroke: 0.15px #000000 !important;
     }
 }
 
@@ -1003,7 +1020,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
-<script src="/sharonstore3.0/assets/js/pos.js?v=29"></script>
+<script src="/sharonstore3.0/assets/js/pos.js?v=30"></script>
 <script>
 const shiftModals = {
     start: new bootstrap.Modal(document.getElementById('startShiftModal')),
