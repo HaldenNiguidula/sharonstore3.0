@@ -284,74 +284,190 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
     border-radius:3px;color:#4a4b4b;
 }
 
-/* Receipt modal  58mm thermal receipt width */
+/* Receipt modal — 58mm thermal receipt preview & sizing */
 .receipt-modal .modal-dialog{
-    max-width: calc(58mm + 32px) !important;  /* 58mm content + padding */
-    width:     calc(58mm + 32px) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    max-width: 340px !important;
+    width:     340px !important;
+    margin: 1.75rem auto !important;
 }
 .receipt-modal .modal-content{
-    background:#fff!important;color:#111!important;
-    border-radius:10px!important;
-    width: 100% !important;
+    background:#ffffff !important;
+    color:#111827 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius:12px !important;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
 }
 .receipt-modal .modal-header{
-    border-bottom:1px solid #e5e7eb!important;
-    padding:10px 14px!important;
+    border-bottom:1px solid #e5e7eb !important;
+    padding:12px 16px !important;
 }
 .receipt-modal .modal-title{
-    color:#111!important;font-weight:800!important;font-size:0.88rem!important;
+    color:#111827 !important;
+    font-weight:800 !important;
+    font-size:0.92rem !important;
+}
+.receipt-modal .modal-body{
+    background: #f1f5f9 !important;
+    padding: 16px !important;
+    max-height: 70vh !important;
+    overflow-y: auto !important;
 }
 .receipt-modal .modal-footer{
-    background:#f9fafb!important;border-top:1px solid #e5e7eb!important;
-    padding:10px 14px!important;
+    background:#ffffff !important;
+    border-top:1px solid #e5e7eb !important;
+    padding:12px 16px !important;
 }
 #receiptContent{
     width: 58mm !important;
-    min-width: 58mm !important;
-    max-width: 58mm !important;
+    max-width: 100% !important;
     margin: 0 auto !important;
-    font-family:'Courier New',Courier,monospace !important;
-    font-size: 9pt !important;
-    line-height: 1.4 !important;
-    color: #000 !important;          /* thermal: always black */
+    padding: 10px 4mm !important; /* 4mm side margins simulates physical 58mm roll */
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px dashed #cbd5e1 !important;
+    border-radius: 4px !important;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06) !important;
+    font-family:'Consolas','Courier New',monospace !important;
+    font-size: 8pt !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
-    padding: 10px 5mm !important;    /* 5mm side margins inside 58mm roll */
+    box-sizing: border-box !important;
 }
-/* Force every child element inside receipt to black for thermal */
+/* Force every child element inside receipt to bold black for thermal */
 #receiptContent * {
-    color: #000 !important;
+    color: #000000 !important;
+    box-sizing: border-box !important;
 }
 
-/* Print  exact 58mm thermal roll */
+/* ══════════════════════════════════════════════════════════
+   PRINT: Exact 58mm Thermal Receipt (58 x 3276mm continuous roll)
+   ══════════════════════════════════════════════════════════ */
 @media print{
-    body * { visibility: hidden !important; }
-    #receiptContent, #receiptContent * { visibility: visible !important; }
-    #receiptContent {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
+    @page {
+        size: 58mm auto;
+        margin: 0mm !important;
+    }
+
+    html, body {
         width: 58mm !important;
-        min-width: 58mm !important;
         max-width: 58mm !important;
-        padding: 4mm !important;
         margin: 0 !important;
-        font-family: 'Courier New', Courier, monospace !important;
-        font-size: 8pt !important;
-        line-height: 1.35 !important;
-        color: #000 !important;
-        background: #fff !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    body.modal-open {
+        overflow: visible !important;
+    }
+
+    /* Completely isolate and remove all POS screen elements from print layout */
+    body > *:not(#receiptModal) {
+        display: none !important;
+    }
+    .modal-backdrop,
+    .no-print {
+        display: none !important;
+    }
+
+    /* Reset modal wrapper into clean static flow */
+    #receiptModal {
+        display: block !important;
+        position: static !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 58mm !important;
+        max-width: 58mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    #receiptModal .modal-dialog {
+        display: block !important;
+        position: static !important;
+        width: 58mm !important;
+        max-width: 58mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: none !important;
         border: none !important;
         box-shadow: none !important;
+    }
+    #receiptModal .modal-content {
+        display: block !important;
+        position: static !important;
+        width: 58mm !important;
+        max-width: 58mm !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    #receiptModal .modal-header,
+    #receiptModal .modal-footer,
+    #receiptModal .btn-close {
+        display: none !important;
+    }
+    #receiptModal .modal-body {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
         overflow: visible !important;
         max-height: none !important;
     }
-    @page {
-        size: 58mm auto;   /* 58mm wide, auto-height (continuous roll) */
-        margin: 0;
+
+    /* 41mm safe printable width with 5mm left margin (eliminates both left and right cutoffs on 58mm roll) */
+    #receiptContent {
+        display: block !important;
+        position: static !important;
+        visibility: visible !important;
+        box-sizing: border-box !important;
+        width: 41mm !important;
+        max-width: 41mm !important;
+        min-width: 41mm !important;
+        margin: 0 0 0 5mm !important;
+        padding: 1mm 1mm 8mm 1mm !important; /* 8mm bottom paper feed clearance for auto-cutter */
+        background: #ffffff !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+        max-height: none !important;
+        height: auto !important;
+        color: #000000 !important;
+        font-family: 'Consolas', 'Courier New', monospace !important;
+        font-size: 7.5pt !important;
+        font-weight: 700 !important;
+        line-height: 1.25 !important;
+        letter-spacing: -0.15px !important;
+        -webkit-text-stroke: 0.25px #000000 !important;
+        text-shadow: 0 0 0.35px #000000, 0 0 0.35px #000000 !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    #receiptContent * {
+        color: #000000 !important;
+        visibility: visible !important;
+        box-sizing: border-box !important;
+        background: transparent !important;
+        -webkit-text-stroke: 0.2px #000000 !important;
     }
 }
 
@@ -747,10 +863,8 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-0">
-                <div id="receiptContent"
-                     style="max-height:65vh;overflow-y:auto;">
-                </div>
+            <div class="modal-body">
+                <div id="receiptContent"></div>
             </div>
             <div class="modal-footer gap-2">
                 <button class="btn btn-secondary btn-sm" onclick="window.print()">
@@ -889,7 +1003,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
-<script src="/sharonstore3.0/assets/js/pos.js?v=26"></script>
+<script src="/sharonstore3.0/assets/js/pos.js?v=29"></script>
 <script>
 const shiftModals = {
     start: new bootstrap.Modal(document.getElementById('startShiftModal')),

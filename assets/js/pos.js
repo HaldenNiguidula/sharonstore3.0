@@ -362,69 +362,69 @@ function completeSale() {
     });
 }
 
-// ── Receipt: 58mm thermal, all-black, 5mm side margins ────────
+// ── Receipt: 58mm thermal (42mm safe printable width, high-density bold black) ────
 function showReceipt(data) {
     var now     = new Date();   // real-time local clock when receipt opens
-    var dateStr = now.toLocaleDateString('en-PH', {weekday:'short', year:'numeric', month:'short', day:'numeric'});
+    var dateStr = now.toLocaleDateString('en-PH', {year:'numeric', month:'short', day:'numeric'});
     var timeStr = now.toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
 
+    // CSS dividers: 1.5px dashed and 2px solid for thick, dark thermal burn lines
+    var SEP  = '<div style="border-top:1.5px dashed #000;margin:3px 0;width:100%;"></div>';
+    var SEP2 = '<div style="border-top:2px solid #000;margin:3px 0;width:100%;"></div>';
 
-    // 32-char separator fits 48mm usable width (58mm - 5mm margins each side)
-    var SEP  = '--------------------------------';
-    var SEP2 = '================================';
-
-    // All styles use color:#000 — no greys, no greens — thermal prints black only
-    var S  = 'color:#000;font-size:9pt;font-family:Courier New,Courier,monospace;';
-    var SB = 'color:#000;font-size:9pt;font-weight:700;font-family:Courier New,Courier,monospace;';
-    var SM = 'color:#000;font-size:8pt;font-family:Courier New,Courier,monospace;';
+    // Thermal styles: pure black, heavy bold Consolas monospace for maximum heat transfer/darkness
+    var S  = 'color:#000;font-size:7.5pt;font-weight:700;font-family:Consolas,Courier New,monospace;line-height:1.25;letter-spacing:-0.15px;';
+    var SB = 'color:#000;font-size:7.5pt;font-weight:900;font-family:Consolas,Courier New,monospace;line-height:1.25;letter-spacing:-0.15px;';
+    var SM = 'color:#000;font-size:7pt;font-weight:700;font-family:Consolas,Courier New,monospace;line-height:1.2;';
 
     var rows = '';
     for (var i = 0; i < data.items.length; i++) {
         var it = data.items[i];
         rows += '<tr>'
-            + '<td colspan="2" style="' + SB + 'padding:3px 0 0;word-break:break-word;">' + esc(it.item_name) + '</td>'
+            + '<td colspan="2" style="' + SB + 'padding:2px 0 0;word-break:break-word;">' + esc(it.item_name) + '</td>'
             + '</tr><tr>'
-            + '<td style="' + SM + 'padding:0 0 5px 0;">' + parseFloat(it.quantity) + ' x &#8369;' + parseFloat(it.unit_price).toFixed(2) + '</td>'
-            + '<td style="' + SB + 'text-align:right;padding:0 0 5px;">&#8369;' + parseFloat(it.subtotal).toFixed(2) + '</td>'
+            + '<td style="' + SM + 'padding:0 0 3px 0;">' + parseFloat(it.quantity) + ' x &#8369;' + parseFloat(it.unit_price).toFixed(2) + '</td>'
+            + '<td style="' + SB + 'text-align:right;padding:0 0 3px;white-space:nowrap;">&#8369;' + parseFloat(it.subtotal).toFixed(2) + '</td>'
             + '</tr>';
     }
 
     var html = ''
-        + '<div style="text-align:center;margin-bottom:8px;">'
-        +   '<div style="' + SB + 'font-size:13pt;letter-spacing:1px;">SHARON STORE</div>'
+        + '<div style="text-align:center;margin-bottom:4px;">'
+        +   '<div style="' + SB + 'font-size:10.5pt;letter-spacing:0.5px;">SHARON STORE</div>'
         +   '<div style="' + SM + '">Pampang Public Market</div>'
         +   '<div style="' + SM + '">Angeles City, Pampanga</div>'
         +   '<div style="' + SM + '">Tel: (045) 123-4567</div>'
         + '</div>'
-        + '<div style="' + SM + 'text-align:center;margin:4px 0;">' + SEP + '</div>'
-        + '<div style="' + S + 'margin-bottom:4px;">'
-        +   '<div style="display:flex;justify-content:space-between;"><span>TXN#</span><span style="font-weight:700;">' + esc(data.transaction_code) + '</span></div>'
+        + SEP
+        + '<div style="' + S + 'margin-bottom:2px;">'
+        +   '<div style="display:flex;justify-content:space-between;"><span>TXN#</span><span style="font-weight:900;">' + esc(data.transaction_code) + '</span></div>'
         +   '<div style="display:flex;justify-content:space-between;"><span>Date</span><span>' + dateStr + '</span></div>'
         +   '<div style="display:flex;justify-content:space-between;"><span>Time</span><span>' + timeStr + '</span></div>'
-        +   '<div style="display:flex;justify-content:space-between;"><span>Cashier</span><span>' + esc(data.cashier_name) + '</span></div>'
+        +   '<div style="display:flex;justify-content:space-between;"><span>Cashier</span><span style="max-width:24mm;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">' + esc(data.cashier_name) + '</span></div>'
         + '</div>'
-        + '<div style="' + SM + 'text-align:center;margin:4px 0;">' + SEP + '</div>'
-        + '<table style="width:100%;border-collapse:collapse;' + S + 'margin-bottom:4px;">'
+        + SEP
+        + '<table style="width:100%;border-collapse:collapse;' + S + 'margin-bottom:2px;">'
         +   '<thead><tr>'
-        +     '<th style="' + SB + 'text-align:left;padding-bottom:3px;font-size:8pt;">ITEM</th>'
-        +     '<th style="' + SB + 'text-align:right;padding-bottom:3px;font-size:8pt;">AMT</th>'
+        +     '<th style="' + SB + 'text-align:left;padding-bottom:2px;font-size:7pt;">ITEM</th>'
+        +     '<th style="' + SB + 'text-align:right;padding-bottom:2px;font-size:7pt;">AMT</th>'
         +   '</tr></thead>'
         +   '<tbody>' + rows + '</tbody>'
         + '</table>'
-        + '<div style="' + SM + 'text-align:center;margin:4px 0;">' + SEP2 + '</div>'
+        + SEP2
         + '<div style="' + S + '">'
-        +   '<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Subtotal (VAT excl.)</span><span>&#8369;' + (parseFloat(data.subtotal)*(100/112)).toFixed(2) + '</span></div>'
-        +   '<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span>VAT 12%</span><span>&#8369;' + parseFloat(data.vat_amount).toFixed(2) + '</span></div>'
-        +   '<div style="display:flex;justify-content:space-between;' + SB + 'font-size:11pt;border-top:2px solid #000;border-bottom:1px solid #000;padding:3px 0;margin-bottom:5px;"><span>TOTAL</span><span>&#8369;' + parseFloat(data.grand_total).toFixed(2) + '</span></div>'
-        +   '<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Cash Tendered</span><span>&#8369;' + parseFloat(data.amount_tendered).toFixed(2) + '</span></div>'
-        +   '<div style="display:flex;justify-content:space-between;' + SB + 'font-size:10pt;border-top:1px solid #000;padding-top:3px;"><span>CHANGE</span><span>&#8369;' + parseFloat(data.change_amount).toFixed(2) + '</span></div>'
+        +   '<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Subtotal (ex-VAT)</span><span style="white-space:nowrap;">&#8369;' + (parseFloat(data.subtotal)*(100/112)).toFixed(2) + '</span></div>'
+        +   '<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>VAT 12%</span><span style="white-space:nowrap;">&#8369;' + parseFloat(data.vat_amount).toFixed(2) + '</span></div>'
+        +   '<div style="display:flex;justify-content:space-between;' + SB + 'font-size:9.5pt;border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:2px 0;margin:2px 0;"><span>TOTAL</span><span style="white-space:nowrap;">&#8369;' + parseFloat(data.grand_total).toFixed(2) + '</span></div>'
+        +   '<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Cash Tendered</span><span style="white-space:nowrap;">&#8369;' + parseFloat(data.amount_tendered).toFixed(2) + '</span></div>'
+        +   '<div style="display:flex;justify-content:space-between;' + SB + 'font-size:8.5pt;border-top:1px solid #000;padding-top:2px;"><span>CHANGE</span><span style="white-space:nowrap;">&#8369;' + parseFloat(data.change_amount).toFixed(2) + '</span></div>'
         + '</div>'
-        + '<div style="' + SM + 'text-align:center;margin:6px 0 0;">' + SEP + '</div>'
-        + '<div style="text-align:center;' + SM + 'margin-top:5px;">'
+        + SEP
+        + '<div style="text-align:center;' + SM + 'margin-top:5px;line-height:1.3;">'
         +   '<div>Thank you for your purchase!</div>'
         +   '<div style="margin-top:2px;">Please come again.</div>'
-        +   '<div style="margin-top:5px;font-size:7pt;">** OFFICIAL RECEIPT **</div>'
-        + '</div>';
+        +   '<div style="margin-top:3px;font-size:7pt;font-weight:900;">** OFFICIAL RECEIPT **</div>'
+        + '</div>'
+        + '<div style="height:8mm;"></div>';
 
     document.getElementById('receiptContent').innerHTML = html;
     receiptM.show();
