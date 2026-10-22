@@ -465,13 +465,20 @@ if ($action === 'list') {
     krsort($filesMap);
     $data = [];
     foreach ($filesMap as $fn => $fp) {
+        $created = date('Y-m-d H:i:s', filemtime($fp));
+        // Prefer filename timestamp over git/container filemtime metadata
+        if (preg_match('/(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})/', $fn, $m)) {
+            $created = $m[1] . ' ' . str_replace('-', ':', $m[2]);
+        }
         $data[] = [
             'filename' => $fn,
             'size'     => filesize($fp),
             'size_fmt' => number_format(filesize($fp) / 1024, 1) . ' KB',
-            'created'  => date('Y-m-d H:i:s', filemtime($fp)),
+            'created'  => $created,
         ];
     }
+    // Sort descending by created date (newest first)
+    usort($data, fn($a, $b) => strcmp($b['created'], $a['created']));
     echo json_encode(['success' => true, 'data' => $data]);
     exit();
 }
