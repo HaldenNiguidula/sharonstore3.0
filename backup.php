@@ -143,8 +143,10 @@ $pageTitle = 'Database Backup';
             <div class="col-12 col-lg-7">
                 <div class="card shadow-sm border-0" style="border-radius: 14px; overflow: hidden;">
                     <div class="card-header d-flex justify-content-between align-items-center bg-white py-3 border-bottom">
-                        <h5 class="mb-0 fw-bold" style="font-size: 0.95rem; color: #1e293b;">
-                            <i class="fa-solid fa-folder-open me-2 text-emerald"></i>Server Backup History
+                        <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: #1e293b;">
+                            <i class="fa-solid fa-folder-open text-emerald"></i>
+                            <span>Server Backup History</span>
+                            <span class="badge bg-light text-muted border fw-normal" style="font-size: 0.7rem;">Latest 5 Backups</span>
                         </h5>
                         <button class="btn btn-sm btn-secondary" onclick="loadBackups()"><i class="fa-solid fa-rotate-right me-1"></i>Refresh</button>
                     </div>

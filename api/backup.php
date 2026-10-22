@@ -57,6 +57,44 @@ function setSetting(PDO $db, string $key, string $value): void {
     $stmt->execute([$key, $value]);
 }
 
+/**
+ * Prunes server backup files so only the newest $max files are kept.
+ * Excess files that are writable are automatically deleted from disk.
+ */
+function pruneServerBackups(string $backupDir, int $max = 5): void {
+    $dirs = array_unique([$backupDir, __DIR__ . '/../backups/']);
+    $filesMap = [];
+    foreach ($dirs as $d) {
+        if (@is_dir($d)) {
+            $glob = glob(rtrim($d, '/\\') . '/*.sql') ?: [];
+            foreach ($glob as $f) {
+                $filesMap[basename($f)] = $f;
+            }
+        }
+    }
+    $items = [];
+    foreach ($filesMap as $fn => $fp) {
+        $created = date('Y-m-d H:i:s', filemtime($fp));
+        if (preg_match('/(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})/', $fn, $m)) {
+            $created = $m[1] . ' ' . str_replace('-', ':', $m[2]);
+        }
+        $items[] = [
+            'filename' => $fn,
+            'filepath' => $fp,
+            'created'  => $created
+        ];
+    }
+    usort($items, fn($a, $b) => strcmp($b['created'], $a['created']));
+    if (count($items) > $max) {
+        $extra = array_slice($items, $max);
+        foreach ($extra as $ex) {
+            if (@is_writable($ex['filepath'])) {
+                @unlink($ex['filepath']);
+            }
+        }
+    }
+}
+
 // ── Generator Helper ──────────────────────────────────────────
 /**
  * Generates a full database backup SQL file using pure PDO.
@@ -140,6 +178,8 @@ function generateBackupFile(string $backupDir, PDO $db, string $prefix = 'sharon
 
     fwrite($fp, "SET FOREIGN_KEY_CHECKS = 1;\n");
     fclose($fp);
+
+    pruneServerBackups($backupDir, 5);
 
     return $filepath;
 }
@@ -453,6 +493,8 @@ if ($action === 'download') {
 // ── List Backups ──────────────────────────────────────────────
 if ($action === 'list') {
     header('Content-Type: application/json');
+    pruneServerBackups($backupDir, 5);
+
     $dirs = array_unique([$backupDir, __DIR__ . '/../backups/']);
     $filesMap = [];
     foreach ($dirs as $d) {
@@ -463,7 +505,6 @@ if ($action === 'list') {
             }
         }
     }
-    krsort($filesMap);
     $data = [];
     foreach ($filesMap as $fn => $fp) {
         $created = date('Y-m-d H:i:s', filemtime($fp));
@@ -480,6 +521,10 @@ if ($action === 'list') {
     }
     // Sort descending by created date (newest first)
     usort($data, fn($a, $b) => strcmp($b['created'], $a['created']));
+
+    // Always cap the list to the 5 most recent backups
+    $data = array_slice($data, 0, 5);
+
     echo json_encode(['success' => true, 'data' => $data]);
     exit();
 }
