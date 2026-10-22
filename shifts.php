@@ -52,7 +52,7 @@ $dailyPin = getDailyManagerPIN($db);
     <title>Shift History - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=20">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=35">
 <style>
 /* ── Shift History Page Custom Styles ── */
 .badge-variance {
@@ -747,7 +747,7 @@ $dailyPin = getDailyManagerPIN($db);
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // Copy PIN to clipboard

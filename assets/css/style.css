@@ -257,7 +257,7 @@ a { text-decoration: none; color: inherit; }
 
 /* Hamburger (mobile only) */
 .ss-hamburger {
-  display: none;
+  display: none !important;
   width: 34px; height: 34px;
   background: var(--surface-2); border: 1.5px solid var(--bd);
   border-radius: 8px; cursor: pointer;
@@ -826,6 +826,14 @@ body.pos-page .ss-hamburger,
 .pos-body .ss-hamburger,
 .app-wrapper:has(.pos-body) .ss-hamburger {
   display: none !important;
+}
+
+/* Strictly hide hamburger on desktop/tablets whenever sidebar is visible (>= 768px) */
+@media (min-width: 768px) {
+  .ss-hamburger,
+  #sidebarToggleBtn {
+    display: none !important;
+  }
 }
 
 @media (max-width: 767px) {

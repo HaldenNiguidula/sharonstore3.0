@@ -70,7 +70,7 @@ var activePosRowIdx = -1;
 function loadAllItems() {
     var g = document.getElementById('itemGrid');
     if (g) {
-        g.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">'
+        g.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">'
             + '<div class="loading-spinner mx-auto mb-2"></div>Loading products...</td></tr>';
     }
     fetch('/sharonstore3.0/api/transactions.php?action=search_items&limit=200', { headers: {'Accept':'application/json'} })
@@ -80,7 +80,7 @@ function loadAllItems() {
         var msg = err.message === 'session'
             ? 'Session expired. <a href="/sharonstore3.0/index.php" style="color:#0abf8a;font-weight:700;">Log in again</a>.'
             : 'Could not load products. <button onclick="loadAllItems()" style="padding:4px 14px;margin-top:6px;background:#e6faf4;border:1.5px solid #b2edd8;color:#0abf8a;border-radius:6px;cursor:pointer;font-weight:700;">&#8635; Retry</button>';
-        if (g) g.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger fw-bold">' + msg + '</td></tr>';
+        if (g) g.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger fw-bold">' + msg + '</td></tr>';
     });
 }
 
@@ -89,7 +89,7 @@ function renderGrid(items) {
     if (!g) return;
     activePosRowIdx = -1;
     if (!items || items.length === 0) {
-        g.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">'
+        g.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">'
             + '<i class="fa-solid fa-box-open" style="font-size:1.8rem;opacity:0.35;display:block;margin-bottom:8px;color:#888888;"></i>No matching products found.</td></tr>';
         return;
     }
@@ -102,17 +102,13 @@ function renderGrid(items) {
             ? '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.7rem;">Out of stock</span>'
             : '<span class="badge bg-light text-dark border" style="font-size:0.75rem;">' + parseFloat(item.stock_qty) + ' ' + esc(item.unit) + '</span>';
         var click = oos ? '' : ' onclick="addById(' + item.item_id + ')"';
-        var btn = oos
-            ? '<span class="text-muted small">—</span>'
-            : '<button type="button" class="btn btn-sm btn-outline-success pos-add-btn" onclick="addById(' + item.item_id + '); event.stopPropagation();" title="Add to cart (Enter)"><i class="fa-solid fa-plus"></i></button>';
 
         html += '<tr class="pos-item-row' + (oos ? ' oos' : '') + '"' + click + ' data-index="' + i + '" data-id="' + item.item_id + '">'
             + '<td style="padding-left:14px;"><div class="pos-item-name">' + esc(item.item_name) + '</div></td>'
             + '<td class="text-muted small">' + esc(item.category_name || '—') + '</td>'
             + '<td class="text-muted small font-monospace">' + esc(item.barcode || '—') + '</td>'
             + '<td class="text-center">' + stock + '</td>'
-            + '<td class="text-end"><span class="pos-item-price">&#8369;' + price + '</span></td>'
-            + '<td class="text-center">' + btn + '</td>'
+            + '<td class="text-end" style="padding-right:16px;"><span class="pos-item-price">&#8369;' + price + '</span></td>'
             + '</tr>';
     }
     g.innerHTML = html;

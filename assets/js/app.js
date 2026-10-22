@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
     window.addEventListener('resize', () => {
-        if (window.innerWidth >= 992) {
+        if (window.innerWidth >= 768) {
             if (sidebar) sidebar.classList.remove('show');
             if (overlay) overlay.classList.remove('show');
         }

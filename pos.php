@@ -20,7 +20,7 @@ $hideHamburger  = true;
     <title>POS - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=29">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=35">
 <style>
 /* Never show hamburger on POS full-screen page */
 .ss-hamburger, #sidebarToggleBtn { display: none !important; }
@@ -740,16 +740,15 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                             <thead>
                                 <tr>
                                     <th style="padding-left:14px;">Product Description</th>
-                                    <th style="width:130px;">Category</th>
-                                    <th style="width:130px;">Barcode</th>
-                                    <th class="text-center" style="width:110px;">Stock</th>
-                                    <th class="text-end" style="width:110px;">Price</th>
-                                    <th class="text-center" style="width:75px;">Add</th>
+                                    <th style="width:140px;">Category</th>
+                                    <th style="width:140px;">Barcode</th>
+                                    <th class="text-center" style="width:120px;">Stock</th>
+                                    <th class="text-end" style="width:120px;padding-right:16px;">Price</th>
                                 </tr>
                             </thead>
                             <tbody id="itemGrid">
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">
+                                    <td colspan="5" class="text-center py-4 text-muted">
                                         <div class="loading-spinner mx-auto mb-2"></div>Loading products...
                                     </td>
                                 </tr>
@@ -1072,8 +1071,8 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
-<script src="/sharonstore3.0/assets/js/pos.js?v=31"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
+<script src="/sharonstore3.0/assets/js/pos.js?v=32"></script>
 <script>
 const shiftModals = {
     start: new bootstrap.Modal(document.getElementById('startShiftModal')),

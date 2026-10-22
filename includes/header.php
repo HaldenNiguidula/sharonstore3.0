@@ -31,9 +31,9 @@ if ($__role === 'cashier') {
 <header class="ss-topbar" id="appTopbar">
 
     <?php if (empty($hideHamburger) && ($pageTitle !== 'Point of Sale')): ?>
-    <!-- Hamburger (mobile) -->
-    <button class="btn ss-hamburger me-2 p-0" id="sidebarToggleBtn"
-            style="width:36px;height:36px;align-items:center;justify-content:center;"
+    <!-- Hamburger (mobile only: hidden when sidebar is visible on desktop / >=768px) -->
+    <button class="btn ss-hamburger d-md-none me-2 p-0" id="sidebarToggleBtn"
+            style="width:36px;height:36px;"
             aria-label="Toggle menu">
         <i class="fa-solid fa-bars" style="font-size:15px;"></i>
     </button>

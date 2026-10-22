@@ -6,7 +6,7 @@
     <title>Manage Accounts - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=17">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=35">
     <?php
     require_once __DIR__ . '/includes/auth_check.php';
     requireAdmin();
@@ -150,7 +150,7 @@
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
 <script>
 const CURRENT_USER_ID = <?= $currentUserId ?>;
 const userModal  = new bootstrap.Modal('#userModal');
