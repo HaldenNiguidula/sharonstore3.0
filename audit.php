@@ -341,13 +341,13 @@ $currentRole = currentRole();
                     <table class="table table-custom table-report mb-0" id="auditTable">
                         <thead>
                             <tr>
-                                <th style="width: 50px;">#</th>
-                                <th style="width: 140px;">Date / Time</th>
-                                <th style="width: 160px;">User</th>
-                                <th style="width: 100px;">Module</th>
-                                <th style="width: 120px;">Action</th>
-                                <th>Description</th>
-                                <th style="width: 110px;">IP Address</th>
+                                <th style="width: 50px;" class="sortable-th"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 140px;" class="sortable-th">Date / Time <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 160px;" class="sortable-th">User <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 100px;" class="sortable-th">Module <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 120px;" class="sortable-th">Action <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Description <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 110px;" class="sortable-th">IP Address <i class="fa-solid fa-sort sort-icon no-print"></i></th>
                             </tr>
                         </thead>
                         <tbody id="auditBody">
@@ -386,7 +386,7 @@ $currentRole = currentRole();
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
 <script>
 let currentPage   = 1;
 let autoRefreshId = null;
@@ -445,12 +445,12 @@ async function loadLogs(page = 1) {
             const color  = MODULE_COLORS[log.module] || '#94a3b8';
             const initials = log.full_name ? log.full_name.split(' ').map(w=>w[0]?.toUpperCase()||'').join('').substring(0,2) : '?';
             html += `<tr style="border-left: 3px solid ${color};">
-                <td class="text-muted fw-bold">${log.log_id}</td>
-                <td style="white-space:nowrap;">
+                <td class="text-muted fw-bold" data-sort-value="${log.log_id}">${log.log_id}</td>
+                <td style="white-space:nowrap;" data-sort-value="${log.log_time}">
                     <div style="font-size:0.82rem; font-weight:600;">${log.log_time.substring(0,10)}</div>
                     <div class="text-muted" style="font-size:0.72rem;">${log.log_time.substring(11,19)}</div>
                 </td>
-                <td>
+                <td data-sort-value="${esc(log.full_name || 'System')}">
                     <div class="d-flex align-items-center gap-2">
                         <div class="ss-avatar" style="width:28px;height:28px;font-size:0.7rem;">${initials}</div>
                         <div>
@@ -459,10 +459,10 @@ async function loadLogs(page = 1) {
                         </div>
                     </div>
                 </td>
-                <td><span class="badge" style="background:${color}22; color:${color}; font-size:0.75rem;">${esc(log.module)}</span></td>
-                <td><code style="font-size:0.78rem; font-weight:700;">${esc(log.action)}</code></td>
-                <td style="font-size:0.83rem; max-width:280px; word-break:break-word;">${esc(log.description || '—')}</td>
-                <td><span class="text-muted" style="font-size:0.75rem; font-family:monospace;">${esc(log.ip_address || '—')}</span></td>
+                <td data-sort-value="${esc(log.module)}"><span class="badge" style="background:${color}22; color:${color}; font-size:0.75rem;">${esc(log.module)}</span></td>
+                <td data-sort-value="${esc(log.action)}"><code style="font-size:0.78rem; font-weight:700;">${esc(log.action)}</code></td>
+                <td style="font-size:0.83rem; max-width:280px; word-break:break-word;" data-sort-value="${esc(log.description || '')}">${esc(log.description || '—')}</td>
+                <td data-sort-value="${esc(log.ip_address || '')}"><span class="text-muted" style="font-size:0.75rem; font-family:monospace;">${esc(log.ip_address || '—')}</span></td>
             </tr>`;
         });
         document.getElementById('auditBody').innerHTML = html;

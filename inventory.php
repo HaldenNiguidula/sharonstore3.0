@@ -119,21 +119,20 @@
                     <table class="table table-custom mb-0" id="inventoryTable" style="min-width:900px;">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Barcode</th>
-                                <th>Item Name</th>
-                                <th>Category</th>
-                                <th>Unit</th>
-                                <th>Sell Price</th>
-                                <th>Cost</th>
-                                <th>Stock</th>
-                                <th>Expiry</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th class="sortable-th"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Barcode <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Item Name <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Unit <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Sell Price <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Expiry <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="no-sort">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="inventoryBody">
-                            <tr><td colspan="11" class="text-center py-5">
+                            <tr><td colspan="10" class="text-center py-5">
                                 <div class="loading-spinner mx-auto mb-2"></div>Loading inventory
                             </td></tr>
                         </tbody>
@@ -308,10 +307,10 @@
         <table class="table table-custom mb-0" id="catTable">
             <thead>
                 <tr>
-                    <th>Category</th>
-                    <th class="text-center">Products</th>
-                    <th class="text-center">In Stock</th>
-                    <th class="text-end">Action</th>
+                    <th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                    <th class="sortable-th text-center">Products <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                    <th class="sortable-th text-center">In Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                    <th class="text-end no-sort">Action</th>
                 </tr>
             </thead>
             <tbody id="catTableBody">
@@ -345,7 +344,7 @@
 </div></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
 <script>
 let currentPage  = 1;
 let categories   = [];
@@ -486,7 +485,7 @@ async function loadItems(page = 1) {
     if (q)    url += `&q=${encodeURIComponent(q)}`;
     if (cat)  url += `&category_id=${cat}`;
 
-    document.getElementById('inventoryBody').innerHTML = `<tr><td colspan="11" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading</td></tr>`;
+    document.getElementById('inventoryBody').innerHTML = `<tr><td colspan="10" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading</td></tr>`;
 
     const r = await fetch(url);
     const j = await r.json();
@@ -499,7 +498,7 @@ async function loadItems(page = 1) {
     document.getElementById('pageInfo').textContent  = `Page ${j.data.page} of ${j.data.total_pages}`;
 
     if (!items.length) {
-        document.getElementById('inventoryBody').innerHTML = `<tr><td colspan="11" class="text-center py-5"><i class="fa-solid fa-box-open fa-2x text-muted mb-2"></i><br>No items found.</td></tr>`;
+        document.getElementById('inventoryBody').innerHTML = `<tr><td colspan="10" class="text-center py-5"><i class="fa-solid fa-box-open fa-2x text-muted mb-2"></i><br>No items found.</td></tr>`;
     } else {
         let html = '';
         items.forEach((item, idx) => {
@@ -524,16 +523,15 @@ async function loadItems(page = 1) {
             }
 
             html += `<tr class="${rowCls}">
-                <td style="color:#555657;font-size:0.8rem;">${((page-1)*20)+idx+1}</td>
-                <td><code style="font-size:0.78rem;">${esc(item.barcode||'\u2014')}</code></td>
-                <td style="font-weight:700;color:#2C2D2D;">${esc(item.item_name)}</td>
-                <td><span class="badge badge-secondary">${esc(item.category_name)}</span></td>
-                <td style="color:#4a4b4b;">${item.unit}</td>
-                <td style="color:#0abf8a;font-weight:700;">&#8369;${parseFloat(item.price).toFixed(2)}</td>
-                <td style="color:#555657;">&#8369;${parseFloat(item.cost_price).toFixed(2)}</td>
-                <td style="font-weight:700;color:#2C2D2D;">${parseFloat(item.stock_qty)} ${item.unit}</td>
-                <td>${expHtml}</td>
-                <td>${sBadge}</td>
+                <td style="color:#555657;font-size:0.8rem;" data-sort-value="${((page-1)*20)+idx+1}">${((page-1)*20)+idx+1}</td>
+                <td data-sort-value="${esc(item.barcode||'')}"><code style="font-size:0.78rem;">${esc(item.barcode||'\u2014')}</code></td>
+                <td style="font-weight:700;color:#2C2D2D;" data-sort-value="${esc(item.item_name)}">${esc(item.item_name)}</td>
+                <td data-sort-value="${esc(item.category_name)}"><span class="badge badge-secondary">${esc(item.category_name)}</span></td>
+                <td style="color:#4a4b4b;" data-sort-value="${esc(item.unit)}">${item.unit}</td>
+                <td style="color:#0abf8a;font-weight:700;" data-sort-value="${parseFloat(item.price)}">&#8369;${parseFloat(item.price).toFixed(2)}</td>
+                <td style="font-weight:700;color:#2C2D2D;" data-sort-value="${parseFloat(item.stock_qty)}">${parseFloat(item.stock_qty)} ${item.unit}</td>
+                <td data-sort-value="${item.expiry_date || ''}">${expHtml}</td>
+                <td data-sort-value="${item.stock_status}">${sBadge}</td>
                 <td>
                     <div class="d-flex gap-1">
                         <button class="btn btn-sm btn-secondary" title="Adjust Stock" onclick="openAdjust(${item.item_id},'${esc(item.item_name)}')"><i class="fa-solid fa-sliders"></i></button>

@@ -562,16 +562,16 @@ $dailyPin = getDailyManagerPIN($db);
                     <table class="table table-custom table-report align-middle mb-0" id="shiftsTable">
                         <thead>
                             <tr>
-                                <th style="width: 80px;">Shift ID</th>
-                                <th>Cashier</th>
-                                <th>Start Time</th>
-                                <th>End Time</th>
-                                <th class="text-end">Starting Cash</th>
-                                <th class="text-end">Expected Cash</th>
-                                <th class="text-end">Actual Cash</th>
-                                <th class="text-end">Short / Over</th>
-                                <th class="text-center" style="width: 100px;">Status</th>
-                                <th class="text-center" style="width: 80px;">Action</th>
+                                <th style="width: 80px;" class="sortable-th">Shift ID <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Cashier <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Start Time <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">End Time <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="text-end sortable-th">Starting Cash <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="text-end sortable-th">Expected Cash <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="text-end sortable-th">Actual Cash <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="text-end sortable-th">Short / Over <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="text-center sortable-th" style="width: 100px;">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="text-center no-sort" style="width: 80px;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="shiftsTbody">
@@ -623,10 +623,10 @@ $dailyPin = getDailyManagerPIN($db);
                                     data-cashier="<?= strtolower(htmlspecialchars($s['cashier_name'] . ' ' . ($s['cashier_username'] ?? ''))) ?>"
                                     data-status="<?= $s['status'] ?>"
                                     data-variance="<?= $vType ?>">
-                                    <td>
+                                    <td data-sort-value="<?= $s['shift_id'] ?>">
                                         <span class="shift-id-tag">#<?= str_pad((string)$s['shift_id'], 4, '0', STR_PAD_LEFT) ?></span>
                                     </td>
-                                    <td>
+                                    <td data-sort-value="<?= htmlspecialchars($s['cashier_name']) ?>">
                                         <div class="d-flex align-items-center gap-2">
                                             <div class="cashier-avatar"><?= $initial ?></div>
                                             <div>
@@ -635,11 +635,11 @@ $dailyPin = getDailyManagerPIN($db);
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td data-sort-value="<?= strtotime($s['start_time']) ?>">
                                         <div class="fw-semibold text-dark text-nowrap"><?= date('M d, Y', strtotime($s['start_time'])) ?></div>
                                         <div class="text-muted small"><i class="fa-regular fa-clock me-1"></i><?= date('h:i A', strtotime($s['start_time'])) ?></div>
                                     </td>
-                                    <td>
+                                    <td data-sort-value="<?= $s['end_time'] ? strtotime($s['end_time']) : 0 ?>">
                                         <?php if ($s['end_time']): ?>
                                             <div class="fw-semibold text-dark text-nowrap"><?= date('M d, Y', strtotime($s['end_time'])) ?></div>
                                             <div class="text-muted small"><i class="fa-regular fa-clock me-1"></i><?= date('h:i A', strtotime($s['end_time'])) ?></div>
@@ -649,19 +649,19 @@ $dailyPin = getDailyManagerPIN($db);
                                             </span>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="text-end font-monospace fw-semibold text-dark">
+                                    <td class="text-end font-monospace fw-semibold text-dark" data-sort-value="<?= (float)$s['starting_cash'] ?>">
                                         ₱<?= number_format($s['starting_cash'], 2) ?>
                                     </td>
-                                    <td class="text-end font-monospace fw-semibold text-dark">
+                                    <td class="text-end font-monospace fw-semibold text-dark" data-sort-value="<?= $s['expected_cash'] !== null ? (float)$s['expected_cash'] : '' ?>">
                                         <?= $s['expected_cash'] !== null ? '₱' . number_format($s['expected_cash'], 2) : '<span class="text-muted">—</span>' ?>
                                     </td>
-                                    <td class="text-end font-monospace fw-semibold text-dark">
+                                    <td class="text-end font-monospace fw-semibold text-dark" data-sort-value="<?= $s['actual_cash'] !== null ? (float)$s['actual_cash'] : '' ?>">
                                         <?= $s['actual_cash'] !== null ? '₱' . number_format($s['actual_cash'], 2) : '<span class="text-muted">—</span>' ?>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end" data-sort-value="<?= $variance !== null ? $variance : '' ?>">
                                         <?= $vBadgeHtml ?>
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-center" data-sort-value="<?= $s['status'] ?>">
                                         <?php if ($s['status'] === 'open'): ?>
                                             <span class="badge badge-emerald px-2 py-1">
                                                 <i class="fa-solid fa-circle-dot me-1 text-success"></i>Open
@@ -747,7 +747,7 @@ $dailyPin = getDailyManagerPIN($db);
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // Copy PIN to clipboard

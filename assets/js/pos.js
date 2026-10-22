@@ -65,11 +65,13 @@ function switchTab(tab) {
 }
 window.switchTab = switchTab;
 
+var activePosRowIdx = -1;
+
 function loadAllItems() {
     var g = document.getElementById('itemGrid');
     if (g) {
-        g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#555657;">'
-            + '<div class="loading-spinner" style="margin:0 auto 8px;"></div>Loading products...</div>';
+        g.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">'
+            + '<div class="loading-spinner mx-auto mb-2"></div>Loading products...</td></tr>';
     }
     fetch('/sharonstore3.0/api/transactions.php?action=search_items&limit=200', { headers: {'Accept':'application/json'} })
     .then(function (r) { if (r.status === 401) throw new Error('session'); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
@@ -78,16 +80,17 @@ function loadAllItems() {
         var msg = err.message === 'session'
             ? 'Session expired. <a href="/sharonstore3.0/index.php" style="color:#0abf8a;font-weight:700;">Log in again</a>.'
             : 'Could not load products. <button onclick="loadAllItems()" style="padding:4px 14px;margin-top:6px;background:#e6faf4;border:1.5px solid #b2edd8;color:#0abf8a;border-radius:6px;cursor:pointer;font-weight:700;">&#8635; Retry</button>';
-        if (g) g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#ef4444;font-weight:600;">' + msg + '</div>';
+        if (g) g.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger fw-bold">' + msg + '</td></tr>';
     });
 }
 
 function renderGrid(items) {
     var g = document.getElementById('itemGrid');
     if (!g) return;
+    activePosRowIdx = -1;
     if (!items || items.length === 0) {
-        g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;color:#555657;">'
-            + '<i class="fa-solid fa-box-open" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;color:#888888;"></i>No products found.</div>';
+        g.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">'
+            + '<i class="fa-solid fa-box-open" style="font-size:1.8rem;opacity:0.35;display:block;margin-bottom:8px;color:#888888;"></i>No matching products found.</td></tr>';
         return;
     }
     var html = '';
@@ -96,15 +99,21 @@ function renderGrid(items) {
         var oos   = parseFloat(item.stock_qty) <= 0;
         var price = parseFloat(item.price).toFixed(2);
         var stock = oos
-            ? '<span style="color:#ef4444;font-size:0.62rem;font-weight:700;">Out of stock</span>'
-            : '<span style="color:#0abf8a;font-size:0.62rem;font-weight:600;">Stock: ' + parseFloat(item.stock_qty) + ' ' + esc(item.unit) + '</span>';
+            ? '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.7rem;">Out of stock</span>'
+            : '<span class="badge bg-light text-dark border" style="font-size:0.75rem;">' + parseFloat(item.stock_qty) + ' ' + esc(item.unit) + '</span>';
         var click = oos ? '' : ' onclick="addById(' + item.item_id + ')"';
-        html += '<div class="pcard' + (oos ? ' oos' : '') + '"' + click + '>'
-            + '<div class="pcard-cat">' + esc(item.category_name) + '</div>'
-            + '<div class="pcard-name">' + esc(item.item_name) + '</div>'
-            + '<div class="pcard-price">&#8369;' + price + '</div>'
-            + '<div class="pcard-stock">' + stock + '</div>'
-            + '</div>';
+        var btn = oos
+            ? '<span class="text-muted small">—</span>'
+            : '<button type="button" class="btn btn-sm btn-outline-success pos-add-btn" onclick="addById(' + item.item_id + '); event.stopPropagation();" title="Add to cart (Enter)"><i class="fa-solid fa-plus"></i></button>';
+
+        html += '<tr class="pos-item-row' + (oos ? ' oos' : '') + '"' + click + ' data-index="' + i + '" data-id="' + item.item_id + '">'
+            + '<td style="padding-left:14px;"><div class="pos-item-name">' + esc(item.item_name) + '</div></td>'
+            + '<td class="text-muted small">' + esc(item.category_name || '—') + '</td>'
+            + '<td class="text-muted small font-monospace">' + esc(item.barcode || '—') + '</td>'
+            + '<td class="text-center">' + stock + '</td>'
+            + '<td class="text-end"><span class="pos-item-price">&#8369;' + price + '</span></td>'
+            + '<td class="text-center">' + btn + '</td>'
+            + '</tr>';
     }
     g.innerHTML = html;
 }
@@ -142,23 +151,66 @@ function bindEvents() {
         document.getElementById('scannerStatus').textContent   = 'Press F2 to focus scanner';
     });
 
-    document.getElementById('itemSearchInput').addEventListener('input', function () {
-        clearTimeout(srchTimer);
-        var q = this.value.trim().toLowerCase();
-        srchTimer = setTimeout(function () {
-            if (!q) { renderGrid(allItems); return; }
-            var local = allItems.filter(function (i) {
-                return i.item_name.toLowerCase().indexOf(q) >= 0
-                    || (i.barcode || '').toLowerCase().indexOf(q) >= 0
-                    || i.category_name.toLowerCase().indexOf(q) >= 0;
-            });
-            renderGrid(local);
-            fetch('/sharonstore3.0/api/transactions.php?action=search_items&q=' + encodeURIComponent(q), { headers: {'Accept':'application/json'} })
-            .then(function (r) { return r.ok ? r.json() : null; })
-            .then(function (j) { if (j && j.success) renderGrid(j.items); })
-            .catch(function () {});
-        }, 280);
-    });
+    var searchInp = document.getElementById('itemSearchInput');
+
+    function highlightPosRow(idx) {
+        var tbody = document.getElementById('itemGrid');
+        if (!tbody) return;
+        var rows = tbody.querySelectorAll('.pos-item-row:not(.oos)');
+        if (!rows.length) return;
+        for (var r = 0; r < rows.length; r++) { rows[r].classList.remove('pos-row-active'); }
+        if (idx >= 0 && idx < rows.length) {
+            rows[idx].classList.add('pos-row-active');
+            rows[idx].scrollIntoView({ block: 'nearest' });
+            activePosRowIdx = idx;
+        } else {
+            activePosRowIdx = -1;
+        }
+    }
+
+    if (searchInp) {
+        searchInp.addEventListener('input', function () {
+            clearTimeout(srchTimer);
+            activePosRowIdx = -1;
+            var q = this.value.trim().toLowerCase();
+            srchTimer = setTimeout(function () {
+                if (!q) { renderGrid(allItems); return; }
+                var local = allItems.filter(function (i) {
+                    return i.item_name.toLowerCase().indexOf(q) >= 0
+                        || (i.barcode || '').toLowerCase().indexOf(q) >= 0
+                        || i.category_name.toLowerCase().indexOf(q) >= 0;
+                });
+                renderGrid(local);
+                fetch('/sharonstore3.0/api/transactions.php?action=search_items&q=' + encodeURIComponent(q), { headers: {'Accept':'application/json'} })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (j) { if (j && j.success) renderGrid(j.items); })
+                .catch(function () {});
+            }, 180);
+        });
+
+        searchInp.addEventListener('keydown', function (e) {
+            var tbody = document.getElementById('itemGrid');
+            var rows = tbody ? tbody.querySelectorAll('.pos-item-row:not(.oos)') : [];
+            if (!rows.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                var next = (activePosRowIdx + 1) % rows.length;
+                highlightPosRow(next);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                var prev = (activePosRowIdx - 1 + rows.length) % rows.length;
+                highlightPosRow(prev);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activePosRowIdx >= 0 && rows[activePosRowIdx]) {
+                    rows[activePosRowIdx].click();
+                } else if (rows.length === 1) {
+                    rows[0].click();
+                }
+            }
+        });
+    }
 
     function doClear() {
         if (cart.length && confirm('Clear all items from cart?')) {

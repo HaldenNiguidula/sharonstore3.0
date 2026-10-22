@@ -29,11 +29,17 @@ if ($action === 'sales_report') {
         ";
     } elseif ($type === 'weekly') {
         $query = "
-            SELECT CONCAT(YEAR(transaction_date), '-', LPAD(WEEK(transaction_date), 2, '0')) as raw_date, CONCAT('Week ', WEEK(transaction_date), ', ', YEAR(transaction_date)) as label, SUM(total_amount) as total, COUNT(*) as tx_count
+            SELECT 
+                YEAR(transaction_date) as yr,
+                WEEK(transaction_date, 1) as wk,
+                CONCAT(YEAR(transaction_date), '-', LPAD(WEEK(transaction_date, 1), 2, '0')) as raw_date, 
+                CONCAT('Week ', WEEK(transaction_date, 1), ', ', YEAR(transaction_date)) as label, 
+                SUM(total_amount) as total, 
+                COUNT(*) as tx_count
             FROM tbl_transactions
             WHERE (status IS NULL OR status != 'voided') AND transaction_date >= DATE_SUB(CURDATE(), INTERVAL 12 WEEK)
-            GROUP BY YEAR(transaction_date), WEEK(transaction_date)
-            ORDER BY YEAR(transaction_date) ASC, WEEK(transaction_date) ASC
+            GROUP BY YEAR(transaction_date), WEEK(transaction_date, 1)
+            ORDER BY YEAR(transaction_date) ASC, WEEK(transaction_date, 1) ASC
         ";
     } elseif ($type === 'monthly') {
         $query = "
@@ -58,12 +64,24 @@ if ($action === 'sales_report') {
         foreach ($results as $r) {
             $labels[] = $r['label'];
             $totals[] = (float)$r['total'];
-            $tableData[] = [
+            
+            $item = [
                 'raw_date' => $r['raw_date'],
                 'period' => $r['label'],
                 'tx_count' => (int)$r['tx_count'],
                 'revenue' => (float)$r['total']
             ];
+
+            if ($type === 'weekly') {
+                $dto = new DateTime();
+                $dto->setISODate((int)$r['yr'], (int)$r['wk']);
+                $startStr = $dto->format('M d, Y');
+                $dto->modify('+6 days');
+                $endStr = $dto->format('M d, Y');
+                $item['date_range'] = "$startStr – $endStr";
+            }
+
+            $tableData[] = $item;
         }
         
         // Reverse table data so newest is at the top
@@ -95,9 +113,9 @@ if ($action === 'item_breakdown') {
         // raw_date format: YYYY-WW
         $parts = explode('-', $raw_date);
         if (count($parts) !== 2) respond(false, 'Invalid date format.');
-        $where .= " AND YEAR(t.transaction_date) = ? AND WEEK(t.transaction_date) = ?";
-        $params[] = $parts[0];
-        $params[] = $parts[1];
+        $where .= " AND YEAR(t.transaction_date) = ? AND WEEK(t.transaction_date, 1) = ?";
+        $params[] = (int)$parts[0];
+        $params[] = (int)$parts[1];
     } elseif ($type === 'monthly') {
         // raw_date format: YYYY-MM
         $parts = explode('-', $raw_date);

@@ -206,6 +206,7 @@ CREATE TABLE `tbl_suppliers` (
   `supplier_id` int(11) NOT NULL AUTO_INCREMENT,
   `company_name` varchar(100) NOT NULL,
   `contact_person` varchar(100) DEFAULT NULL,
+  `category` varchar(500) DEFAULT NULL,
   `phone` varchar(50) DEFAULT NULL,
   `address` text DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
@@ -220,7 +221,7 @@ CREATE TABLE `tbl_suppliers` (
 
 LOCK TABLES `tbl_suppliers` WRITE;
 /*!40000 ALTER TABLE `tbl_suppliers` DISABLE KEYS */;
-INSERT INTO `tbl_suppliers` VALUES (1,'Chicken Manok Corp.','Toti Tolentino','+639171234567','Manila, Philippines','2026-09-29 21:27:35',1);
+INSERT INTO `tbl_suppliers` VALUES (1,'Chicken Manok Corp.','Toti Tolentino','Poultry and Fresh Meats','+639171234567','Manila, Philippines','2026-09-29 21:27:35',1);
 /*!40000 ALTER TABLE `tbl_suppliers` ENABLE KEYS */;
 UNLOCK TABLES;
 

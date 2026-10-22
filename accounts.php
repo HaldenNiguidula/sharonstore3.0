@@ -56,12 +56,12 @@
                     <table class="table table-custom mb-0">
                         <thead>
                             <tr>
-                                <th>User</th>
-                                <th>Username</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th>Actions</th>
+                                <th class="sortable-th">User <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Username <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Role <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Created <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="no-sort">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="usersBody">
@@ -150,7 +150,7 @@
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
 <script>
 const CURRENT_USER_ID = <?= $currentUserId ?>;
 const userModal  = new bootstrap.Modal('#userModal');
@@ -172,16 +172,16 @@ async function loadUsers() {
             ? '<span class="badge badge-success">Active</span>'
             : '<span class="badge badge-danger">Inactive</span>';
         html += `<tr>
-            <td>
+            <td data-sort-value="${esc(u.full_name)}">
                 <div class="d-flex align-items-center gap-3">
                     <div class="ss-avatar" style="width:36px;height:36px;font-size:0.85rem;">${initials}</div>
                     <span class="fw-600">${esc(u.full_name)}${isMe?' <span class="badge badge-blue ms-1">You</span>':''}</span>
                 </div>
             </td>
-            <td><code>${esc(u.username)}</code></td>
-            <td>${roleBadge}</td>
-            <td>${statusBadge}</td>
-            <td class="text-muted small">${u.created_at.substring(0,10)}</td>
+            <td data-sort-value="${esc(u.username)}"><code>${esc(u.username)}</code></td>
+            <td data-sort-value="${esc(u.role)}">${roleBadge}</td>
+            <td data-sort-value="${u.is_active ? 1 : 0}">${statusBadge}</td>
+            <td class="text-muted small" data-sort-value="${u.created_at}">${u.created_at.substring(0,10)}</td>
             <td>
                 <div class="d-flex gap-1">
                     <button class="btn btn-sm btn-outline-primary" onclick="openEdit(${u.user_id})"><i class="fa-solid fa-pen"></i></button>

@@ -7,9 +7,10 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/includes/auth_check.php';
 requireLogin();
 
-$pageTitle    = 'Point of Sale';
-$userFullName = currentUserName();
-$userRole     = currentRole();
+$pageTitle      = 'Point of Sale';
+$userFullName   = currentUserName();
+$userRole       = currentRole();
+$hideHamburger  = true;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -19,8 +20,11 @@ $userRole     = currentRole();
     <title>POS - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=18">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=29">
 <style>
+/* Never show hamburger on POS full-screen page */
+.ss-hamburger, #sidebarToggleBtn { display: none !important; }
+
 /* ============================================================
    POS-specific styles  Light Theme aligned to system design
    ============================================================ */
@@ -72,53 +76,86 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 /* Manual search panel  scrollable, never clips content */
 #panelManual{
     max-height:55vh;   /* taller so more cards are visible */
-    overflow:visible;  /* let the grid handle its own scroll */
+    overflow:visible;
     display:flex;
     flex-direction:column;
-    padding:12px 16px;
+    padding:10px 14px 12px;
 }
-#panelManual > .d-flex{ flex-shrink:0; }  /* search bar row stays fixed */
-.product-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
-    gap:8px;
-    flex:1;
-    overflow-y:auto;
-    overflow-x:hidden;
-    min-height:100px;
-    padding-right:4px;
-    margin-top:10px;
-    align-content:start;   /* cards stick to top, no stretching */
+#panelManual > .d-flex{ flex-shrink:0; }
+
+/* Traditional Desktop POS Item List Table */
+.pos-item-list-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 120px;
+    max-height: 250px;
+    margin-top: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
 }
-/* Product cards — fixed height so all rows are uniform */
-.pcard{
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    background:#ffffff;
-    border:1.5px solid #e2e8f0;
-    border-radius:10px;
-    padding:10px 8px;
-    cursor:pointer;
-    text-align:center;
-    user-select:none;
-    height:108px;          /* fixed height = all cards same size */
-    transition:background 0.16s, border-color 0.16s, box-shadow 0.16s;
-    overflow:hidden;
+.pos-item-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.82rem;
+    border-collapse: separate;
+    border-spacing: 0;
 }
-.pcard:hover{
-    background:#f0fdf8;
-    border-color:#0abf8a;
-    box-shadow:0 3px 12px rgba(10,191,138,0.14);
-    transform:translateY(-1px);
+.pos-item-table thead th {
+    background-color: #f8fafc !important;
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 7px 12px;
+    border-bottom: 1.5px solid #cbd5e1 !important;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
-.pcard.oos{opacity:0.4;cursor:not-allowed;pointer-events:none;}
-.pcard-cat  {font-size:0.55rem;color:#888888;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-transform:uppercase;letter-spacing:0.3px;flex-shrink:0;}
-.pcard-name {font-size:0.76rem;font-weight:700;color:#2C2D2D;line-height:1.3;
-             display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
-             overflow:hidden;flex:1;margin:3px 0;}
-.pcard-price{font-size:0.85rem;font-weight:800;color:#0abf8a;flex-shrink:0;}
-.pcard-stock{font-size:0.58rem;color:#888888;flex-shrink:0;}
+.pos-item-row {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.1s ease;
+}
+.pos-item-row:hover {
+    background-color: #f0fdf4 !important;
+}
+.pos-item-row.pos-row-active {
+    background-color: #ecfdf5 !important;
+    box-shadow: inset 3px 0 0 #10b981;
+}
+.pos-item-row.pos-row-active .pos-item-name {
+    color: #059669 !important;
+}
+.pos-item-row.oos {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background-color: #fafafa !important;
+}
+.pos-item-row td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+.pos-item-name {
+    font-weight: 700;
+    color: #2C2D2D;
+    line-height: 1.25;
+}
+.pos-item-price {
+    font-weight: 800;
+    color: #0abf8a;
+    font-size: 0.88rem;
+}
+.pos-add-btn {
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 6px;
+}
 
 
 /* Cart header */
@@ -680,28 +717,44 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                     </div>
                 </div>
 
-                <!-- Manual Search Panel -->
-                <div id="panelManual" style="display:none; background:#ffffff; border-bottom:1px solid #e2e8f0;">
+                <!-- Manual Search Panel (Traditional Desktop POS List) -->
+                <div id="panelManual" style="display:none; background:#ffffff; border-bottom:1px solid #e2e8f0; padding:10px 14px 12px;">
 
                     <div style="display:flex;gap:8px;align-items:center;">
                         <div style="position:relative;flex:1;">
-                            <i class="fa-solid fa-search"
-                               style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#888888;pointer-events:none;"></i>
+                            <i class="fa-solid fa-magnifying-glass"
+                               style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#10b981;pointer-events:none;"></i>
                             <input type="text" id="itemSearchInput" class="form-control"
-                                   style="padding-left:36px;"
-                                   placeholder="Search by product name, barcode, or category..."
+                                   style="padding-left:36px;font-size:0.92rem;font-weight:600;"
+                                   placeholder="Search product name, barcode, category (↑↓ to select, Enter / click to add)..."
                                    autocomplete="off">
                         </div>
                         <button class="btn btn-secondary" onclick="clearSearch()" title="Clear search">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
-                    <!-- Product grid  items rendered here by JS -->
-                    <div id="itemGrid" class="product-grid">
-                        <div style="grid-column:1/-1;text-align:center;padding:20px;color:#888888;">
-                            <div class="loading-spinner" style="margin:0 auto 8px;"></div>
-                            Loading products...
-                        </div>
+
+                    <!-- Traditional POS Item List View -->
+                    <div class="pos-item-list-container">
+                        <table class="table table-hover table-sm pos-item-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="padding-left:14px;">Product Description</th>
+                                    <th style="width:130px;">Category</th>
+                                    <th style="width:130px;">Barcode</th>
+                                    <th class="text-center" style="width:110px;">Stock</th>
+                                    <th class="text-end" style="width:110px;">Price</th>
+                                    <th class="text-center" style="width:75px;">Add</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemGrid">
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        <div class="loading-spinner mx-auto mb-2"></div>Loading products...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -1019,8 +1072,8 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
-<script src="/sharonstore3.0/assets/js/pos.js?v=30"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
+<script src="/sharonstore3.0/assets/js/pos.js?v=31"></script>
 <script>
 const shiftModals = {
     start: new bootstrap.Modal(document.getElementById('startShiftModal')),

@@ -21,7 +21,7 @@ $db     = getDB();
 
 // ── Items List ────────────────────────────────────────────────
 if ($action === 'items_list') {
-    $stmt = $db->query("SELECT item_id, item_name, stock_qty, unit FROM tbl_inventory WHERE is_active = 1 ORDER BY item_name ASC");
+    $stmt = $db->query("SELECT i.item_id, i.barcode, i.item_name, c.category_name, i.stock_qty, i.unit FROM tbl_inventory i LEFT JOIN tbl_categories c ON c.category_id = i.category_id WHERE i.is_active = 1 ORDER BY i.item_name ASC");
     respond(true, 'OK', $stmt->fetchAll());
 }
 

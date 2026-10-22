@@ -186,7 +186,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
 <script>
 // -- Palette --------------------------------------------------
 const EMERALD   = '#10b981';
@@ -359,17 +359,17 @@ async function loadLowStock() {
             el.innerHTML = '<div class="empty-state p-4"><i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i><p class="text-muted mb-0">All items are sufficiently stocked!</p></div>';
             return;
         }
-        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Status</th></tr></thead><tbody>';
+        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th class="sortable-th">Item <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th></tr></thead><tbody>';
         j.data.forEach(row => {
             const badge = row.status === 'out'
                 ? '<span class="badge badge-danger">Out of Stock</span>'
                 : '<span class="badge badge-warning">Low Stock</span>';
             const rowCls = row.status === 'out' ? 'table-row-danger' : 'table-row-warning';
             html += `<tr class="${rowCls}">
-                <td><span class="fw-600">${esc(row.item_name)}</span></td>
-                <td><span class="text-muted-sm">${esc(row.category_name)}</span></td>
-                <td><span class="fw-700">${parseFloat(row.stock_qty)} ${row.unit}</span></td>
-                <td>${badge}</td>
+                <td data-sort-value="${esc(row.item_name)}"><span class="fw-600">${esc(row.item_name)}</span></td>
+                <td data-sort-value="${esc(row.category_name)}"><span class="text-muted-sm">${esc(row.category_name)}</span></td>
+                <td data-sort-value="${parseFloat(row.stock_qty)}"><span class="fw-700">${parseFloat(row.stock_qty)} ${row.unit}</span></td>
+                <td data-sort-value="${row.status}">${badge}</td>
             </tr>`;
         });
         html += '</tbody></table></div>';
@@ -387,17 +387,17 @@ async function loadExpiring() {
             el.innerHTML = '<div class="empty-state p-4"><i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i><p class="text-muted mb-0">No items expiring within 30 days.</p></div>';
             return;
         }
-        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Expiry Date</th><th>Days Left</th></tr></thead><tbody>';
+        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th class="sortable-th">Item <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Expiry Date <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Days Left <i class="fa-solid fa-sort sort-icon no-print"></i></th></tr></thead><tbody>';
         j.data.forEach(row => {
             const days = parseInt(row.days_left);
             const daysCls = days <= 7 ? 'text-danger fw-700' : days <= 14 ? 'text-warning fw-600' : 'text-info';
             const rowCls  = days <= 0 ? 'table-row-danger' : days <= 7 ? 'table-row-warning' : '';
             html += `<tr class="${rowCls}">
-                <td class="fw-600">${esc(row.item_name)}</td>
-                <td class="text-muted-sm">${esc(row.category_name)}</td>
-                <td>${parseFloat(row.stock_qty)} ${row.unit}</td>
-                <td>${row.expiry_date}</td>
-                <td><span class="${daysCls}">${days <= 0 ? 'EXPIRED' : days + ' days'}</span></td>
+                <td class="fw-600" data-sort-value="${esc(row.item_name)}">${esc(row.item_name)}</td>
+                <td class="text-muted-sm" data-sort-value="${esc(row.category_name)}">${esc(row.category_name)}</td>
+                <td data-sort-value="${parseFloat(row.stock_qty)}">${parseFloat(row.stock_qty)} ${row.unit}</td>
+                <td data-sort-value="${row.expiry_date}">${row.expiry_date}</td>
+                <td data-sort-value="${days}"><span class="${daysCls}">${days <= 0 ? 'EXPIRED' : days + ' days'}</span></td>
             </tr>`;
         });
         html += '</tbody></table></div>';

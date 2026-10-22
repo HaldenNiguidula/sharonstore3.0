@@ -27,7 +27,7 @@ if ($currentRole === 'cashier') {
     <title>Stock Monitoring - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=17">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=28">
 <style>
 /* Screen adjustments */
 @media(max-width:767px){
@@ -301,7 +301,7 @@ if ($currentRole === 'cashier') {
         <!-- ══ UNLOCKED STOCK MONITORING CONTENT ══ -->
         <div id="stockMonitorContent" style="<?= ($currentRole === 'cashier' && !$hasOpenShift) ? 'display:none;' : '' ?>">
 
-        <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-3 pt-4">
             <div>
                 <ul class="breadcrumb-custom"><li><a href="/sharonstore3.0/dashboard.php">Home</a></li><li class="active">Stock Monitoring</li></ul>
                 <h1 class="page-header-title"><i class="fa-solid fa-magnifying-glass-chart me-2 text-emerald"></i>Stock Monitoring</h1>
@@ -432,14 +432,14 @@ if ($currentRole === 'cashier') {
                     <table class="table table-custom table-report mb-0">
                         <thead>
                             <tr>
-                                <th style="width: 50px;" class="text-center">#</th>
-                                <th>Item Name</th>
-                                <th>Category</th>
-                                <th class="text-center" style="width: 80px;">Unit</th>
-                                <th class="text-center" style="width: 100px;">Stock</th>
-                                <th class="text-center" style="width: 90px;">Threshold</th>
-                                <th style="width: 120px;">Expiry</th>
-                                <th class="text-center" style="width: 110px;">Status</th>
+                                <th style="width: 50px;" class="text-center sortable-th"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Item Name <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="text-center sortable-th" style="width: 80px;">Unit <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="text-center sortable-th" style="width: 100px;">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="text-center sortable-th" style="width: 90px;">Threshold <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" style="width: 120px;">Expiry <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="text-center sortable-th" style="width: 110px;">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
                             </tr>
                         </thead>
                         <tbody id="stockBody">
@@ -505,7 +505,7 @@ if ($currentRole === 'cashier') {
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
 <script>
 const isCashierRole = <?= json_encode($currentRole === 'cashier') ?>;
 let hasOpenShift = <?= json_encode($hasOpenShift) ?>;
@@ -634,7 +634,7 @@ async function loadLowStock() {
             el.innerHTML = '<div class="empty-state p-4 text-center"><i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i><p class="text-muted mb-0">All stock levels are healthy.</p></div>';
             return;
         }
-        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th>Item</th><th>Stock</th><th>Status</th></tr></thead><tbody>';
+        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th class="sortable-th">Item <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th></tr></thead><tbody>';
         items.forEach(row => {
             const isOut = parseFloat(row.stock_qty) <= 0;
             html += `<tr class="${isOut ? 'table-row-danger' : 'table-row-warning'}">
@@ -668,7 +668,7 @@ async function loadExpiring() {
             el.innerHTML = '<div class="empty-state p-4 text-center"><i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i><p class="text-muted mb-0">No items expiring within 30 days.</p></div>';
             return;
         }
-        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th>Item</th><th>Expiry</th><th>Days Left</th></tr></thead><tbody>';
+        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th class="sortable-th">Item <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Expiry <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Days Left <i class="fa-solid fa-sort sort-icon no-print"></i></th></tr></thead><tbody>';
         expiring.forEach(row => {
             if (!row.expiry_date) return;
             const [ey,em,ed] = row.expiry_date.split('-').map(Number);
@@ -728,14 +728,14 @@ function renderList(items) {
         })() : '<span class="text-muted">—</span>';
         
         html += `<tr class="${rowCls}">
-            <td class="text-center text-muted fw-bold">${index + 1}</td>
-            <td class="fw-600">${esc(item.item_name)}</td>
-            <td><span class="badge badge-secondary">${esc(item.category_name)}</span></td>
-            <td class="text-center">${item.unit}</td>
-            <td class="text-center fw-700">${parseFloat(item.stock_qty)}</td>
-            <td class="text-center text-muted">${item.low_stock_threshold}</td>
-            <td>${expHtml}</td>
-            <td class="text-center">${sBadge}</td>
+            <td class="text-center text-muted fw-bold" data-sort-value="${index + 1}">${index + 1}</td>
+            <td class="fw-600" data-sort-value="${esc(item.item_name)}">${esc(item.item_name)}</td>
+            <td data-sort-value="${esc(item.category_name)}"><span class="badge badge-secondary">${esc(item.category_name)}</span></td>
+            <td class="text-center" data-sort-value="${esc(item.unit)}">${item.unit}</td>
+            <td class="text-center fw-700" data-sort-value="${parseFloat(item.stock_qty)}">${parseFloat(item.stock_qty)}</td>
+            <td class="text-center text-muted" data-sort-value="${parseFloat(item.low_stock_threshold)}">${item.low_stock_threshold}</td>
+            <td data-sort-value="${item.expiry_date || ''}">${expHtml}</td>
+            <td class="text-center" data-sort-value="${item.stock_status}">${sBadge}</td>
         </tr>`;
     });
     document.getElementById('stockBody').innerHTML = html || `<tr><td colspan="8" class="text-center py-4 text-muted">No items match.</td></tr>`;

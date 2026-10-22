@@ -33,6 +33,33 @@ $currentRole = currentRole();
     display: none !important;
 }
 
+/* Integrated Search Autocomplete Suggestions */
+.suggestion-item {
+    border: none;
+    border-bottom: 1px solid #f1f5f9;
+    background: #ffffff;
+    transition: all 0.12s ease-in-out;
+    text-align: left;
+    width: 100%;
+}
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+.suggestion-item:hover, .suggestion-item.active-suggestion {
+    background-color: #f0fdf4 !important;
+}
+.suggestion-item.active-suggestion .fw-semibold {
+    color: #059669 !important;
+}
+.suggestion-item.selected-item {
+    background-color: #ecfdf5 !important;
+    border-left: 3px solid #10b981;
+}
+.forecast-item-link:hover .product-title-link {
+    color: #059669 !important;
+    text-decoration: underline;
+}
+
 /* ============================================================
    OFFICIAL PRINT TABLE REPORT STYLING
    ============================================================ */
@@ -317,10 +344,22 @@ $currentRole = currentRole();
             <div class="card-body">
                 <div class="row g-3 align-items-end">
                     <div class="col-12 col-md-5">
-                        <label class="form-label">Select Product</label>
-                        <select id="itemSelect" class="form-select">
-                            <option value="">— Select a product —</option>
-                        </select>
+                        <label class="form-label d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold">Select Product</span>
+                            <span class="text-muted small" id="productSearchBadge"></span>
+                        </label>
+                        <div class="position-relative">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                <input type="text" id="productSearchInput" class="form-control border-start-0 ps-1" placeholder="Search product name, category, barcode..." autocomplete="off">
+                                <button class="btn btn-outline-secondary d-none" type="button" id="clearProductSearchBtn" onclick="clearProductSearch()" title="Clear product selection">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <input type="hidden" id="selectedItemId" value="">
+                            <div id="productSuggestionsList" class="dropdown-menu shadow-lg w-100 p-0 mt-1" style="max-height: 280px; overflow-y: auto; display: none; z-index: 1060; border-radius: 8px;">
+                            </div>
+                        </div>
                     </div>
                     <div class="col-6 col-md-3">
                         <label class="form-label">Lookback Period</label>
@@ -423,10 +462,10 @@ $currentRole = currentRole();
                         <table class="table table-custom table-report mb-0">
                             <thead>
                                 <tr>
-                                    <th>Month</th>
-                                    <th class="text-center">Actual Qty Sold</th>
-                                    <th class="text-center" style="color:#3b82f6;">SMA Prediction</th>
-                                    <th class="text-center" style="color:#10b981;">WMA Prediction</th>
+                                    <th class="sortable-th">Month <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                    <th class="text-center sortable-th">Actual Qty Sold <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                    <th class="text-center sortable-th" style="color:#3b82f6;">SMA Prediction <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                    <th class="text-center sortable-th" style="color:#10b981;">WMA Prediction <i class="fa-solid fa-sort sort-icon no-print"></i></th>
                                 </tr>
                             </thead>
                             <tbody id="forecastTableBody"></tbody>
@@ -472,45 +511,275 @@ $currentRole = currentRole();
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
 <script>
 let forecastChart;
 
-// ── Load item dropdown ────────────────────────────────────────
+let allForecastItems = [];
+
+let activeSuggestionIndex = -1;
+
+// ── Load item list ──────────────────────────────────────────
 async function loadItems() {
     const r = await fetch('/sharonstore3.0/api/forecasting.php?action=items_list');
     const j = await r.json();
     if (!j.success) return;
-    const sel = document.getElementById('itemSelect');
-    sel.innerHTML += `<option value="all" style="font-weight:700;color:#0abf8a;">★★ FORECAST ALL PRODUCTS ★★</option>`;
-    j.data.forEach(i => {
-        sel.innerHTML += `<option value="${i.item_id}" data-stock="${i.stock_qty}" data-unit="${esc(i.unit)}">${esc(i.item_name)} (Stock: ${i.stock_qty} ${i.unit})</option>`;
+    allForecastItems = j.data || [];
+    const badge = document.getElementById('productSearchBadge');
+    if (badge) {
+        badge.textContent = `${allForecastItems.length} products`;
+    }
+}
+
+function renderProductSuggestions(query = '') {
+    const list = document.getElementById('productSuggestionsList');
+    const badge = document.getElementById('productSearchBadge');
+    const clearBtn = document.getElementById('clearProductSearchBtn');
+    const selectedId = document.getElementById('selectedItemId') ? document.getElementById('selectedItemId').value : '';
+    activeSuggestionIndex = -1;
+
+    const q = (query || '').toLowerCase().trim();
+    if (clearBtn) {
+        clearBtn.classList.toggle('d-none', !query && !selectedId);
+    }
+
+    let filtered = allForecastItems;
+    if (q) {
+        filtered = allForecastItems.filter(i => {
+            const name = (i.item_name || '').toLowerCase();
+            const cat = (i.category_name || '').toLowerCase();
+            const barcode = (i.barcode || '').toLowerCase();
+            return name.includes(q) || cat.includes(q) || barcode.includes(q);
+        });
+    }
+
+    if (badge) {
+        if (selectedId) {
+            const selItem = allForecastItems.find(i => String(i.item_id) === String(selectedId));
+            badge.innerHTML = `<span class="badge bg-success text-white"><i class="fa-solid fa-check me-1"></i>${esc(selItem ? selItem.category_name || 'Selected' : 'Selected')}</span>`;
+        } else if (q) {
+            badge.textContent = `${filtered.length} found`;
+            badge.className = filtered.length > 0 ? 'badge bg-emerald text-white' : 'badge bg-danger text-white';
+        } else {
+            badge.textContent = `${allForecastItems.length} products`;
+            badge.className = 'text-muted small';
+        }
+    }
+
+    if (!list) return;
+
+    if (!filtered.length) {
+        list.innerHTML = `
+            <div class="p-3 text-center text-muted small">
+                <i class="fa-solid fa-box-open me-1 text-secondary"></i> No matching products found
+            </div>`;
+        list.style.display = 'block';
+        return;
+    }
+
+    let html = '<div class="list-group list-group-flush">';
+    filtered.forEach((i, idx) => {
+        const isSelected = String(i.item_id) === String(selectedId);
+        const catBadge = i.category_name ? `<span class="badge bg-light text-secondary border me-2">${esc(i.category_name)}</span>` : '';
+        const barcodeText = i.barcode ? `<span class="text-muted small me-2"><i class="fa-solid fa-barcode me-1"></i>${esc(i.barcode)}</span>` : '';
+        html += `
+            <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3 suggestion-item ${isSelected ? 'selected-item' : ''}" 
+                    data-index="${idx}" data-id="${i.item_id}" onclick="selectProductById(${i.item_id})">
+                <div class="text-start me-2">
+                    <div class="fw-semibold text-dark">${esc(i.item_name)}</div>
+                    <div class="d-flex align-items-center flex-wrap gap-1 mt-1">
+                        ${catBadge}
+                        ${barcodeText}
+                    </div>
+                </div>
+                <div class="text-end flex-shrink-0">
+                    <span class="badge bg-light text-dark border">Stock: ${i.stock_qty} ${esc(i.unit)}</span>
+                </div>
+            </button>`;
+    });
+    html += '</div>';
+    list.innerHTML = html;
+    list.style.display = 'block';
+}
+
+function selectProductById(itemId) {
+    const item = allForecastItems.find(i => String(i.item_id) === String(itemId));
+    if (!item) return;
+
+    const hiddenId = document.getElementById('selectedItemId');
+    const input = document.getElementById('productSearchInput');
+    const clearBtn = document.getElementById('clearProductSearchBtn');
+    const badge = document.getElementById('productSearchBadge');
+
+    if (hiddenId) hiddenId.value = item.item_id;
+    if (input) input.value = item.item_name;
+    if (clearBtn) clearBtn.classList.remove('d-none');
+    if (badge) {
+        badge.innerHTML = `<span class="badge bg-success text-white"><i class="fa-solid fa-check me-1"></i>${esc(item.category_name || 'Selected')}</span>`;
+    }
+
+    hideProductSuggestions();
+}
+
+function hideProductSuggestions() {
+    const list = document.getElementById('productSuggestionsList');
+    if (list) list.style.display = 'none';
+    activeSuggestionIndex = -1;
+}
+
+function showProductSuggestions() {
+    const input = document.getElementById('productSearchInput');
+    renderProductSuggestions(input ? input.value : '');
+}
+
+function clearProductSearch() {
+    const inp = document.getElementById('productSearchInput');
+    const selected = document.getElementById('selectedItemId');
+    if (selected) selected.value = '';
+    if (inp) {
+        inp.value = '';
+        inp.focus();
+    }
+    const clearBtn = document.getElementById('clearProductSearchBtn');
+    if (clearBtn) clearBtn.classList.add('d-none');
+
+    const badge = document.getElementById('productSearchBadge');
+    if (badge) {
+        badge.textContent = `${allForecastItems.length} products`;
+        badge.className = 'text-muted small';
+    }
+
+    renderProductSuggestions('');
+}
+
+function updateActiveSuggestion(items) {
+    items.forEach((item, idx) => {
+        if (idx === activeSuggestionIndex) {
+            item.classList.add('active-suggestion');
+            item.scrollIntoView({ block: 'nearest' });
+        } else {
+            item.classList.remove('active-suggestion');
+        }
     });
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInp = document.getElementById('productSearchInput');
+
+    if (searchInp) {
+        searchInp.addEventListener('focus', () => {
+            showProductSuggestions();
+        });
+
+        searchInp.addEventListener('input', (e) => {
+            const selectedId = document.getElementById('selectedItemId').value;
+            if (selectedId) {
+                const selItem = allForecastItems.find(i => String(i.item_id) === String(selectedId));
+                if (!selItem || selItem.item_name.toLowerCase() !== e.target.value.toLowerCase()) {
+                    document.getElementById('selectedItemId').value = '';
+                }
+            }
+            renderProductSuggestions(e.target.value);
+        });
+
+        searchInp.addEventListener('keydown', (e) => {
+            const list = document.getElementById('productSuggestionsList');
+            const items = list ? list.querySelectorAll('.suggestion-item') : [];
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!items.length) {
+                    showProductSuggestions();
+                    return;
+                }
+                activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+                updateActiveSuggestion(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (!items.length) return;
+                activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+                updateActiveSuggestion(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (list && list.style.display !== 'none' && activeSuggestionIndex >= 0 && items[activeSuggestionIndex]) {
+                    items[activeSuggestionIndex].click();
+                    document.getElementById('btnForecast').click();
+                } else if (document.getElementById('selectedItemId').value) {
+                    hideProductSuggestions();
+                    document.getElementById('btnForecast').click();
+                } else {
+                    const q = (searchInp.value || '').trim().toLowerCase();
+                    if (q) {
+                        const exact = allForecastItems.find(i => (i.item_name || '').toLowerCase() === q || (i.barcode || '').toLowerCase() === q);
+                        if (exact) {
+                            selectProductById(exact.item_id);
+                            document.getElementById('btnForecast').click();
+                            return;
+                        }
+                        const filtered = allForecastItems.filter(i => {
+                            return (i.item_name || '').toLowerCase().includes(q) ||
+                                   (i.category_name || '').toLowerCase().includes(q) ||
+                                   (i.barcode || '').toLowerCase().includes(q);
+                        });
+                        if (filtered.length === 1) {
+                            selectProductById(filtered[0].item_id);
+                            document.getElementById('btnForecast').click();
+                        } else if (filtered.length > 1) {
+                            showProductSuggestions();
+                        }
+                    } else {
+                        showProductSuggestions();
+                    }
+                }
+            } else if (e.key === 'Escape') {
+                hideProductSuggestions();
+            }
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#productSearchInput') && !e.target.closest('#productSuggestionsList') && !e.target.closest('#clearProductSearchBtn')) {
+            hideProductSuggestions();
+        }
+    });
+});
+
 // ── Generate Forecast ─────────────────────────────────────────
 document.getElementById('btnForecast').addEventListener('click', async () => {
-    const itemId  = document.getElementById('itemSelect').value;
+    let itemId  = document.getElementById('selectedItemId').value;
     const periods = document.getElementById('periodsSelect').value;
-    if (!itemId) { showToast('Please select a product.', 'warning'); return; }
+
+    if (!itemId) {
+        const query = (document.getElementById('productSearchInput').value || '').trim().toLowerCase();
+        if (query) {
+            const match = allForecastItems.find(i => (i.item_name || '').toLowerCase() === query || (i.barcode || '').toLowerCase() === query);
+            if (match) {
+                selectProductById(match.item_id);
+                itemId = match.item_id;
+            } else {
+                const filtered = allForecastItems.filter(i => {
+                    return (i.item_name || '').toLowerCase().includes(query) ||
+                           (i.category_name || '').toLowerCase().includes(query) ||
+                           (i.barcode || '').toLowerCase().includes(query);
+                });
+                if (filtered.length === 1) {
+                    selectProductById(filtered[0].item_id);
+                    itemId = filtered[0].item_id;
+                }
+            }
+        }
+    }
+
+    if (!itemId) {
+        showToast('Please select a product to generate forecast.', 'warning');
+        showProductSuggestions();
+        document.getElementById('productSearchInput').focus();
+        return;
+    }
 
     const btn = document.getElementById('btnForecast');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Calculating…';
-
-    if (itemId === 'all') {
-        const r = await fetch(`/sharonstore3.0/api/forecasting.php?action=forecast_all&periods=${periods}`);
-        const j = await r.json();
-        
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles me-2"></i>Forecast';
-        
-        if (!j.success) { showToast(j.message, 'error'); return; }
-        showToast('Generated forecast for all products!', 'success');
-        document.getElementById('forecastResults').style.display = 'none';
-        loadOverview();
-        return;
-    }
 
     const r = await fetch(`/sharonstore3.0/api/forecasting.php?action=forecast&item_id=${itemId}&periods=${periods}`);
     const j = await r.json();
@@ -582,13 +851,13 @@ document.getElementById('btnForecast').addEventListener('click', async () => {
     let tbody = '';
     d.history.forEach(h => {
         tbody += `<tr>
-            <td class="fw-600">${esc(h.month_label)}</td>
-            <td class="text-center fw-700">${parseFloat(h.qty_sold)}</td>
-            <td class="text-center" style="color:#3b82f6;">${d.sma_forecast ? Math.round(d.sma_forecast) : '-'}</td>
-            <td class="text-center" style="color:#10b981;">${d.wma_forecast ? Math.round(d.wma_forecast) : '-'}</td>
+            <td class="fw-600" data-sort-value="${esc(h.month_key || h.month_label)}">${esc(h.month_label)}</td>
+            <td class="text-center fw-700" data-sort-value="${parseFloat(h.qty_sold)}">${parseFloat(h.qty_sold)}</td>
+            <td class="text-center" style="color:#3b82f6;" data-sort-value="${d.sma_forecast || 0}">${d.sma_forecast ? Math.round(d.sma_forecast) : '-'}</td>
+            <td class="text-center" style="color:#10b981;" data-sort-value="${d.wma_forecast || 0}">${d.wma_forecast ? Math.round(d.wma_forecast) : '-'}</td>
         </tr>`;
     });
-    tbody += `<tr style="background:rgba(16,185,129,0.08); font-weight:800;">
+    tbody += `<tr class="no-sort-row" style="background:rgba(16,185,129,0.08); font-weight:800;">
         <td>Next Month (${esc(d.next_period)})</td>
         <td class="text-center text-muted">—</td>
         <td class="text-center" style="color:#3b82f6;">${d.sma_forecast ? Math.round(d.sma_forecast) : '-'}</td>
@@ -656,13 +925,15 @@ async function loadOverview() {
             </div>
             <div class="table-responsive"><table class="table table-custom table-report mb-0">
             <thead><tr>
-                <th style="width:50px;" class="text-center">#</th>
-                <th>Product</th><th>Category</th><th class="text-center">Current Stock</th>
-                <th class="text-center" style="color:#3b82f6;">SMA Forecast</th>
-                <th class="text-center" style="color:#10b981;">WMA Forecast</th>
-                <th class="text-center" style="color:#f59e0b;">SMA Order</th>
-                <th class="text-center" style="color:#f59e0b;">WMA Order</th>
-                <th class="text-center">Status</th>
+                <th style="width:50px;" class="text-center sortable-th"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="sortable-th">Product <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="text-center sortable-th">Current Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="text-center sortable-th" style="color:#3b82f6;">SMA Forecast <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="text-center sortable-th" style="color:#10b981;">WMA Forecast <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="text-center sortable-th" style="color:#f59e0b;">SMA Order <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="text-center sortable-th" style="color:#f59e0b;">WMA Order <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="text-center sortable-th">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
             </tr></thead><tbody>`;
             
         j.data.forEach((row, idx) => {
@@ -671,15 +942,20 @@ async function loadOverview() {
                 ? '<span class="badge badge-warning">Restock Needed</span>'
                 : (row.sma_forecast ? '<span class="badge badge-success">Adequate</span>' : '<span class="badge badge-secondary">No Data</span>');
             html += `<tr class="${needsRestock?'table-row-warning':''}">
-                <td class="text-center text-muted fw-bold">${idx + 1}</td>
-                <td class="fw-600">${esc(row.item_name)}</td>
-                <td class="text-muted">${esc(row.category_name)}</td>
-                <td class="text-center">${parseFloat(row.stock_qty)} ${esc(row.unit)}</td>
-                <td class="text-center" style="color:#3b82f6;">${row.sma_forecast ? Math.round(row.sma_forecast) : '—'}</td>
-                <td class="text-center" style="color:#10b981;">${row.wma_forecast ? Math.round(row.wma_forecast) : '—'}</td>
-                <td class="text-center fw-700" style="color:#f59e0b;">${row.sma_restock > 0 ? row.sma_restock : '—'}</td>
-                <td class="text-center fw-700" style="color:#f59e0b;">${row.wma_restock > 0 ? row.wma_restock : '—'}</td>
-                <td class="text-center">${badge}</td>
+                <td class="text-center text-muted fw-bold" data-sort-value="${idx + 1}">${idx + 1}</td>
+                <td class="fw-600" data-sort-value="${esc(row.item_name)}">
+                    <a href="javascript:void(0)" class="text-dark text-decoration-none forecast-item-link" onclick="selectProductById(${row.item_id}); document.getElementById('btnForecast').click(); window.scrollTo({top: 0, behavior: 'smooth'});" title="Click to view forecast for ${esc(row.item_name)}">
+                        <span class="product-title-link">${esc(row.item_name)}</span>
+                        <i class="fa-solid fa-arrow-trend-up ms-1 text-emerald opacity-75 small no-print"></i>
+                    </a>
+                </td>
+                <td class="text-muted" data-sort-value="${esc(row.category_name)}">${esc(row.category_name)}</td>
+                <td class="text-center" data-sort-value="${parseFloat(row.stock_qty)}">${parseFloat(row.stock_qty)} ${esc(row.unit)}</td>
+                <td class="text-center" style="color:#3b82f6;" data-sort-value="${row.sma_forecast || 0}">${row.sma_forecast ? Math.round(row.sma_forecast) : '—'}</td>
+                <td class="text-center" style="color:#10b981;" data-sort-value="${row.wma_forecast || 0}">${row.wma_forecast ? Math.round(row.wma_forecast) : '—'}</td>
+                <td class="text-center fw-700" style="color:#f59e0b;" data-sort-value="${row.sma_restock || 0}">${row.sma_restock > 0 ? row.sma_restock : '—'}</td>
+                <td class="text-center fw-700" style="color:#f59e0b;" data-sort-value="${row.wma_restock || 0}">${row.wma_restock > 0 ? row.wma_restock : '—'}</td>
+                <td class="text-center" data-sort-value="${needsRestock ? 2 : (row.sma_forecast ? 1 : 0)}">${badge}</td>
             </tr>`;
         });
         html += '</tbody></table></div>';
@@ -695,7 +971,7 @@ loadItems();
 loadOverview();
 
 (function attachFilterEnterKey() {
-    const filterControls = ['itemSelect', 'periodsSelect'];
+    const filterControls = ['periodsSelect'];
     filterControls.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;

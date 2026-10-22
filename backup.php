@@ -324,7 +324,7 @@ function doPost(e) {
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
 <script>
 let deleteTargetFilename = null;
 let restoreTargetFilename = null;
@@ -345,12 +345,12 @@ async function loadBackups() {
             container.innerHTML = '<div class="empty-state p-5 text-center"><i class="fa-solid fa-box-open fa-2x text-muted mb-3"></i><p class="text-muted">No backups yet. Click "Download Backup to PC" or "Upload to Google Drive" to create your first backup.</p></div>';
             return;
         }
-        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th>Filename</th><th>Size</th><th>Created</th><th style="width:160px;">Actions</th></tr></thead><tbody>';
+        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th class="sortable-th">Filename <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Size <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Created <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="no-sort" style="width:160px;">Actions</th></tr></thead><tbody>';
         j.data.forEach(f => {
             html += `<tr>
-                <td><i class="fa-solid fa-file-code me-2 text-emerald"></i><span style="font-family:monospace; font-size:0.8rem;">${esc(f.filename)}</span></td>
-                <td class="text-muted small">${f.size_fmt}</td>
-                <td class="text-muted small">${f.created}</td>
+                <td data-sort-value="${esc(f.filename)}"><i class="fa-solid fa-file-code me-2 text-emerald"></i><span style="font-family:monospace; font-size:0.8rem;">${esc(f.filename)}</span></td>
+                <td class="text-muted small" data-sort-value="${f.size || 0}">${f.size_fmt}</td>
+                <td class="text-muted small" data-sort-value="${f.created || ''}">${f.created}</td>
                 <td>
                     <div class="d-flex gap-1">
                         <a href="/sharonstore3.0/api/backup.php?action=download&file=${encodeURIComponent(f.filename)}" class="btn btn-sm btn-outline-primary" title="Download to PC">

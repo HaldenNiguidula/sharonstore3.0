@@ -14,7 +14,7 @@ $currentAdminRole = currentRole();
     <title>Sales Reports - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=17">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=29">
 <style>
 .report-tabs {
     display: flex;
@@ -54,18 +54,6 @@ $currentAdminRole = currentRole();
 }
 .clickable-period:hover {
     text-decoration: underline;
-}
-.sortable-th {
-    cursor: pointer;
-    user-select: none;
-}
-.sortable-th:hover {
-    background-color: var(--surface-2);
-}
-.sort-icon {
-    font-size: 0.8em;
-    margin-left: 5px;
-    color: var(--txt-muted);
 }
 
 /* Screen: Hide print-only elements */
@@ -420,20 +408,32 @@ $currentAdminRole = currentRole();
             <!-- Table Card / Official Print Table -->
             <div class="card">
                 <div class="card-header bg-white no-print">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Data Breakdown</h5>
-                        <small class="text-muted"><i class="fa-solid fa-circle-info me-1"></i>Click any date to view items sold</small>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h5 class="mb-0">Data Breakdown</h5>
+                            <small class="text-muted"><i class="fa-solid fa-circle-info me-1"></i>Click any date to view items sold</small>
+                        </div>
+                        <div id="weeklyFilterGroup" class="d-none align-items-center flex-wrap gap-2">
+                            <span class="text-muted small fw-bold"><i class="fa-regular fa-calendar-days me-1 text-emerald"></i>Filter Table Date Range:</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <input type="date" id="weeklyDateStart" class="form-control form-control-sm" style="width:135px;" title="Start date">
+                                <span class="text-muted small">to</span>
+                                <input type="date" id="weeklyDateEnd" class="form-control form-control-sm" style="width:135px;" title="End date">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="filterWeeklyTable()" title="Filter weekly table">Filter</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetWeeklyFilter()" title="Reset filter">Reset</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-custom table-report mb-0">
-                            <thead>
+                        <table class="table table-custom table-report mb-0" id="salesReportTable">
+                            <thead id="tableHead">
                                 <tr>
-                                    <th style="width: 60px;" class="text-center">#</th>
-                                    <th>Period / Date</th>
-                                    <th class="text-center" style="width: 160px;">Transactions</th>
-                                    <th class="text-end" style="width: 200px;">Total Revenue</th>
+                                    <th style="width: 60px;" class="text-center sortable-th"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                    <th class="sortable-th">Period / Date <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                    <th class="text-center sortable-th" style="width: 160px;">Transactions <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                    <th class="text-end sortable-th" style="width: 200px;">Total Revenue <i class="fa-solid fa-sort sort-icon no-print"></i></th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody">
@@ -441,7 +441,7 @@ $currentAdminRole = currentRole();
                             </tbody>
                             <tfoot id="tableFoot">
                                 <tr style="background:#f8fafc; font-weight:800;">
-                                    <td colspan="2" class="text-uppercase text-dark">Grand Total</td>
+                                    <td colspan="2" class="text-uppercase text-dark" id="footGrandLabel">Grand Total</td>
                                     <td class="text-center" id="footTotalTxns">0</td>
                                     <td class="text-end" id="footTotalRevenue" style="color:var(--accent);">₱0.00</td>
                                 </tr>
@@ -519,16 +519,10 @@ $currentAdminRole = currentRole();
                     <table class="table table-custom table-report mb-0">
                         <thead>
                             <tr>
-                                <th style="width:50px;" class="text-center">#</th>
-                                <th class="sortable-th" onclick="sortBreakdown('item_name')">
-                                    Item Name <i class="fa-solid fa-sort sort-icon no-print" id="sort-icon-item_name"></i>
-                                </th>
-                                <th class="sortable-th text-center" style="width:160px;" onclick="sortBreakdown('qty_sold')">
-                                    Quantity Sold <i class="fa-solid fa-sort sort-icon no-print" id="sort-icon-qty_sold"></i>
-                                </th>
-                                <th class="sortable-th text-end" style="width:190px;" onclick="sortBreakdown('total_revenue')">
-                                    Total Revenue <i class="fa-solid fa-sort sort-icon no-print" id="sort-icon-total_revenue"></i>
-                                </th>
+                                <th style="width:50px;" class="text-center sortable-th"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th">Item Name <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th text-center" style="width:160px;">Quantity Sold <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th text-end" style="width:190px;">Total Revenue <i class="fa-solid fa-sort sort-icon no-print"></i></th>
                             </tr>
                         </thead>
                         <tbody id="bdTableBody">
@@ -577,14 +571,12 @@ $currentAdminRole = currentRole();
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=25"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=26"></script>
 <script>
 let salesChart = null;
 let currentReportType = 'daily';
 let breakdownData = [];
 let currentBreakdownPeriodLabel = '';
-let sortCol = 'total_revenue';
-let sortDesc = true;
 const bdModal = new bootstrap.Modal(document.getElementById('breakdownModal'));
 
 // Print Main Sales Table Report
@@ -631,7 +623,43 @@ async function loadReport(type, tabEl = null) {
     document.getElementById('printReportHeading').textContent = printHeadingMap[type] || 'Official Sales Report';
     document.getElementById('printMetaPeriod').textContent = printMetaMap[type] || 'Sales Report';
     
-    document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="text-center py-4"><span class="spinner-border spinner-border-sm text-emerald"></span></td></tr>';
+    const isWeekly = type === 'weekly';
+    const weeklyFilterEl = document.getElementById('weeklyFilterGroup');
+    if (weeklyFilterEl) {
+        if (isWeekly) {
+            weeklyFilterEl.classList.remove('d-none');
+            weeklyFilterEl.classList.add('d-flex');
+        } else {
+            weeklyFilterEl.classList.add('d-none');
+            weeklyFilterEl.classList.remove('d-flex');
+        }
+    }
+
+    const thead = document.getElementById('tableHead');
+    if (thead) {
+        if (isWeekly) {
+            thead.innerHTML = `<tr>
+                <th style="width: 60px;" class="text-center sortable-th"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="sortable-th">Week <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="sortable-th">Date Range <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="text-center sortable-th" style="width: 150px;">Transactions <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="text-end sortable-th" style="width: 180px;">Total Revenue <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+            </tr>`;
+            const footLbl = document.getElementById('footGrandLabel');
+            if (footLbl) footLbl.setAttribute('colspan', '3');
+        } else {
+            thead.innerHTML = `<tr>
+                <th style="width: 60px;" class="text-center sortable-th"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="sortable-th">Period / Date <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="text-center sortable-th" style="width: 160px;">Transactions <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th class="text-end sortable-th" style="width: 200px;">Total Revenue <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+            </tr>`;
+            const footLbl = document.getElementById('footGrandLabel');
+            if (footLbl) footLbl.setAttribute('colspan', '2');
+        }
+    }
+    
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="${isWeekly ? 5 : 4}" class="text-center py-4"><span class="spinner-border spinner-border-sm text-emerald"></span></td></tr>`;
 
     try {
         const res = await fetch('/sharonstore3.0/api/reports.php?action=sales_report&type=' + type);
@@ -643,8 +671,9 @@ async function loadReport(type, tabEl = null) {
         }
         
         const d = json.data;
+        currentTableData = d.tableData || [];
         
-        // Update Chart
+        // Update Chart (uncluttered clean labels)
         if (salesChart) salesChart.destroy();
         const ctx = document.getElementById('salesChart').getContext('2d');
         salesChart = new Chart(ctx, {
@@ -669,51 +698,98 @@ async function loadReport(type, tabEl = null) {
             }
         });
 
-        // Compute Totals
-        let grandTxCount = 0;
-        let grandRevenue = 0;
-        const totalPeriods = d.tableData ? d.tableData.length : 0;
-
-        // Update Table
-        let tbody = '';
-        if (!d.tableData || d.tableData.length === 0) {
-            tbody = '<tr><td colspan="4" class="text-center py-4 text-muted">No sales data found for this period.</td></tr>';
-        } else {
-            d.tableData.forEach((row, index) => {
-                const safePeriod = esc(row.period);
-                const safeRawDate = esc(row.raw_date);
-                const txCount = parseInt(row.tx_count, 10) || 0;
-                const revenue = parseFloat(row.revenue) || 0;
-
-                grandTxCount += txCount;
-                grandRevenue += revenue;
-
-                tbody += `<tr>
-                    <td class="text-center text-muted fw-bold">${index + 1}</td>
-                    <td class="fw-600">
-                        <a class="clickable-period" onclick="openBreakdown('${safeRawDate}', '${safePeriod}')" title="Click to view detailed items sold">
-                            <i class="fa-solid fa-magnifying-glass-chart me-1"></i> ${safePeriod}
-                        </a>
-                    </td>
-                    <td class="text-center">${txCount.toLocaleString()}</td>
-                    <td class="text-end fw-700" style="color:var(--accent);">₱${revenue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                </tr>`;
-            });
-        }
-        document.getElementById('tableBody').innerHTML = tbody;
-
-        // Update Table Footers & Print KPI Strip
-        document.getElementById('footTotalTxns').textContent = grandTxCount.toLocaleString();
-        document.getElementById('footTotalRevenue').textContent = '₱' + grandRevenue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-        
-        document.getElementById('printKpiPeriods').textContent = totalPeriods;
-        document.getElementById('printKpiTxns').textContent = grandTxCount.toLocaleString();
-        document.getElementById('printKpiRevenue').textContent = '₱' + grandRevenue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+        // Render Table with Date Range for weekly
+        renderReportTable(currentTableData);
 
     } catch (e) {
         showToast('Failed to load report data.', 'error');
-        document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Error loading data.</td></tr>';
+        document.getElementById('tableBody').innerHTML = `<tr><td colspan="${isWeekly ? 5 : 4}" class="text-center py-4 text-danger">Error loading data.</td></tr>`;
     }
+}
+
+function renderReportTable(data) {
+    const isWeekly = currentReportType === 'weekly';
+    const colCount = isWeekly ? 5 : 4;
+    let grandTxCount = 0;
+    let grandRevenue = 0;
+    const totalPeriods = data ? data.length : 0;
+
+    let tbody = '';
+    if (!data || data.length === 0) {
+        tbody = `<tr><td colspan="${colCount}" class="text-center py-4 text-muted">No sales data found for this period.</td></tr>`;
+    } else {
+        data.forEach((row, index) => {
+            const safePeriod = esc(row.period);
+            const safeRawDate = esc(row.raw_date);
+            const safeDateRange = row.date_range ? esc(row.date_range) : '';
+            const txCount = parseInt(row.tx_count, 10) || 0;
+            const revenue = parseFloat(row.revenue) || 0;
+
+            grandTxCount += txCount;
+            grandRevenue += revenue;
+
+            const modalTitleParam = isWeekly && row.date_range
+                ? `${safePeriod} (${safeDateRange})`
+                : safePeriod;
+
+            tbody += `<tr>
+                <td class="text-center text-muted fw-bold" data-sort-value="${index + 1}">${index + 1}</td>
+                <td class="fw-600" data-sort-value="${safeRawDate}">
+                    <a class="clickable-period" onclick="openBreakdown('${safeRawDate}', '${modalTitleParam}')" title="Click to view detailed items sold">
+                        <i class="fa-solid fa-magnifying-glass-chart me-1"></i> ${safePeriod}
+                    </a>
+                </td>
+                ${isWeekly ? `<td class="fw-semibold text-secondary" data-sort-value="${safeDateRange}"><i class="fa-regular fa-calendar-days me-1 text-emerald"></i>${safeDateRange}</td>` : ''}
+                <td class="text-center" data-sort-value="${txCount}">${txCount.toLocaleString()}</td>
+                <td class="text-end fw-700" style="color:var(--accent);" data-sort-value="${revenue}">₱${revenue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            </tr>`;
+        });
+    }
+    document.getElementById('tableBody').innerHTML = tbody;
+
+    // Update Table Footers & Print KPI Strip
+    document.getElementById('footTotalTxns').textContent = grandTxCount.toLocaleString();
+    document.getElementById('footTotalRevenue').textContent = '₱' + grandRevenue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    
+    document.getElementById('printKpiPeriods').textContent = totalPeriods;
+    document.getElementById('printKpiTxns').textContent = grandTxCount.toLocaleString();
+    document.getElementById('printKpiRevenue').textContent = '₱' + grandRevenue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+    if (window.initSortableTables) {
+        window.initSortableTables();
+    }
+}
+
+function filterWeeklyTable() {
+    const startVal = document.getElementById('weeklyDateStart').value;
+    const endVal = document.getElementById('weeklyDateEnd').value;
+    if (!startVal && !endVal) {
+        renderReportTable(currentTableData);
+        return;
+    }
+    const start = startVal ? new Date(startVal + 'T00:00:00') : new Date('1970-01-01');
+    const end = endVal ? new Date(endVal + 'T23:59:59') : new Date('2099-12-31');
+
+    const filtered = currentTableData.filter(row => {
+        if (!row.date_range) return true;
+        const parts = row.date_range.split('–').map(s => s.trim());
+        if (parts.length === 2) {
+            const rowStart = new Date(parts[0]);
+            const rowEnd = new Date(parts[1] + ' 23:59:59');
+            return rowStart <= end && rowEnd >= start;
+        }
+        return true;
+    });
+
+    renderReportTable(filtered);
+}
+
+function resetWeeklyFilter() {
+    const s = document.getElementById('weeklyDateStart');
+    const e = document.getElementById('weeklyDateEnd');
+    if (s) s.value = '';
+    if (e) e.value = '';
+    renderReportTable(currentTableData);
 }
 
 async function openBreakdown(rawDate, periodLabel) {
@@ -722,11 +798,6 @@ async function openBreakdown(rawDate, periodLabel) {
     document.getElementById('bdPrintPeriodLabel').textContent = periodLabel;
     document.getElementById('bdTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-4"><span class="spinner-border text-emerald"></span></td></tr>';
     bdModal.show();
-    
-    // Reset sort
-    sortCol = 'total_revenue';
-    sortDesc = true;
-    updateSortIcons();
 
     try {
         const res = await fetch(`/sharonstore3.0/api/reports.php?action=item_breakdown&type=${currentReportType}&raw_date=${encodeURIComponent(rawDate)}`);
@@ -741,45 +812,6 @@ async function openBreakdown(rawDate, periodLabel) {
     } catch (err) {
         document.getElementById('bdTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Failed to fetch data.</td></tr>';
     }
-}
-
-function sortBreakdown(col) {
-    if (sortCol === col) {
-        sortDesc = !sortDesc;
-    } else {
-        sortCol = col;
-        sortDesc = true;
-    }
-    updateSortIcons();
-    
-    breakdownData.sort((a, b) => {
-        let valA = a[sortCol];
-        let valB = b[sortCol];
-        
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
-        
-        if (valA < valB) return sortDesc ? 1 : -1;
-        if (valA > valB) return sortDesc ? -1 : 1;
-        return 0;
-    });
-    
-    renderBreakdownTable();
-}
-
-function updateSortIcons() {
-    ['item_name', 'qty_sold', 'total_revenue'].forEach(c => {
-        const el = document.getElementById('sort-icon-' + c);
-        if (el) {
-            if (c === sortCol) {
-                el.className = 'fa-solid sort-icon no-print ' + (sortDesc ? 'fa-sort-down' : 'fa-sort-up');
-                el.style.color = 'var(--accent)';
-            } else {
-                el.className = 'fa-solid fa-sort sort-icon no-print';
-                el.style.color = 'var(--txt-muted)';
-            }
-        }
-    });
 }
 
 function renderBreakdownTable() {
@@ -801,10 +833,10 @@ function renderBreakdownTable() {
         totalRev += rev;
 
         html += `<tr>
-            <td class="text-center text-muted fw-bold">${idx + 1}</td>
-            <td class="fw-600">${esc(row.item_name)}</td>
-            <td class="text-center fw-700">${qty}</td>
-            <td class="text-end fw-700" style="color:var(--accent);">₱${rev.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            <td class="text-center text-muted fw-bold" data-sort-value="${idx + 1}">${idx + 1}</td>
+            <td class="fw-600" data-sort-value="${esc(row.item_name)}">${esc(row.item_name)}</td>
+            <td class="text-center fw-700" data-sort-value="${qty}">${qty.toLocaleString()}</td>
+            <td class="text-end fw-700" style="color:var(--accent);" data-sort-value="${rev}">₱${rev.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
         </tr>`;
     });
     document.getElementById('bdTableBody').innerHTML = html;
