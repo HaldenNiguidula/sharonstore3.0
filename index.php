@@ -464,10 +464,6 @@ body {
             <i class="fa-solid fa-right-to-bracket"></i>
             <span id="loginBtnText">Sign In</span>
         </button>
-
-        <div class="login-switch-prompt">
-            New store staff? <a href="javascript:void(0)" onclick="switchAuthTab('register')">Register as Cashier</a>
-        </div>
     </form>
 
     <!-- ══ REGISTER FORM ══════════════════════════════════════════ -->
@@ -525,10 +521,6 @@ body {
             <i class="fa-solid fa-user-plus"></i>
             <span id="regBtnText">Create Account</span>
         </button>
-
-        <div class="login-switch-prompt">
-            Already have an account? <a href="javascript:void(0)" onclick="switchAuthTab('login')">Sign in here</a>
-        </div>
     </form>
 
     <div class="login-footer">
