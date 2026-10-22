@@ -170,7 +170,7 @@ async function loadUsers() {
             : '<span class="badge badge-secondary"><i class="fa-solid fa-cash-register me-1"></i>Cashier</span>';
         const statusBadge = u.is_active
             ? '<span class="badge badge-success">Active</span>'
-            : '<span class="badge badge-danger">Inactive</span>';
+            : '<span class="badge badge-warning text-dark"><i class="fa-solid fa-clock me-1"></i>Pending Approval</span>';
         html += `<tr>
             <td data-sort-value="${esc(u.full_name)}">
                 <div class="d-flex align-items-center gap-3">
@@ -185,8 +185,8 @@ async function loadUsers() {
             <td>
                 <div class="d-flex gap-1">
                     <button class="btn btn-sm btn-outline-primary" onclick="openEdit(${u.user_id})"><i class="fa-solid fa-pen"></i></button>
-                    ${!isMe ? `<button class="btn btn-sm btn-secondary" onclick="toggleActive(${u.user_id})" title="${u.is_active?'Deactivate':'Activate'}">
-                        <i class="fa-solid ${u.is_active?'fa-user-slash':'fa-user-check'}"></i></button>
+                    ${!isMe ? `<button class="btn btn-sm ${u.is_active ? 'btn-secondary' : 'btn-success text-white'}" onclick="toggleActive(${u.user_id})" title="${u.is_active?'Deactivate':'Approve & Activate'}">
+                        <i class="fa-solid ${u.is_active?'fa-user-slash':'fa-user-check'}"></i>${u.is_active ? '' : ' <span class="d-none d-md-inline small fw-bold">Approve</span>'}</button>
                     <button class="btn btn-sm btn-danger" onclick="openDelete(${u.user_id},'${esc(u.full_name)}')"><i class="fa-solid fa-trash"></i></button>` : ''}
                 </div>
             </td>

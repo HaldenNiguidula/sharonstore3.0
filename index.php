@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// Login Page — Sharon Store System
+// Auth Page (Sign In & Cashier Registration) — Sharon Store System
 // ============================================================
 require_once __DIR__ . '/includes/db.php';
 startAppSession();
@@ -12,42 +12,95 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 
-$error   = '';
-$success = '';
+$error     = '';
+$success   = '';
+$activeTab = 'login'; // 'login' or 'register'
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
+    $formAction = $_POST['form_action'] ?? 'login';
 
-    if ($username === '' || $password === '') {
-        $error = 'Please enter both username and password.';
-    } else {
-        try {
-            $db   = getDB();
-            $stmt = $db->prepare("SELECT user_id, username, password, full_name, role FROM tbl_users WHERE username = ? AND is_active = 1 LIMIT 1");
-            $stmt->execute([$username]);
-            $user = $stmt->fetch();
+    if ($formAction === 'register') {
+        $activeTab = 'register';
+        $regFullName = trim($_POST['reg_full_name'] ?? '');
+        $regUsername = trim($_POST['reg_username'] ?? '');
+        $regPassword = $_POST['reg_password'] ?? '';
+        $regConfirm  = $_POST['reg_confirm'] ?? '';
 
-            if ($user && password_verify($password, $user['password'])) {
-                $_SESSION['user_id']   = $user['user_id'];
-                $_SESSION['username']  = $user['username'];
-                $_SESSION['full_name'] = $user['full_name'];
-                $_SESSION['role']      = $user['role'];
+        if ($regFullName === '' || $regUsername === '' || $regPassword === '') {
+            $error = 'Please fill in all required fields.';
+        } elseif (strlen($regUsername) < 3 || strlen($regUsername) > 30) {
+            $error = 'Username must be between 3 and 30 characters.';
+        } elseif (!preg_match('/^[a-zA-Z0-9_]+$/', $regUsername)) {
+            $error = 'Username can only contain letters, numbers, and underscores.';
+        } elseif (strlen($regPassword) < 6) {
+            $error = 'Password must be at least 6 characters long.';
+        } elseif ($regPassword !== $regConfirm) {
+            $error = 'Passwords do not match.';
+        } else {
+            try {
+                $db = getDB();
+                $chk = $db->prepare("SELECT COUNT(*) FROM tbl_users WHERE LOWER(username) = LOWER(?)");
+                $chk->execute([$regUsername]);
+                if ((int)$chk->fetchColumn() > 0) {
+                    $error = "Username '{$regUsername}' is already taken. Please choose another.";
+                } else {
+                    $hash = password_hash($regPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+                    $ins = $db->prepare("INSERT INTO tbl_users (username, password, full_name, role, is_active) VALUES (?, ?, ?, 'cashier', 0)");
+                    $ins->execute([$regUsername, $hash, $regFullName]);
+                    $newId = (int)$db->lastInsertId();
 
-                // Audit log
-                require_once __DIR__ . '/includes/audit.php';
-                logAudit($user['user_id'], 'LOGIN', 'Auth', "User '{$user['username']}' signed in.");
+                    require_once __DIR__ . '/includes/audit.php';
+                    logAudit($newId, 'SELF_REGISTER', 'Auth', "Cashier '{$regUsername}' ({$regFullName}) registered. Awaiting manager approval.");
 
-                $redirect = $user['role'] === 'admin' ? '/sharonstore3.0/dashboard.php' : '/sharonstore3.0/pos.php';
-                session_write_close();
-                header("Location: $redirect");
-                exit();
-            } else {
-                $error = 'Invalid username or password. Please try again.';
+                    $success = "Registration submitted! Your account is pending Store Manager approval in the Accounts panel.";
+                    $activeTab = 'login';
+                    $_POST['username'] = $regUsername; // Pre-fill login input
+                }
+            } catch (Exception $e) {
+                $error = 'Registration failed due to a system error. Please contact the administrator.';
+                error_log("Register error: " . $e->getMessage());
             }
-        } catch (Exception $e) {
-            $error = 'System error. Please contact the administrator.';
-            error_log("Login error: " . $e->getMessage());
+        }
+    } else {
+        // Sign In
+        $activeTab = 'login';
+        $username = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        if ($username === '' || $password === '') {
+            $error = 'Please enter both username and password.';
+        } else {
+            try {
+                $db   = getDB();
+                $stmt = $db->prepare("SELECT user_id, username, password, full_name, role, is_active FROM tbl_users WHERE username = ? LIMIT 1");
+                $stmt->execute([$username]);
+                $user = $stmt->fetch();
+
+                if ($user && password_verify($password, $user['password'])) {
+                    if ((int)$user['is_active'] !== 1) {
+                        $error = 'Your account is pending manager approval. Please ask the Store Manager to activate your account.';
+                    } else {
+                        $_SESSION['user_id']   = $user['user_id'];
+                        $_SESSION['username']  = $user['username'];
+                        $_SESSION['full_name'] = $user['full_name'];
+                        $_SESSION['role']      = $user['role'];
+
+                        // Audit log
+                        require_once __DIR__ . '/includes/audit.php';
+                        logAudit($user['user_id'], 'LOGIN', 'Auth', "User '{$user['username']}' signed in.");
+
+                        $redirect = $user['role'] === 'admin' ? '/sharonstore3.0/dashboard.php' : '/sharonstore3.0/pos.php';
+                        session_write_close();
+                        header("Location: $redirect");
+                        exit();
+                    }
+                } else {
+                    $error = 'Invalid username or password. Please try again.';
+                }
+            } catch (Exception $e) {
+                $error = 'System error. Please contact the administrator.';
+                error_log("Login error: " . $e->getMessage());
+            }
         }
     }
 }
@@ -57,8 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In — Sharon Store</title>
-    <meta name="description" content="Sharon Store POS & Inventory Management System — Secure Login">
+    <title>Sign In &mdash; Sharon Store</title>
+    <meta name="description" content="Sharon Store POS & Inventory Management System — Secure Authentication">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -75,7 +128,8 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    padding: 24px 16px;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -115,13 +169,13 @@ body {
 /* Card */
 .login-card {
     position: relative; z-index: 1;
-    width: 100%; max-width: 420px;
-    background: rgba(30, 42, 58, 0.85);
+    width: 100%; max-width: 440px;
+    background: rgba(30, 42, 58, 0.88);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 24px;
-    padding: 44px 40px;
+    padding: 38px 36px;
     box-shadow: 0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
     animation: card-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -133,12 +187,12 @@ body {
 /* Logo */
 .login-logo {
     display: flex; align-items: center; justify-content: center;
-    gap: 14px; margin-bottom: 28px;
+    gap: 14px; margin-bottom: 22px;
 }
 .login-logo-icon {
-    width: 52px; height: 52px;
+    width: 50px; height: 50px;
     background: linear-gradient(135deg, #10b981, #059669);
-    border-radius: 16px;
+    border-radius: 15px;
     display: flex; align-items: center; justify-content: center;
     font-size: 22px; color: #fff;
     box-shadow: 0 8px 24px rgba(16,185,129,0.45);
@@ -147,7 +201,7 @@ body {
     display: flex; flex-direction: column; line-height: 1.2;
 }
 .login-store-name {
-    font-size: 1.5rem; font-weight: 900;
+    font-size: 1.45rem; font-weight: 900;
     background: linear-gradient(135deg, #10b981, #34d399);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text; letter-spacing: -0.5px;
@@ -157,23 +211,59 @@ body {
     letter-spacing: 0.03em;
 }
 
+/* Auth Segmented Tabs */
+.auth-tabs {
+    display: flex;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 13px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 24px;
+}
+.auth-tab {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+}
+.auth-tab:hover {
+    color: #ffffff;
+}
+.auth-tab.active {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+}
+
 /* Title */
 .login-title {
-    text-align: center; margin-bottom: 28px;
+    text-align: center; margin-bottom: 22px;
 }
 .login-title h1 {
-    font-size: 1.35rem; font-weight: 800; color: #ffffff;
-    letter-spacing: -0.3px; margin-bottom: 6px;
+    font-size: 1.3rem; font-weight: 800; color: #ffffff;
+    letter-spacing: -0.3px; margin-bottom: 4px;
 }
 .login-title p {
-    font-size: 0.85rem; color: #94a3b8;
+    font-size: 0.82rem; color: #94a3b8;
 }
 
 /* Form */
-.form-group { margin-bottom: 18px; }
+.form-group { margin-bottom: 16px; }
 .form-label {
-    display: block; font-size: 0.82rem; font-weight: 600;
-    color: #d1dae8; margin-bottom: 8px;
+    display: block; font-size: 0.8rem; font-weight: 600;
+    color: #d1dae8; margin-bottom: 6px;
     letter-spacing: 0.02em;
 }
 .input-wrap { position: relative; }
@@ -184,11 +274,11 @@ body {
     transition: color 0.2s;
 }
 .login-input {
-    width: 100%; padding: 13px 16px 13px 42px;
+    width: 100%; padding: 12px 16px 12px 42px;
     background: rgba(255,255,255,0.07);
     border: 1px solid rgba(255,255,255,0.15);
     border-radius: 12px; color: #ffffff;
-    font-size: 0.93rem; font-family: 'Inter', sans-serif;
+    font-size: 0.92rem; font-family: 'Inter', sans-serif;
     font-weight: 500; transition: all 0.2s;
     outline: none;
 }
@@ -210,13 +300,13 @@ body {
 }
 .pw-toggle:hover { color: #94a3b8; }
 
-/* Error alert */
+/* Alerts */
 .login-error {
     background: rgba(239,68,68,0.12);
     border: 1px solid rgba(239,68,68,0.3);
-    border-radius: 10px; padding: 12px 16px;
+    border-radius: 10px; padding: 12px 14px;
     display: flex; align-items: flex-start; gap: 10px;
-    font-size: 0.83rem; color: #fca5a5;
+    font-size: 0.82rem; color: #fca5a5;
     margin-bottom: 18px; animation: shake 0.4s ease;
 }
 @keyframes shake {
@@ -224,19 +314,40 @@ body {
     25%      { transform: translateX(-6px); }
     75%      { transform: translateX(6px); }
 }
-.login-error i { flex-shrink:0; margin-top:1px; font-size:1rem; color:#f87171; }
+.login-error i { flex-shrink:0; margin-top:2px; font-size:1rem; color:#f87171; }
 
-/* Login button */
+.login-success {
+    background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 10px; padding: 12px 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 0.82rem; color: #6ee7b7;
+    margin-bottom: 18px;
+}
+.login-success i { flex-shrink:0; margin-top:2px; font-size:1rem; color:#10b981; }
+
+.login-info-box {
+    background: rgba(16,185,129,0.06);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.77rem;
+    color: #94a3b8;
+    line-height: 1.45;
+    margin-bottom: 16px;
+}
+
+/* Submit button */
 .login-btn {
-    width: 100%; padding: 14px;
+    width: 100%; padding: 13px;
     background: linear-gradient(135deg, #10b981, #059669);
     border: none; border-radius: 12px;
-    color: #fff; font-size: 0.95rem; font-weight: 700;
+    color: #fff; font-size: 0.94rem; font-weight: 700;
     font-family: 'Inter', sans-serif; cursor: pointer;
     transition: all 0.2s; letter-spacing: 0.02em;
     box-shadow: 0 4px 16px rgba(16,185,129,0.35);
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    margin-top: 8px;
+    margin-top: 6px;
 }
 .login-btn:hover {
     background: linear-gradient(135deg, #34d399, #10b981);
@@ -246,35 +357,29 @@ body {
 .login-btn:active { transform: translateY(0); }
 .login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-/* Credentials hint */
-.login-hint {
-    margin-top: 24px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 10px; padding: 14px 16px;
+/* Switch link prompt */
+.login-switch-prompt {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 0.82rem;
+    color: #8fa3bc;
 }
-.login-hint-title {
-    font-size: 0.7rem; font-weight: 700; color: #8fa3bc;
-    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+.login-switch-prompt a {
+    color: #34d399;
+    text-decoration: none;
+    font-weight: 700;
+    margin-left: 4px;
+    transition: color 0.2s;
 }
-.cred-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 4px 0;
+.login-switch-prompt a:hover {
+    color: #6ee7b7;
+    text-decoration: underline;
 }
-.cred-role {
-    font-size: 0.75rem; font-weight: 700;
-    padding: 2px 8px; border-radius: 12px;
-}
-.cred-role.admin    { background: rgba(16,185,129,0.18); color: #6ee7b7; }
-.cred-role.cashier  { background: rgba(96,165,250,0.18);  color: #93c5fd; }
-.cred-info { font-size: 0.8rem; color: #a0b4cc; font-family: 'Courier New', monospace; font-weight: 600; }
-.cred-btn  { font-size: 0.72rem; color: #34d399; background: none; border: none; cursor: pointer; padding: 2px 6px; font-weight: 600; }
-.cred-btn:hover { color: #6ee7b7; }
 
 /* Footer */
 .login-footer {
-    text-align: center; margin-top: 20px;
-    font-size: 0.73rem; color: #5c7a99;
+    text-align: center; margin-top: 22px;
+    font-size: 0.72rem; color: #5c7a99;
 }
 </style>
 </head>
@@ -297,13 +402,23 @@ body {
         </div>
     </div>
 
-    <!-- Title -->
-    <div class="login-title">
-        <h1>Welcome Back</h1>
-        <p>Sign in to continue to your dashboard</p>
+    <!-- Segmented Tabs -->
+    <div class="auth-tabs">
+        <button type="button" class="auth-tab <?= $activeTab === 'login' ? 'active' : '' ?>" id="tabSignIn" onclick="switchAuthTab('login')">
+            <i class="fa-solid fa-right-to-bracket me-2"></i>Sign In
+        </button>
+        <button type="button" class="auth-tab <?= $activeTab === 'register' ? 'active' : '' ?>" id="tabRegister" onclick="switchAuthTab('register')">
+            <i class="fa-solid fa-user-plus me-2"></i>Register
+        </button>
     </div>
 
-    <!-- Error Message -->
+    <!-- Title -->
+    <div class="login-title">
+        <h1 id="authTitle"><?= $activeTab === 'register' ? 'Create Cashier Account' : 'Welcome Back' ?></h1>
+        <p id="authSubtitle"><?= $activeTab === 'register' ? 'Submit details for Store Manager activation' : 'Sign in to access POS & Store Dashboard' ?></p>
+    </div>
+
+    <!-- Alerts -->
     <?php if ($error): ?>
     <div class="login-error">
         <i class="fa-solid fa-circle-exclamation"></i>
@@ -311,8 +426,16 @@ body {
     </div>
     <?php endif; ?>
 
-    <!-- Login Form -->
-    <form method="POST" action="" id="loginForm" autocomplete="on">
+    <?php if ($success): ?>
+    <div class="login-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <span><?= htmlspecialchars($success) ?></span>
+    </div>
+    <?php endif; ?>
+
+    <!-- ══ LOGIN FORM ═════════════════════════════════════════════ -->
+    <form method="POST" action="" id="loginForm" class="<?= $activeTab === 'register' ? 'd-none' : '' ?>" autocomplete="on">
+        <input type="hidden" name="form_action" value="login">
 
         <div class="form-group">
             <label class="form-label" for="username">Username</label>
@@ -331,8 +454,7 @@ body {
                        placeholder="Enter your password" required autocomplete="current-password"
                        style="padding-right: 44px;">
                 <i class="fa-solid fa-lock input-icon"></i>
-                <button type="button" class="pw-toggle" id="pwToggle" tabindex="-1"
-                        title="Show/hide password">
+                <button type="button" class="pw-toggle" onclick="togglePasswordVisibility('password', 'pwIcon')" tabindex="-1" title="Show/hide password">
                     <i class="fa-solid fa-eye" id="pwIcon"></i>
                 </button>
             </div>
@@ -343,26 +465,71 @@ body {
             <span id="loginBtnText">Sign In</span>
         </button>
 
+        <div class="login-switch-prompt">
+            New store staff? <a href="javascript:void(0)" onclick="switchAuthTab('register')">Register as Cashier</a>
+        </div>
     </form>
 
-    <!-- Credentials Hint -->
-    <div class="login-hint">
-        <div class="login-hint-title"><i class="fa-solid fa-circle-info me-1"></i>Demo Credentials</div>
-        <div class="cred-row">
-            <span class="cred-role admin">Admin</span>
-            <span class="cred-info">admin / admin123</span>
-            <button class="cred-btn" onclick="fillCreds('admin','admin123')" title="Fill credentials">
-                <i class="fa-solid fa-arrow-up-right-from-square"></i> Use
-            </button>
+    <!-- ══ REGISTER FORM ══════════════════════════════════════════ -->
+    <form method="POST" action="" id="registerForm" class="<?= $activeTab === 'register' ? '' : 'd-none' ?>" autocomplete="off">
+        <input type="hidden" name="form_action" value="register">
+
+        <div class="login-info-box">
+            <i class="fa-solid fa-shield-halved text-emerald me-1"></i>
+            Self-registered accounts are set to <strong>Cashier</strong> and require <strong>Store Manager activation</strong> in Accounts before sign in.
         </div>
-        <div class="cred-row">
-            <span class="cred-role cashier">Cashier</span>
-            <span class="cred-info">cashier1 / cashier123</span>
-            <button class="cred-btn" onclick="fillCreds('cashier1','cashier123')" title="Fill credentials">
-                <i class="fa-solid fa-arrow-up-right-from-square"></i> Use
-            </button>
+
+        <div class="form-group">
+            <label class="form-label" for="regFullName">Full Name <span class="text-danger">*</span></label>
+            <div class="input-wrap">
+                <input type="text" id="regFullName" name="reg_full_name" class="login-input"
+                       placeholder="e.g. Maria Santos" required
+                       value="<?= htmlspecialchars($_POST['reg_full_name'] ?? '') ?>">
+                <i class="fa-solid fa-id-card input-icon"></i>
+            </div>
         </div>
-    </div>
+
+        <div class="form-group">
+            <label class="form-label" for="regUsername">Desired Username <span class="text-danger">*</span></label>
+            <div class="input-wrap">
+                <input type="text" id="regUsername" name="reg_username" class="login-input"
+                       placeholder="e.g. cashier2" required autocomplete="username"
+                       value="<?= htmlspecialchars($_POST['reg_username'] ?? '') ?>">
+                <i class="fa-solid fa-at input-icon"></i>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="regPassword">Password <span class="text-danger">*</span></label>
+            <div class="input-wrap">
+                <input type="password" id="regPassword" name="reg_password" class="login-input"
+                       placeholder="Min. 6 characters" required autocomplete="new-password"
+                       style="padding-right: 44px;">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <button type="button" class="pw-toggle" onclick="togglePasswordVisibility('regPassword', 'regPwIcon')" tabindex="-1" title="Show/hide password">
+                    <i class="fa-solid fa-eye" id="regPwIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="regConfirm">Confirm Password <span class="text-danger">*</span></label>
+            <div class="input-wrap">
+                <input type="password" id="regConfirm" name="reg_confirm" class="login-input"
+                       placeholder="Re-enter password" required autocomplete="new-password">
+                <i class="fa-solid fa-circle-check input-icon"></i>
+            </div>
+        </div>
+
+        <button type="submit" class="login-btn" id="regBtn">
+            <i class="fa-solid fa-user-plus"></i>
+            <span id="regBtnText">Create Account</span>
+        </button>
+
+        <div class="login-switch-prompt">
+            Already have an account? <a href="javascript:void(0)" onclick="switchAuthTab('login')">Sign in here</a>
+        </div>
+    </form>
 
     <div class="login-footer">
         &copy; <?= date('Y') ?> Sharon Store &mdash; Pampang Public Market
@@ -371,32 +538,59 @@ body {
 </div>
 
 <script>
-// Password toggle
-document.getElementById('pwToggle').addEventListener('click', function() {
-    const pw   = document.getElementById('password');
-    const icon = document.getElementById('pwIcon');
-    if (pw.type === 'password') {
-        pw.type = 'text';
-        icon.className = 'fa-solid fa-eye-slash';
-    } else {
-        pw.type = 'password';
-        icon.className = 'fa-solid fa-eye';
-    }
-});
+// Switch between Sign In and Register tabs
+function switchAuthTab(tab) {
+    const loginForm   = document.getElementById('loginForm');
+    const registerForm= document.getElementById('registerForm');
+    const tabSignIn   = document.getElementById('tabSignIn');
+    const tabRegister = document.getElementById('tabRegister');
+    const authTitle   = document.getElementById('authTitle');
+    const authSubtitle= document.getElementById('authSubtitle');
 
-// Fill demo credentials
-function fillCreds(u, p) {
-    document.getElementById('username').value = u;
-    document.getElementById('password').value = p;
-    document.getElementById('username').focus();
+    if (tab === 'register') {
+        loginForm.classList.add('d-none');
+        registerForm.classList.remove('d-none');
+        tabSignIn.classList.remove('active');
+        tabRegister.classList.add('active');
+        authTitle.textContent = 'Create Cashier Account';
+        authSubtitle.textContent = 'Submit details for Store Manager activation';
+        document.getElementById('regFullName').focus();
+    } else {
+        registerForm.classList.add('d-none');
+        loginForm.classList.remove('d-none');
+        tabRegister.classList.remove('active');
+        tabSignIn.classList.add('active');
+        authTitle.textContent = 'Welcome Back';
+        authSubtitle.textContent = 'Sign in to access POS & Store Dashboard';
+        document.getElementById('username').focus();
+    }
 }
 
-// Loading state on submit
+// Password toggle helper
+function togglePasswordVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon  = document.getElementById(iconId);
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+    }
+}
+
+// Form submit loading states
 document.getElementById('loginForm').addEventListener('submit', function() {
-    const btn  = document.getElementById('loginBtn');
-    const text = document.getElementById('loginBtnText');
+    const btn = document.getElementById('loginBtn');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Signing in…</span>';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i><span>Signing in...</span>';
+});
+
+document.getElementById('registerForm').addEventListener('submit', function() {
+    const btn = document.getElementById('regBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i><span>Submitting registration...</span>';
 });
 </script>
 </body>
