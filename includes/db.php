@@ -152,7 +152,18 @@ class DbSessionHandler implements SessionHandlerInterface {
             $stmt = $this->pdo->prepare("REPLACE INTO tbl_sessions (id, data, last_activity) VALUES (?, ?, ?)");
             return $stmt->execute([$id, $data, time()]);
         } catch (Throwable $e) {
-            return false;
+            try {
+                $this->pdo->exec("CREATE TABLE IF NOT EXISTS `tbl_sessions` (
+                    `id` VARCHAR(128) NOT NULL PRIMARY KEY,
+                    `data` MEDIUMTEXT NOT NULL,
+                    `last_activity` INT UNSIGNED NOT NULL,
+                    INDEX (`last_activity`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                $stmt = $this->pdo->prepare("REPLACE INTO tbl_sessions (id, data, last_activity) VALUES (?, ?, ?)");
+                return $stmt->execute([$id, $data, time()]);
+            } catch (Throwable $e2) {
+                return false;
+            }
         }
     }
 
@@ -181,17 +192,19 @@ function startAppSession(): void {
         return;
     }
 
-    ini_set('session.gc_maxlifetime', '604800'); // 7 days
-    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-        || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+    if (!headers_sent()) {
+        ini_set('session.gc_maxlifetime', '604800'); // 7 days
+        $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
 
-    session_set_cookie_params([
-        'lifetime' => 604800,
-        'path'     => '/',
-        'secure'   => $isSecure,
-        'httponly' => true,
-        'samesite' => 'Lax'
-    ]);
+        session_set_cookie_params([
+            'lifetime' => 604800,
+            'path'     => '/',
+            'secure'   => $isSecure,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+    }
 
     try {
         $pdo = getDB();
@@ -216,11 +229,12 @@ function importSeedDataFromDump(PDO $pdo): void {
         return;
     }
 
-    try {
-        $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
-    } catch (Throwable $e) {}
+    try { $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;"); } catch (Throwable $e) {}
+    try { $pdo->exec("SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';"); } catch (Throwable $e) {}
 
+    // Extract complete statements from SQL dump
     $lines = explode("\n", $content);
+    $statements = [];
     $current = '';
 
     foreach ($lines as $line) {
@@ -233,30 +247,43 @@ function importSeedDataFromDump(PDO $pdo): void {
         }
         $current .= $line . "\n";
         if (str_ends_with($trimmed, ';')) {
-            $stmt = trim($current);
+            $statements[] = trim($current);
             $current = '';
+        }
+    }
 
-            if (stripos($stmt, 'DROP TABLE') === 0) {
-                continue;
-            }
-            if (stripos($stmt, 'CREATE TABLE') === 0) {
-                $stmt = preg_replace('/^CREATE TABLE\s+/i', 'CREATE TABLE IF NOT EXISTS ', $stmt);
-            }
-            if (stripos($stmt, 'INSERT INTO') === 0) {
-                $stmt = 'INSERT IGNORE INTO ' . substr($stmt, 11);
-            }
-
+    // Pass 1: Ensure all tables are created first
+    foreach ($statements as $stmt) {
+        if (stripos($stmt, 'CREATE TABLE') === 0) {
+            $createStmt = preg_replace('/^CREATE TABLE\s+/i', 'CREATE TABLE IF NOT EXISTS ', $stmt);
             try {
-                $pdo->exec($stmt);
+                $pdo->exec($createStmt);
             } catch (Throwable $t) {
-                // Ignore query warnings or duplicate entries
+                // If TiDB rejected because referenced parent table doesn't exist yet, strip inline FK constraint
+                try {
+                    $stripped = preg_replace('/,\s*CONSTRAINT\s+[`\w]+\s+FOREIGN\s+KEY\s*\([^)]+\)\s*REFERENCES\s+[`\w]+\s*\([^)]+\)(\s+ON\s+(DELETE|UPDATE)\s+[A-Z\s]+)*/i', '', $createStmt);
+                    $stripped = preg_replace('/,(\s*\))/m', '$1', $stripped);
+                    $pdo->exec($stripped);
+                } catch (Throwable $t2) {
+                    error_log('Table creation fallback error: ' . $t2->getMessage());
+                }
             }
         }
     }
 
-    try {
-        $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
-    } catch (Throwable $e) {}
+    // Pass 2: Insert data into existing tables
+    foreach ($statements as $stmt) {
+        if (stripos($stmt, 'INSERT INTO') === 0) {
+            $insertStmt = 'INSERT IGNORE INTO ' . substr($stmt, 11);
+            try {
+                $pdo->exec($insertStmt);
+            } catch (Throwable $t) {
+                error_log('Seed insert warning: ' . $t->getMessage());
+            }
+        }
+    }
+
+    try { $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;"); } catch (Throwable $e) {}
 }
 
 function ensureSchema(PDO $pdo): void {

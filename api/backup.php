@@ -2,6 +2,7 @@
 // ============================================================
 // Backup API — Sharon Store System
 // Supports Local Backup & Google Drive Cloud Backup (Apps Script Webhook)
+// Compatible with both Local XAMPP and Cloud / Serverless (Vercel / TiDB)
 // ============================================================
 declare(strict_types=1);
 
@@ -11,19 +12,41 @@ require_once __DIR__ . '/../includes/audit.php';
 
 requireAdmin();
 
-$backupDir = __DIR__ . '/../backups/';
-if (!is_dir($backupDir)) mkdir($backupDir, 0755, true);
+/**
+ * Returns a guaranteed writable directory for backups.
+ * On local dev (XAMPP), uses project /backups/ directory.
+ * On serverless (Vercel/Lambda where project root is read-only), falls back to sys temp dir.
+ */
+function getBackupDir(): string {
+    $projectBackup = __DIR__ . '/../backups/';
+    if (!@is_dir($projectBackup)) {
+        @mkdir($projectBackup, 0777, true);
+    }
+    if (@is_dir($projectBackup) && @is_writable($projectBackup)) {
+        return rtrim($projectBackup, '/\\') . DIRECTORY_SEPARATOR;
+    }
+    $tmpBackup = rtrim(sys_get_temp_dir(), '/\\') . DIRECTORY_SEPARATOR . 'sharonstore_backups' . DIRECTORY_SEPARATOR;
+    if (!@is_dir($tmpBackup)) {
+        @mkdir($tmpBackup, 0777, true);
+    }
+    return $tmpBackup;
+}
 
+$backupDir = getBackupDir();
 $db = getDB();
 $userId = currentUserId();
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 // ── Settings Helpers ──────────────────────────────────────────
 function getSetting(PDO $db, string $key, string $default = ''): string {
-    $stmt = $db->prepare("SELECT setting_value FROM tbl_settings WHERE setting_key = ?");
-    $stmt->execute([$key]);
-    $val = $stmt->fetchColumn();
-    return $val !== false && $val !== null ? (string)$val : $default;
+    try {
+        $stmt = $db->prepare("SELECT setting_value FROM tbl_settings WHERE setting_key = ?");
+        $stmt->execute([$key]);
+        $val = $stmt->fetchColumn();
+        return $val !== false && $val !== null ? (string)$val : $default;
+    } catch (\Throwable $e) {
+        return $default;
+    }
 }
 
 function setSetting(PDO $db, string $key, string $value): void {
@@ -35,84 +58,261 @@ function setSetting(PDO $db, string $key, string $value): void {
 }
 
 // ── Generator Helper ──────────────────────────────────────────
+/**
+ * Generates a full database backup SQL file using pure PDO.
+ * Works seamlessly across both local MySQL and remote Cloud MySQL (TiDB Cloud, etc.)
+ * without requiring any external mysqldump binary.
+ */
 function generateBackupFile(string $backupDir, PDO $db, string $prefix = 'sharonstore_backup_'): string {
     $filename = $prefix . date('Y-m-d_H-i-s') . '.sql';
     $filepath = $backupDir . $filename;
 
-    // Try mysqldump first
-    $mysqldumpBin = file_exists('C:\\xampp\\mysql\\bin\\mysqldump.exe') ? 'C:\\xampp\\mysql\\bin\\mysqldump.exe' : 'mysqldump';
-    $cmd = "\"{$mysqldumpBin}\" -u root --no-tablespaces sharonstore_db > " . escapeshellarg($filepath) . " 2>&1";
-    $output = [];
-    exec($cmd, $output, $code);
-
-    if ($code !== 0 || !file_exists($filepath) || filesize($filepath) < 100) {
-        // Fallback: PHP-based dump using PDO
-        $content = "-- Sharon Store Database Backup\n-- Generated: " . date('Y-m-d H:i:s') . "\n-- =============================================\n\n";
-        $content .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
-
-        $tables = $db->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
-        foreach ($tables as $table) {
-            $create = $db->query("SHOW CREATE TABLE `{$table}`")->fetch();
-            $content .= "DROP TABLE IF EXISTS `{$table}`;\n";
-            $content .= $create['Create Table'] . ";\n\n";
-
-            $rows = $db->query("SELECT * FROM `{$table}`")->fetchAll();
-            if ($rows) {
-                $cols = '`' . implode('`,`', array_keys($rows[0])) . '`';
-                $content .= "INSERT INTO `{$table}` ({$cols}) VALUES\n";
-                $vals = [];
-                foreach ($rows as $row) {
-                    $escaped = array_map(fn($v) => $v === null ? 'NULL' : $db->quote((string)$v), $row);
-                    $vals[] = '(' . implode(',', $escaped) . ')';
-                }
-                $content .= implode(",\n", $vals) . ";\n\n";
-            }
-        }
-        $content .= "SET FOREIGN_KEY_CHECKS=1;\n";
-        file_put_contents($filepath, $content);
+    $fp = @fopen($filepath, 'w');
+    if (!$fp) {
+        throw new \RuntimeException("Unable to open backup file for writing: " . $filepath);
     }
+
+    fwrite($fp, "-- Sharon Store Database Backup\n");
+    fwrite($fp, "-- Generated: " . date('Y-m-d H:i:s') . "\n");
+    fwrite($fp, "-- Database: " . DB_NAME . "\n");
+    fwrite($fp, "-- Host: " . DB_HOST . "\n");
+    fwrite($fp, "-- =============================================\n\n");
+    fwrite($fp, "SET FOREIGN_KEY_CHECKS = 0;\n");
+    fwrite($fp, "SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n\n");
+
+    try {
+        $tables = $db->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")->fetchAll(PDO::FETCH_NUM);
+    } catch (\Throwable $e) {
+        $tables = [];
+    }
+    if (empty($tables)) {
+        $tables = $db->query("SHOW TABLES")->fetchAll(PDO::FETCH_NUM);
+    }
+
+    foreach ($tables as $tRow) {
+        $table = $tRow[0];
+
+        // Fetch CREATE TABLE DDL
+        try {
+            $createRow = $db->query("SHOW CREATE TABLE `{$table}`")->fetch(PDO::FETCH_NUM);
+        } catch (\Throwable $e) {
+            continue;
+        }
+
+        if ($createRow && isset($createRow[1])) {
+            fwrite($fp, "DROP TABLE IF EXISTS `{$table}`;\n");
+            fwrite($fp, $createRow[1] . ";\n\n");
+        }
+
+        // Do not dump ephemeral sessions data to keep dumps clean and safe
+        if ($table === 'tbl_sessions') {
+            continue;
+        }
+
+        // Stream table rows in batches
+        try {
+            $stmt = $db->query("SELECT * FROM `{$table}`");
+            $chunk = [];
+            $cols = null;
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                if ($cols === null) {
+                    $cols = '`' . implode('`,`', array_keys($row)) . '`';
+                }
+                $escaped = array_map(function($v) use ($db) {
+                    if ($v === null) return 'NULL';
+                    return $db->quote((string)$v);
+                }, $row);
+                $chunk[] = '(' . implode(',', $escaped) . ')';
+
+                if (count($chunk) >= 100) {
+                    fwrite($fp, "INSERT INTO `{$table}` ({$cols}) VALUES\n" . implode(",\n", $chunk) . ";\n\n");
+                    $chunk = [];
+                }
+            }
+            if (!empty($chunk)) {
+                fwrite($fp, "INSERT INTO `{$table}` ({$cols}) VALUES\n" . implode(",\n", $chunk) . ";\n\n");
+            }
+        } catch (\Throwable $e) {
+            // Continue with other tables if one fails
+        }
+    }
+
+    fwrite($fp, "SET FOREIGN_KEY_CHECKS = 1;\n");
+    fclose($fp);
 
     return $filepath;
 }
 
 // ── Restore Helper ────────────────────────────────────────────
+/**
+ * Restores database from a SQL backup file using a robust PDO streaming parser.
+ * Handles multiline statements, comments, string literals with semicolons,
+ * and skips TiDB-incompatible statements like LOCK TABLES.
+ */
 function restoreDatabaseFromFile(string $filepath, PDO $db): array {
     if (!file_exists($filepath) || filesize($filepath) === 0) {
         return ['success' => false, 'message' => 'SQL backup file not found or empty.'];
     }
 
-    // Attempt 1: MySQL CLI binary execution (fastest and most reliable)
-    $mysqlBin = file_exists('C:\\xampp\\mysql\\bin\\mysql.exe') ? 'C:\\xampp\\mysql\\bin\\mysql.exe' : 'mysql';
-    $cmd = "\"{$mysqlBin}\" -u root sharonstore_db < " . escapeshellarg($filepath) . " 2>&1";
-    $output = [];
-    $code = 1;
-    exec($cmd, $output, $code);
-
-    if ($code === 0) {
-        return ['success' => true, 'message' => 'Database successfully restored.'];
+    $handle = @fopen($filepath, 'r');
+    if (!$handle) {
+        return ['success' => false, 'message' => 'Could not open SQL file for reading.'];
     }
 
-    // Attempt 2: PDO multi-query execution fallback
-    try {
-        $sql = file_get_contents($filepath);
-        if ($sql === false || trim($sql) === '') {
-            return ['success' => false, 'message' => 'Could not read SQL file contents.'];
+    try { $db->exec("SET FOREIGN_KEY_CHECKS = 0;"); } catch (\Throwable $e) {}
+    try { $db->exec("SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';"); } catch (\Throwable $e) {}
+
+    $query = '';
+    $inString = false;
+    $stringChar = '';
+    $inBlockComment = false;
+    $executed = 0;
+    $errors = [];
+
+    while (($line = fgets($handle)) !== false) {
+        $len = strlen($line);
+        $i = 0;
+
+        while ($i < $len) {
+            $char = $line[$i];
+            $next = $i + 1 < $len ? $line[$i + 1] : '';
+
+            // Handle block comments /* ... */
+            if ($inBlockComment) {
+                if ($char === '*' && $next === '/') {
+                    $inBlockComment = false;
+                    $i += 2;
+                    continue;
+                }
+                $i++;
+                continue;
+            }
+
+            // Handle strings '...' and "..."
+            if ($inString) {
+                $query .= $char;
+                if ($char === '\\') {
+                    if ($i + 1 < $len) {
+                        $i++;
+                        $query .= $line[$i];
+                    }
+                } elseif ($char === $stringChar) {
+                    if ($next === $stringChar) {
+                        $i++;
+                        $query .= $line[$i];
+                    } else {
+                        $inString = false;
+                        $stringChar = '';
+                    }
+                }
+                $i++;
+                continue;
+            }
+
+            // Outside strings and block comments:
+            if ($char === '/' && $next === '*') {
+                $inBlockComment = true;
+                $i += 2;
+                continue;
+            }
+
+            if (($char === '-' && $next === '-') || $char === '#') {
+                break; // Skip comment till end of line
+            }
+
+            if ($char === "'" || $char === '"') {
+                $inString = true;
+                $stringChar = $char;
+                $query .= $char;
+                $i++;
+                continue;
+            }
+
+            if ($char === ';') {
+                $stmt = trim($query);
+                $query = '';
+                $i++;
+
+                if ($stmt === '') continue;
+
+                $upper = strtoupper($stmt);
+                // Skip TiDB unsupported statements
+                if (str_starts_with($upper, 'LOCK TABLES') || str_starts_with($upper, 'UNLOCK TABLES')) {
+                    continue;
+                }
+                // Don't drop or overwrite active tbl_sessions so admin doesn't get kicked out
+                if (preg_match('/^DROP\s+TABLE\s+(IF\s+EXISTS\s+)?`?tbl_sessions`?/i', $stmt)) {
+                    continue;
+                }
+                if (preg_match('/^CREATE\s+TABLE\s+(IF\s+NOT\s+EXISTS\s+)?`?tbl_sessions`?/i', $stmt)) {
+                    continue;
+                }
+
+                try {
+                    $db->exec($stmt);
+                    $executed++;
+                } catch (\Throwable $e) {
+                    if (stripos($stmt, 'CREATE TABLE') === 0) {
+                        try {
+                            $stripped = preg_replace('/,\s*CONSTRAINT\s+[`\w]+\s+FOREIGN\s+KEY\s*\([^)]+\)\s*REFERENCES\s+[`\w]+\s*\([^)]+\)(\s+ON\s+(DELETE|UPDATE)\s+[A-Z\s]+)*/i', '', $stmt);
+                            $stripped = preg_replace('/,(\s*\))/m', '$1', $stripped);
+                            $db->exec($stripped);
+                            $executed++;
+                            continue;
+                        } catch (\Throwable $e2) {}
+                    }
+                    $errMsg = $e->getMessage();
+                    if (!str_contains($errMsg, "doesn't support LOCK")) {
+                        $errors[] = substr($errMsg, 0, 150);
+                    }
+                }
+                continue;
+            }
+
+            $query .= $char;
+            $i++;
         }
+    }
 
-        $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
-        $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
-        $db->exec("SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';");
-        $db->exec($sql);
-        $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
+    $stmt = trim($query);
+    if ($stmt !== '') {
+        $upper = strtoupper($stmt);
+        if (!str_starts_with($upper, 'LOCK TABLES') && !str_starts_with($upper, 'UNLOCK TABLES')) {
+            try {
+                $db->exec($stmt);
+                $executed++;
+            } catch (\Throwable $e) {
+                $errors[] = substr($e->getMessage(), 0, 150);
+            }
+        }
+    }
 
-        return ['success' => true, 'message' => 'Database successfully restored.'];
-    } catch (\Throwable $e) {
-        try { $db->exec("SET FOREIGN_KEY_CHECKS = 1;"); } catch (\Throwable $ignore) {}
+    fclose($handle);
+
+    try { $db->exec("SET FOREIGN_KEY_CHECKS = 1;"); } catch (\Throwable $e) {}
+
+    // Ensure tbl_sessions structure is intact
+    try {
+        $db->exec("CREATE TABLE IF NOT EXISTS `tbl_sessions` (
+            `id` VARCHAR(128) NOT NULL PRIMARY KEY,
+            `data` MEDIUMTEXT NOT NULL,
+            `last_activity` INT UNSIGNED NOT NULL,
+            INDEX (`last_activity`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+    } catch (\Throwable $e) {}
+
+    if ($executed === 0 && !empty($errors)) {
         return [
             'success' => false,
-            'message' => 'Restoration error: ' . $e->getMessage()
+            'message' => 'Failed to restore database: ' . implode('; ', array_slice($errors, 0, 3))
         ];
     }
+
+    return [
+        'success' => true,
+        'message' => "Database successfully restored ({$executed} statements executed)."
+    ];
 }
 
 // ── Google Drive Webhook Helper ───────────────────────────────
@@ -206,8 +406,13 @@ if ($action === 'download') {
     if ($requestedFile !== '' && str_ends_with($requestedFile, '.sql')) {
         $filepath = $backupDir . $requestedFile;
         if (!file_exists($filepath)) {
-            http_response_code(404);
-            die('Backup file not found.');
+            $alt = __DIR__ . '/../backups/' . $requestedFile;
+            if (file_exists($alt)) {
+                $filepath = $alt;
+            } else {
+                http_response_code(404);
+                die('Backup file not found.');
+            }
         }
         $filename = $requestedFile;
     } else {
@@ -216,7 +421,7 @@ if ($action === 'download') {
 
         logAudit($userId, 'DATABASE_BACKUP', 'Backup', "Database backup created: {$filename}");
 
-        // If auto-upload to Google Drive is enabled, push in background
+        // If auto-upload to Google Drive is enabled, push
         $autoUpload = getSetting($db, 'gdrive_auto_backup', '0');
         $webhookUrl = getSetting($db, 'gdrive_webhook_url', '');
         if ($autoUpload === '1' && !empty($webhookUrl)) {
@@ -229,11 +434,17 @@ if ($action === 'download') {
         }
     }
 
-    // Send file download to browser
+    // Clean any prior output buffers before sending binary file
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
     header('Content-Type: application/octet-stream');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
     header('Content-Length: ' . filesize($filepath));
-    header('Cache-Control: no-cache');
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('Pragma: no-cache');
+    header('Expires: 0');
     readfile($filepath);
     exit();
 }
@@ -241,14 +452,26 @@ if ($action === 'download') {
 // ── List Backups ──────────────────────────────────────────────
 if ($action === 'list') {
     header('Content-Type: application/json');
-    $files = glob($backupDir . '*.sql') ?: [];
-    rsort($files);
-    $data = array_map(fn($f) => [
-        'filename' => basename($f),
-        'size'     => filesize($f),
-        'size_fmt' => number_format(filesize($f) / 1024, 1) . ' KB',
-        'created'  => date('Y-m-d H:i:s', filemtime($f)),
-    ], $files);
+    $dirs = array_unique([$backupDir, __DIR__ . '/../backups/']);
+    $filesMap = [];
+    foreach ($dirs as $d) {
+        if (@is_dir($d)) {
+            $glob = glob(rtrim($d, '/\\') . '/*.sql') ?: [];
+            foreach ($glob as $f) {
+                $filesMap[basename($f)] = $f;
+            }
+        }
+    }
+    krsort($filesMap);
+    $data = [];
+    foreach ($filesMap as $fn => $fp) {
+        $data[] = [
+            'filename' => $fn,
+            'size'     => filesize($fp),
+            'size_fmt' => number_format(filesize($fp) / 1024, 1) . ' KB',
+            'created'  => date('Y-m-d H:i:s', filemtime($fp)),
+        ];
+    }
     echo json_encode(['success' => true, 'data' => $data]);
     exit();
 }
@@ -261,9 +484,14 @@ if ($action === 'delete') {
         echo json_encode(['success' => false, 'message' => 'Invalid filename.']);
         exit();
     }
-    $path = $backupDir . $fn;
-    if (file_exists($path)) {
-        unlink($path);
+    $deleted = false;
+    foreach ([$backupDir . $fn, __DIR__ . '/../backups/' . $fn] as $p) {
+        if (file_exists($p)) {
+            @unlink($p);
+            $deleted = true;
+        }
+    }
+    if ($deleted) {
         logAudit($userId, 'DELETE_BACKUP', 'Backup', "Deleted backup: {$fn}");
         echo json_encode(['success' => true, 'message' => 'Backup deleted.']);
     } else {
@@ -302,10 +530,10 @@ if ($action === 'restore') {
         $targetFilepath = $backupDir . $destFilename;
 
         if (!move_uploaded_file($_FILES['backup_file']['tmp_name'], $targetFilepath)) {
-            echo json_encode(['success' => false, 'message' => 'Failed to save uploaded backup file on server.']);
-            exit();
+            // Fallback: read directly from temporary uploaded path
+            $targetFilepath = $_FILES['backup_file']['tmp_name'];
         }
-        $originalName = $destFilename;
+        $originalName = $uploadName;
     } else {
         // Restoring from server backup history
         $fn = basename($_POST['filename'] ?? '');
@@ -314,17 +542,26 @@ if ($action === 'restore') {
             exit();
         }
         $targetFilepath = $backupDir . $fn;
-        $originalName   = $fn;
-
         if (!file_exists($targetFilepath)) {
-            echo json_encode(['success' => false, 'message' => 'Selected backup file does not exist on server.']);
-            exit();
+            $alt = __DIR__ . '/../backups/' . $fn;
+            if (file_exists($alt)) {
+                $targetFilepath = $alt;
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Selected backup file does not exist on server.']);
+                exit();
+            }
         }
+        $originalName = $fn;
     }
 
     // 1. Automatic Safety Snapshot before restoring
-    $safetyPath = generateBackupFile($backupDir, $db, 'sharonstore_safety_pre_restore_');
-    $safetyFilename = basename($safetyPath);
+    $safetyFilename = 'skipped';
+    try {
+        $safetyPath = generateBackupFile($backupDir, $db, 'sharonstore_safety_pre_restore_');
+        $safetyFilename = basename($safetyPath);
+    } catch (\Throwable $e) {
+        error_log("Safety snapshot error: " . $e->getMessage());
+    }
 
     // 2. Perform restoration
     $restoreResult = restoreDatabaseFromFile($targetFilepath, $db);
@@ -396,6 +633,12 @@ if ($action === 'upload_gdrive') {
     if (!empty($fn)) {
         // Uploading an existing backup file from the list
         $filepath = $backupDir . $fn;
+        if (!file_exists($filepath)) {
+            $alt = __DIR__ . '/../backups/' . $fn;
+            if (file_exists($alt)) {
+                $filepath = $alt;
+            }
+        }
         $filename = $fn;
     } else {
         // Generating a fresh backup and uploading
@@ -429,10 +672,10 @@ if ($action === 'test_gdrive') {
     }
 
     $testFile = $backupDir . 'sharonstore_ping.tmp';
-    file_put_contents($testFile, "-- Sharon Store Connection Test\nSELECT 1;\n");
+    @file_put_contents($testFile, "-- Sharon Store Connection Test\nSELECT 1;\n");
 
     $result = sendToGoogleDrive($testUrl, 'sharonstore_test_ping.sql', $testFile);
-    if (file_exists($testFile)) unlink($testFile);
+    if (file_exists($testFile)) @unlink($testFile);
 
     echo json_encode($result);
     exit();

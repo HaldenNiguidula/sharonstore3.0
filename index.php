@@ -39,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 logAudit($user['user_id'], 'LOGIN', 'Auth', "User '{$user['username']}' signed in.");
 
                 $redirect = $user['role'] === 'admin' ? '/sharonstore3.0/dashboard.php' : '/sharonstore3.0/pos.php';
+                session_write_close();
                 header("Location: $redirect");
                 exit();
             } else {
