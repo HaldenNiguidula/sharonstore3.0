@@ -337,9 +337,10 @@ function sendToGoogleDrive(string $webhookUrl, string $filename, string $filepat
     }
 
     $payload = json_encode([
-        'filename' => $filename,
-        'size'     => filesize($filepath),
-        'base64'   => base64_encode((string)file_get_contents($filepath)),
+        'filename'  => $filename,
+        'size'      => filesize($filepath),
+        'base64'    => base64_encode((string)file_get_contents($filepath)),
+        'max_files' => 5,
     ]);
 
     $ch = curl_init($webhookUrl);

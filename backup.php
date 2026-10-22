@@ -197,12 +197,40 @@ function doPost(e) {
     var targetFolder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
     var blob = Utilities.newBlob(Utilities.base64Decode(data.base64), "application/sql", filename);
     var file = targetFolder.createFile(blob);
+
+    // Auto-prune: Keep only the 5 most recent backups in Google Drive
+    var maxBackups = data.max_files || 5;
+    var backupFiles = [];
+    var files = targetFolder.getFiles();
+    while (files.hasNext()) {
+      var f = files.next();
+      if (f.getName().indexOf('.sql') !== -1) {
+        backupFiles.push({
+          file: f,
+          created: f.getDateCreated().getTime()
+        });
+      }
+    }
+
+    // Sort newest to oldest
+    backupFiles.sort(function(a, b) {
+      return b.created - a.created;
+    });
+
+    // Move older backups beyond 5 to Google Drive Trash
+    var prunedCount = 0;
+    for (var i = maxBackups; i < backupFiles.length; i++) {
+      backupFiles[i].file.setTrashed(true);
+      prunedCount++;
+    }
+
     return ContentService.createTextOutput(JSON.stringify({
       status: "success",
-      message: "Backup uploaded to Google Drive successfully!",
+      message: "Backup uploaded to Google Drive!" + (prunedCount > 0 ? " (Auto-cleaned " + prunedCount + " older backup" + (prunedCount > 1 ? "s" : "") + ", keeping latest 5)" : ""),
       fileId: file.getId(),
       fileUrl: file.getUrl(),
-      fileName: filename
+      fileName: filename,
+      pruned: prunedCount
     })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({
@@ -211,6 +239,10 @@ function doPost(e) {
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }</code></pre>
+                </div>
+
+                <div class="alert alert-info py-2 px-3 small mb-3 border-0" style="background:#f0fdf4; color:#166534; border-left:4px solid #10b981 !important; border-radius: 8px;">
+                    <i class="fa-solid fa-clock-rotate-left me-1"></i><strong>Automatic 5-File Retention Policy:</strong> The script automatically retains the 5 newest database backups and sends older backups to your Google Drive Trash.
                 </div>
 
                 <div class="alert alert-warning py-2 px-3 small mb-3 border-0" style="background:#fffbeb; color:#92400e; border-left:4px solid #f59e0b !important; border-radius: 8px;">
