@@ -20,6 +20,10 @@ function getDB(): PDO {
         ];
         // Remote DBs (TiDB, Aiven, Railway, etc.) require SSL
         if (DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1') {
+            $ca = __DIR__ . '/cacert.pem';
+            if (file_exists($ca) && defined('PDO::MYSQL_ATTR_SSL_CA')) {
+                $options[PDO::MYSQL_ATTR_SSL_CA] = $ca;
+            }
             if (defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT')) {
                 $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
             }
