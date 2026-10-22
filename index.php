@@ -2,7 +2,8 @@
 // ============================================================
 // Login Page — Sharon Store System
 // ============================================================
-if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/includes/db.php';
+startAppSession();
 
 // Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
@@ -10,8 +11,6 @@ if (isset($_SESSION['user_id'])) {
     header("Location: $go");
     exit();
 }
-
-require_once __DIR__ . '/includes/db.php';
 
 $error   = '';
 $success = '';

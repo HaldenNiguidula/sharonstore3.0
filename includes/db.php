@@ -118,190 +118,179 @@ function getDailyManagerPIN(PDO $db): string {
     return $newPin;
 }
 
+// ============================================================
+// Database Session Handler for Serverless Environments
+// ============================================================
+class DbSessionHandler implements SessionHandlerInterface {
+    private PDO $pdo;
+
+    public function __construct(PDO $pdo) {
+        $this->pdo = $pdo;
+    }
+
+    public function open(string $path, string $name): bool {
+        return true;
+    }
+
+    public function close(): bool {
+        return true;
+    }
+
+    public function read(string $id): string|false {
+        try {
+            $stmt = $this->pdo->prepare("SELECT data FROM tbl_sessions WHERE id = ? AND last_activity > ? LIMIT 1");
+            $stmt->execute([$id, time() - 604800]); // 7 days validity
+            $val = $stmt->fetchColumn();
+            return $val !== false ? (string)$val : '';
+        } catch (Throwable $e) {
+            return '';
+        }
+    }
+
+    public function write(string $id, string $data): bool {
+        try {
+            $stmt = $this->pdo->prepare("REPLACE INTO tbl_sessions (id, data, last_activity) VALUES (?, ?, ?)");
+            return $stmt->execute([$id, $data, time()]);
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
+    public function destroy(string $id): bool {
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM tbl_sessions WHERE id = ?");
+            return $stmt->execute([$id]);
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
+    public function gc(int $max_lifetime): int|false {
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM tbl_sessions WHERE last_activity < ?");
+            $stmt->execute([time() - $max_lifetime]);
+            return $stmt->rowCount();
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+}
+
+function startAppSession(): void {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        return;
+    }
+
+    ini_set('session.gc_maxlifetime', '604800'); // 7 days
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+
+    session_set_cookie_params([
+        'lifetime' => 604800,
+        'path'     => '/',
+        'secure'   => $isSecure,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+
+    try {
+        $pdo = getDB();
+        $handler = new DbSessionHandler($pdo);
+        session_set_save_handler($handler, true);
+    } catch (Throwable $e) {
+        if (is_dir('/tmp') && is_writable('/tmp')) {
+            session_save_path('/tmp');
+        }
+    }
+
+    @session_start();
+}
+
+function importSeedDataFromDump(PDO $pdo): void {
+    $sqlFile = dirname(__DIR__) . '/sql/sharonstore.sql';
+    if (!file_exists($sqlFile)) {
+        return;
+    }
+    $content = file_get_contents($sqlFile);
+    if (!$content) {
+        return;
+    }
+
+    try {
+        $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+    } catch (Throwable $e) {}
+
+    $lines = explode("\n", $content);
+    $current = '';
+
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+        if ($trimmed === '' || str_starts_with($trimmed, '--') || str_starts_with($trimmed, '/*')) {
+            continue;
+        }
+        if (str_starts_with($trimmed, 'LOCK TABLES') || str_starts_with($trimmed, 'UNLOCK TABLES')) {
+            continue;
+        }
+        $current .= $line . "\n";
+        if (str_ends_with($trimmed, ';')) {
+            $stmt = trim($current);
+            $current = '';
+
+            if (stripos($stmt, 'DROP TABLE') === 0) {
+                continue;
+            }
+            if (stripos($stmt, 'CREATE TABLE') === 0) {
+                $stmt = preg_replace('/^CREATE TABLE\s+/i', 'CREATE TABLE IF NOT EXISTS ', $stmt);
+            }
+            if (stripos($stmt, 'INSERT INTO') === 0) {
+                $stmt = 'INSERT IGNORE INTO ' . substr($stmt, 11);
+            }
+
+            try {
+                $pdo->exec($stmt);
+            } catch (Throwable $t) {
+                // Ignore query warnings or duplicate entries
+            }
+        }
+    }
+
+    try {
+        $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
+    } catch (Throwable $e) {}
+}
+
 function ensureSchema(PDO $pdo): void {
     static $checked = false;
     if ($checked) return;
     $checked = true;
 
     try {
-        $tables = $pdo->query("SHOW TABLES LIKE 'tbl_users'")->fetchAll();
-        if (!empty($tables)) {
-            return;
+        // 1. Ensure tbl_sessions table exists for serverless session persistence
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `tbl_sessions` (
+            `id` varchar(128) NOT NULL PRIMARY KEY,
+            `data` mediumtext NOT NULL,
+            `last_activity` int unsigned NOT NULL,
+            INDEX (`last_activity`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+        // 2. Check if inventory or transactions have data
+        $invCount = 0;
+        try {
+            $invCount = (int)$pdo->query("SELECT COUNT(*) FROM tbl_inventory")->fetchColumn();
+        } catch (Throwable $e) {
+            $invCount = 0;
         }
 
-        $queries = [
-            "CREATE TABLE IF NOT EXISTS `tbl_categories` (
-              `category_id` int NOT NULL AUTO_INCREMENT,
-              `category_name` varchar(100) NOT NULL,
-              `description` text DEFAULT NULL,
-              `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              PRIMARY KEY (`category_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        $txnCount = 0;
+        try {
+            $txnCount = (int)$pdo->query("SELECT COUNT(*) FROM tbl_transactions")->fetchColumn();
+        } catch (Throwable $e) {
+            $txnCount = 0;
+        }
 
-            "CREATE TABLE IF NOT EXISTS `tbl_users` (
-              `user_id` int NOT NULL AUTO_INCREMENT,
-              `username` varchar(50) NOT NULL,
-              `password` varchar(255) NOT NULL,
-              `full_name` varchar(100) NOT NULL,
-              `role` enum('admin','cashier') NOT NULL DEFAULT 'cashier',
-              `is_active` tinyint(1) NOT NULL DEFAULT 1,
-              `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-              PRIMARY KEY (`user_id`),
-              UNIQUE KEY `uq_username` (`username`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-
-            "CREATE TABLE IF NOT EXISTS `tbl_inventory` (
-              `item_id` int NOT NULL AUTO_INCREMENT,
-              `barcode` varchar(50) DEFAULT NULL,
-              `item_name` varchar(150) NOT NULL,
-              `category_id` int NOT NULL,
-              `unit` enum('pieces','packs','kg') NOT NULL DEFAULT 'pieces',
-              `price` decimal(10,2) NOT NULL DEFAULT 0.00,
-              `cost_price` decimal(10,2) NOT NULL DEFAULT 0.00,
-              `stock_qty` decimal(10,2) NOT NULL DEFAULT 0.00,
-              `low_stock_threshold` int NOT NULL DEFAULT 10,
-              `expiry_date` date DEFAULT NULL,
-              `is_active` tinyint(1) NOT NULL DEFAULT 1,
-              `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-              PRIMARY KEY (`item_id`),
-              UNIQUE KEY `uq_barcode` (`barcode`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-
-            "CREATE TABLE IF NOT EXISTS `tbl_suppliers` (
-              `supplier_id` int NOT NULL AUTO_INCREMENT,
-              `company_name` varchar(100) NOT NULL,
-              `contact_person` varchar(100) DEFAULT NULL,
-              `category` varchar(500) DEFAULT NULL,
-              `phone` varchar(50) DEFAULT NULL,
-              `address` text DEFAULT NULL,
-              `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-              `is_active` tinyint(1) DEFAULT 1,
-              PRIMARY KEY (`supplier_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-
-            "CREATE TABLE IF NOT EXISTS `tbl_settings` (
-              `setting_key` varchar(50) NOT NULL,
-              `setting_value` varchar(255) DEFAULT NULL,
-              PRIMARY KEY (`setting_key`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-
-            "CREATE TABLE IF NOT EXISTS `tbl_shifts` (
-              `shift_id` int NOT NULL AUTO_INCREMENT,
-              `cashier_id` int NOT NULL,
-              `starting_cash` decimal(10,2) NOT NULL DEFAULT 0.00,
-              `start_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              `end_time` datetime DEFAULT NULL,
-              `expected_cash` decimal(10,2) DEFAULT NULL,
-              `actual_cash` decimal(10,2) DEFAULT NULL,
-              `short_over` decimal(10,2) DEFAULT NULL,
-              `status` enum('open','closed') NOT NULL DEFAULT 'open',
-              PRIMARY KEY (`shift_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-
-            "CREATE TABLE IF NOT EXISTS `tbl_transactions` (
-              `transaction_id` int NOT NULL AUTO_INCREMENT,
-              `transaction_code` varchar(30) NOT NULL,
-              `user_id` int NOT NULL,
-              `total_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
-              `amount_tendered` decimal(10,2) NOT NULL DEFAULT 0.00,
-              `change_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
-              `status` varchar(20) NOT NULL DEFAULT 'completed',
-              `transaction_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              `shift_id` int DEFAULT NULL,
-              PRIMARY KEY (`transaction_id`),
-              UNIQUE KEY `uq_txn_code` (`transaction_code`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-
-            "CREATE TABLE IF NOT EXISTS `tbl_transaction_details` (
-              `detail_id` int NOT NULL AUTO_INCREMENT,
-              `transaction_id` int NOT NULL,
-              `item_id` int NOT NULL,
-              `quantity` decimal(10,2) NOT NULL DEFAULT 1.00,
-              `unit_price` decimal(10,2) NOT NULL DEFAULT 0.00,
-              `subtotal` decimal(10,2) NOT NULL DEFAULT 0.00,
-              PRIMARY KEY (`detail_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-
-            "CREATE TABLE IF NOT EXISTS `tbl_audit_logs` (
-              `log_id` int NOT NULL AUTO_INCREMENT,
-              `user_id` int DEFAULT NULL,
-              `action` varchar(100) NOT NULL,
-              `module` varchar(50) NOT NULL,
-              `description` text DEFAULT NULL,
-              `ip_address` varchar(45) DEFAULT NULL,
-              `log_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              PRIMARY KEY (`log_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-
-            "CREATE TABLE IF NOT EXISTS `tbl_forecasts` (
-              `forecast_id` int NOT NULL AUTO_INCREMENT,
-              `item_id` int NOT NULL,
-              `forecast_period` date NOT NULL,
-              `predicted_qty` decimal(10,2) NOT NULL DEFAULT 0.00,
-              `method` varchar(10) NOT NULL DEFAULT 'SMA',
-              `generated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              PRIMARY KEY (`forecast_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-
-            "INSERT IGNORE INTO `tbl_users` (`user_id`, `username`, `password`, `full_name`, `role`, `is_active`) VALUES 
-            (4,'admin','\$2y\$10\$Kqv6WROs7wHAvrLaZeJyjuA3Z5tuty56bD6iLYkEKyHxIVrxyo2LW','Sharon Dela Cruz','admin',1),
-            (5,'cashier1','\$2y\$10\$.HD0Z7AR8eJOoa.ifLwAhOBiwj9sX/4.7pW2dqCcpKL5NiXtXF3.q','Maria Santos','cashier',1),
-            (6,'cashier2','\$2y\$12\$HQ/GdytdIIRKO0OfUQSGxuNnbVCAXta4kyj14N3Ijw9OAWEt22zsK','Jose Reyes','cashier',1)",
-
-            "INSERT IGNORE INTO `tbl_categories` (`category_id`, `category_name`, `description`) VALUES 
-            (1,'Canned Goods','Canned and preserved food products'),
-            (2,'Dry Commodities','Rice, sugar, flour and dry staples'),
-            (3,'Household Essentials','Cleaning supplies and household items'),
-            (4,'Beverages','Drinks, juices and water products'),
-            (5,'Snacks & Confectionery','Chips, crackers and sweet items'),
-            (6,'Personal Care','Hygiene and personal care products'),
-            (7,'Condiments & Sauces','Vinegar, soy sauce, ketchup, etc.')",
-
-            "INSERT IGNORE INTO `tbl_inventory` (`item_id`, `barcode`, `item_name`, `category_id`, `unit`, `price`, `cost_price`, `stock_qty`, `low_stock_threshold`, `expiry_date`, `is_active`) VALUES 
-            (1,'4800012345001','Ligo Sardines in Tomato Sauce 155g',1,'pieces',18.00,13.00,120.00,20,'2027-03-15',1),
-            (2,'4800012345002','555 Corned Beef 260g',1,'pieces',65.00,50.00,85.00,15,'2027-06-20',0),
-            (3,'4800012345003','Century Tuna Flakes in Oil 180g',1,'pieces',42.00,32.00,93.00,20,'2027-09-10',1),
-            (4,'4800012345004','Argentina Corned Beef 150g',1,'pieces',48.00,37.00,60.00,15,'2027-08-05',1),
-            (5,'4800012345005','Del Monte Tomato Sauce 250g',1,'pieces',28.00,20.00,59.00,10,'2026-12-31',1),
-            (6,'4800023456001','Sinandomeng Rice 5kg',2,'packs',280.00,240.00,50.00,10,'2026-12-01',1),
-            (7,'4800023456002','White Sugar 1kg',2,'kg',65.00,52.00,30.00,5,NULL,1),
-            (8,'4800023456003','All-Purpose Flour 1kg',2,'kg',55.00,43.00,18.00,5,'2027-01-15',1),
-            (9,'4800023456004','Table Salt 500g',2,'packs',15.00,10.00,80.00,15,NULL,1),
-            (10,'4800023456005','Brown Sugar 1kg',2,'kg',72.00,58.00,19.00,5,NULL,1),
-            (11,'4800034567001','Tide Detergent Powder 1kg',3,'packs',95.00,75.00,45.00,10,'2028-01-01',1),
-            (12,'4800034567002','Joy Dishwashing Liquid 500ml',3,'pieces',85.00,65.00,37.00,10,'2028-06-01',1),
-            (13,'4800034567003','Ariel Detergent 1kg',3,'packs',102.00,80.00,37.00,10,'2028-01-01',1),
-            (14,'4800034567004','Domex Toilet Bowl Cleaner 500ml',3,'pieces',78.00,60.00,24.00,5,'2028-06-01',1),
-            (15,'4800034567005','Mr. Clean Multipurpose 500ml',3,'pieces',88.00,68.00,22.00,5,'2028-06-01',1),
-            (16,'4800045678001','Coca-Cola 1.5L',4,'pieces',65.00,50.00,70.00,15,'2026-10-01',1),
-            (17,'4800045678002','Royal Tru-Orange 1.5L',4,'pieces',60.00,46.00,55.00,15,'2026-10-01',1),
-            (18,'4800045678003','Nestea Iced Tea 1L',4,'pieces',45.00,34.00,88.00,20,'2026-11-30',1),
-            (19,'4800045678004','Absolute Water 500ml',4,'pieces',15.00,10.00,150.00,30,'2027-06-01',0),
-            (20,'4800045678005','Milo Powdered Chocolate 400g',4,'pieces',145.00,115.00,35.00,8,'2027-12-31',1),
-            (21,'4800056789001','Nova Country Cheddar 22g',5,'pieces',12.00,8.00,200.00,30,'2026-09-15',1),
-            (22,'4800056789002','Piattos Cheese 85g',5,'pieces',38.00,28.00,95.00,20,'2026-10-30',1),
-            (23,'4800056789003','Boy Bawang Cornick 100g',5,'pieces',22.00,15.00,133.00,25,'2026-11-30',1),
-            (24,'4800056789004','Oishi Marty\'s Crackers 135g',5,'pieces',30.00,22.00,77.00,15,'2026-12-31',1),
-            (25,'4800067890001','Palmolive Shampoo 200ml',6,'pieces',98.00,75.00,42.00,10,'2028-12-31',1),
-            (26,'4800067890002','Safeguard Soap 135g',6,'pieces',45.00,33.00,88.00,15,'2028-12-31',1),
-            (27,'4800067890003','Colgate Toothpaste 150ml',6,'pieces',72.00,55.00,64.00,15,'2028-12-31',1),
-            (28,'4800078901001','Datu Puti Vinegar 1L',7,'pieces',38.00,28.00,53.00,10,'2028-01-01',1),
-            (29,'4800078901002','Silver Swan Soy Sauce 1L',7,'pieces',42.00,32.00,47.00,10,'2028-01-01',1),
-            (30,'4800078901003','UFC Banana Ketchup 320g',7,'pieces',52.00,40.00,38.00,8,'2027-06-30',1),
-            (31,'705632085943','baguk',2,'pieces',10.00,5.00,0.00,5,'2027-10-13',1)",
-
-            "INSERT IGNORE INTO `tbl_suppliers` (`supplier_id`, `company_name`, `contact_person`, `category`, `phone`, `address`, `is_active`) VALUES 
-            (1,'Chicken Manok Corp.','Toti Tolentino','Poultry and Fresh Meats','+639171234567','Manila, Philippines',1)",
-
-            "INSERT IGNORE INTO `tbl_settings` (`setting_key`, `setting_value`) VALUES 
-            ('daily_pin','2795'),
-            ('pin_date',CURDATE())"
-        ];
-
-        foreach ($queries as $q) {
-            $pdo->exec($q);
+        // If either inventory or transactions is empty, import all data from the dump!
+        if ($invCount < 10 || $txnCount === 0) {
+            importSeedDataFromDump($pdo);
         }
     } catch (Throwable $t) {
         error_log('ensureSchema warning: ' . $t->getMessage());

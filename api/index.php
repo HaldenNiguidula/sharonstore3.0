@@ -4,15 +4,9 @@
 // ============================================================
 ob_start();
 
-// Ensure writable session storage in serverless Lambda environments
-if (session_status() === PHP_SESSION_NONE) {
-    if (is_dir('/tmp') && is_writable('/tmp')) {
-        session_save_path('/tmp');
-    }
-    @session_start();
-}
-
 $rootDir = dirname(__DIR__);
+require_once $rootDir . '/includes/db.php';
+startAppSession();
 $file = $_GET['file'] ?? '';
 
 if (empty($file) || $file === '/' || $file === 'index') {

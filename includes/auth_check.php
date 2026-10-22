@@ -2,12 +2,8 @@
 // ============================================================
 // Auth Check — Sharon Store System
 // ============================================================
-if (session_status() === PHP_SESSION_NONE) {
-    if (is_dir('/tmp') && is_writable('/tmp')) {
-        session_save_path('/tmp');
-    }
-    @session_start();
-}
+require_once __DIR__ . '/db.php';
+startAppSession();
 
 function requireLogin(): void {
     if (!isset($_SESSION['user_id'])) {

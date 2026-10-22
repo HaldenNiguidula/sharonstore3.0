@@ -3,7 +3,6 @@
 // POS Page  Sharon Store System
 // Accessible by both Admin and Cashier
 // ============================================================
-if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/includes/auth_check.php';
 requireLogin();
 
