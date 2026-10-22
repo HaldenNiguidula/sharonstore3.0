@@ -1,37 +1,72 @@
 {
   "functions": {
+    "*.php": {
+      "runtime": "vercel-php@0.6.1"
+    },
     "api/*.php": {
       "runtime": "vercel-php@0.6.1"
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/sharonstore3.0/assets/(.*)",
-      "dest": "/assets/$1"
+      "source": "/sharonstore3.0/assets/:path*",
+      "destination": "/assets/:path*"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "source": "/sharonstore3.0/api/:path*",
+      "destination": "/api/:path*"
     },
     {
-      "src": "/sharonstore3.0/api/(.*)",
-      "dest": "/api/$1"
+      "source": "/sharonstore3.0/:page*",
+      "destination": "/:page*"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "source": "/dashboard",
+      "destination": "/dashboard.php"
     },
     {
-      "src": "/sharonstore3.0/(.*)",
-      "dest": "/api/index.php?file=$1"
+      "source": "/pos",
+      "destination": "/pos.php"
     },
     {
-      "src": "/sharonstore3.0",
-      "dest": "/api/index.php?file=index.php"
+      "source": "/inventory",
+      "destination": "/inventory.php"
     },
     {
-      "src": "/(.*)",
-      "dest": "/api/index.php?file=$1"
+      "source": "/suppliers",
+      "destination": "/suppliers.php"
+    },
+    {
+      "source": "/reports",
+      "destination": "/reports.php"
+    },
+    {
+      "source": "/shifts",
+      "destination": "/shifts.php"
+    },
+    {
+      "source": "/forecasting",
+      "destination": "/forecasting.php"
+    },
+    {
+      "source": "/stock-monitor",
+      "destination": "/stock-monitor.php"
+    },
+    {
+      "source": "/accounts",
+      "destination": "/accounts.php"
+    },
+    {
+      "source": "/audit",
+      "destination": "/audit.php"
+    },
+    {
+      "source": "/backup",
+      "destination": "/backup.php"
+    },
+    {
+      "source": "/logout",
+      "destination": "/logout.php"
     }
   ]
 }
