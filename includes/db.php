@@ -18,7 +18,7 @@ function getDB(): PDO {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
-        if (getenv('DB_SSL_NO_VERIFY')) {
+        if (defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT') && getenv('DB_SSL_NO_VERIFY')) {
             $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
         }
         try {
