@@ -2,12 +2,18 @@
 // ============================================================
 // Database Connection — Sharon Store System
 // ============================================================
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_PORT', getenv('DB_PORT') ?: '3306');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : '');
-define('DB_NAME', getenv('DB_NAME') ?: 'sharonstore_db');
-define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8mb4');
+$rawHost = getenv('DB_HOST');
+$rawPort = getenv('DB_PORT');
+$rawUser = getenv('DB_USER');
+$rawPass = getenv('DB_PASS');
+$rawName = getenv('DB_NAME');
+
+define('DB_HOST', $rawHost !== false ? trim($rawHost, " \t\n\r\0\x0B\"'") : 'localhost');
+define('DB_PORT', $rawPort !== false ? trim($rawPort, " \t\n\r\0\x0B\"'") : '3306');
+define('DB_USER', $rawUser !== false ? trim($rawUser, " \t\n\r\0\x0B\"'") : 'root');
+define('DB_PASS', $rawPass !== false ? trim($rawPass, " \t\n\r\0\x0B\"'") : '');
+define('DB_NAME', $rawName !== false ? trim($rawName, " \t\n\r\0\x0B\"'") : 'sharonstore_db');
+define('DB_CHARSET', getenv('DB_CHARSET') ? trim(getenv('DB_CHARSET'), " \t\n\r\0\x0B\"'") : 'utf8mb4');
 
 function getDB(): PDO {
     static $pdo = null;
