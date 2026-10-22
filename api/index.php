@@ -2,8 +2,15 @@
 // ============================================================
 // Vercel Serverless Entrypoint Router — Sharon Store
 // ============================================================
-ini_set('display_errors', '1');
-error_reporting(E_ALL);
+ob_start();
+
+// Ensure writable session storage in serverless Lambda environments
+if (session_status() === PHP_SESSION_NONE) {
+    if (is_dir('/tmp') && is_writable('/tmp')) {
+        session_save_path('/tmp');
+    }
+    @session_start();
+}
 
 $rootDir = dirname(__DIR__);
 $file = $_GET['file'] ?? '';

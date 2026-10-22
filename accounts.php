@@ -1,3 +1,9 @@
+<?php
+require_once __DIR__ . '/includes/auth_check.php';
+requireAdmin();
+$pageTitle = 'Manage Accounts';
+$currentUserId = currentUserId();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,12 +13,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=35">
-    <?php
-    require_once __DIR__ . '/includes/auth_check.php';
-    requireAdmin();
-    $pageTitle = 'Manage Accounts';
-    $currentUserId = currentUserId();
-    ?>
 <style>
 @media(max-width:767px){
   .page-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;}
