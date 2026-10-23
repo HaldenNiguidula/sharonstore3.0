@@ -18,22 +18,21 @@ function respond(bool $s, string $m = '', mixed $d = null): never {
 $action = $_GET['action'] ?? '';
 $db     = getDB();
 
-// ── Stats ──────────────────────────────────────────────────────
-if ($action === 'stats') {
+function getDashboardStats(PDO $db): array {
     $today = $db->query("
         SELECT COALESCE(SUM(total_amount),0) AS today_revenue,
                COUNT(*) AS today_transactions
         FROM tbl_transactions
         WHERE DATE(transaction_date) = CURDATE()
           AND (status IS NULL OR status != 'voided')
-    ")->fetch();
+    ")->fetch() ?: [];
 
     $weekly = $db->query("
         SELECT COALESCE(SUM(total_amount),0) AS weekly_revenue
         FROM tbl_transactions
         WHERE transaction_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
           AND (status IS NULL OR status != 'voided')
-    ")->fetch();
+    ")->fetch() ?: [];
 
     $monthly = $db->query("
         SELECT COALESCE(SUM(total_amount),0) AS monthly_revenue
@@ -41,7 +40,7 @@ if ($action === 'stats') {
         WHERE MONTH(transaction_date) = MONTH(CURDATE())
           AND YEAR(transaction_date) = YEAR(CURDATE())
           AND (status IS NULL OR status != 'voided')
-    ")->fetch();
+    ")->fetch() ?: [];
 
     $inv = $db->query("
         SELECT COUNT(*) AS total_items,
@@ -50,13 +49,12 @@ if ($action === 'stats') {
                SUM(CASE WHEN expiry_date IS NOT NULL AND expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) AS expiring_soon,
                COALESCE(SUM(price * stock_qty), 0) AS total_stock_value
         FROM tbl_inventory WHERE is_active = 1
-    ")->fetch();
+    ")->fetch() ?: [];
 
-    respond(true, 'OK', array_merge($today, $weekly, $monthly, $inv));
+    return array_merge($today, $weekly, $monthly, $inv);
 }
 
-// ── Sales Trend (last 30 days) ─────────────────────────────────
-if ($action === 'sales_trend') {
+function getDashboardSalesTrend(PDO $db): array {
     $stmt = $db->query("
         SELECT DATE(transaction_date) AS sale_date,
                COALESCE(SUM(total_amount),0) AS daily_total,
@@ -70,11 +68,10 @@ if ($action === 'sales_trend') {
     $rows   = $stmt->fetchAll();
     $labels = array_column($rows, 'sale_date');
     $data   = array_map(fn($r) => (float)$r['daily_total'], $rows);
-    respond(true, 'OK', ['labels' => $labels, 'data' => $data]);
+    return ['labels' => $labels, 'data' => $data];
 }
 
-// ── Top 10 Fast-Moving Items (last 30 days) ────────────────────
-if ($action === 'top_items') {
+function getDashboardTopItems(PDO $db): array {
     $stmt = $db->query("
         SELECT i.item_name, SUM(d.quantity) AS total_qty, SUM(d.subtotal) AS total_sales
         FROM tbl_transaction_details d
@@ -87,14 +84,13 @@ if ($action === 'top_items') {
         LIMIT 10
     ");
     $rows = $stmt->fetchAll();
-    respond(true, 'OK', [
+    return [
         'labels' => array_column($rows, 'item_name'),
         'data'   => array_map(fn($r) => (float)$r['total_qty'], $rows),
-    ]);
+    ];
 }
 
-// ── Category Sales Distribution ────────────────────────────────
-if ($action === 'category_sales') {
+function getDashboardCategorySales(PDO $db): array {
     $stmt = $db->query("
         SELECT c.category_name, COALESCE(SUM(d.subtotal),0) AS total
         FROM tbl_transaction_details d
@@ -107,14 +103,13 @@ if ($action === 'category_sales') {
         ORDER BY total DESC
     ");
     $rows = $stmt->fetchAll();
-    respond(true, 'OK', [
+    return [
         'labels' => array_column($rows, 'category_name'),
         'data'   => array_map(fn($r) => (float)$r['total'], $rows),
-    ]);
+    ];
 }
 
-// ── Low Stock Items ────────────────────────────────────────────
-if ($action === 'low_stock') {
+function getDashboardLowStock(PDO $db): array {
     $stmt = $db->query("
         SELECT i.item_id, i.item_name, i.stock_qty, i.low_stock_threshold,
                i.unit, c.category_name,
@@ -125,11 +120,10 @@ if ($action === 'low_stock') {
         ORDER BY i.stock_qty ASC
         LIMIT 10
     ");
-    respond(true, 'OK', $stmt->fetchAll());
+    return $stmt->fetchAll();
 }
 
-// ── Expiring Soon ──────────────────────────────────────────────
-if ($action === 'expiring_soon') {
+function getDashboardExpiringSoon(PDO $db): array {
     $stmt = $db->query("
         SELECT i.item_id, i.item_name, i.expiry_date, i.stock_qty, i.unit, c.category_name,
                DATEDIFF(i.expiry_date, CURDATE()) AS days_left
@@ -141,7 +135,44 @@ if ($action === 'expiring_soon') {
         ORDER BY i.expiry_date ASC
         LIMIT 10
     ");
-    respond(true, 'OK', $stmt->fetchAll());
+    return $stmt->fetchAll();
+}
+
+// ── Consolidated Batch Action: Overview (1 HTTP request instead of 6) ──
+if ($action === 'overview' || $action === 'all') {
+    respond(true, 'OK', [
+        'stats'          => getDashboardStats($db),
+        'sales_trend'    => getDashboardSalesTrend($db),
+        'top_items'      => getDashboardTopItems($db),
+        'category_sales' => getDashboardCategorySales($db),
+        'low_stock'      => getDashboardLowStock($db),
+        'expiring_soon'  => getDashboardExpiringSoon($db),
+    ]);
+}
+
+// ── Individual Actions (backward compatibility) ──────────────────────
+if ($action === 'stats') {
+    respond(true, 'OK', getDashboardStats($db));
+}
+
+if ($action === 'sales_trend') {
+    respond(true, 'OK', getDashboardSalesTrend($db));
+}
+
+if ($action === 'top_items') {
+    respond(true, 'OK', getDashboardTopItems($db));
+}
+
+if ($action === 'category_sales') {
+    respond(true, 'OK', getDashboardCategorySales($db));
+}
+
+if ($action === 'low_stock') {
+    respond(true, 'OK', getDashboardLowStock($db));
+}
+
+if ($action === 'expiring_soon') {
+    respond(true, 'OK', getDashboardExpiringSoon($db));
 }
 
 respond(false, 'Unknown action.', null);

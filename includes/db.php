@@ -36,7 +36,11 @@ function getDB(): PDO {
         }
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-            ensureSchema($pdo);
+            // In cloud production, skip schema verification on the hot path to avoid redundant DDL queries.
+            // ensureSchema() only runs if INIT_SCHEMA=1 or ?init_schema=1 is passed.
+            if (getenv('INIT_SCHEMA') === '1' || (!empty($_GET['init_schema']) && $_GET['init_schema'] === '1')) {
+                ensureSchema($pdo);
+            }
         } catch (PDOException $e) {
             http_response_code(500);
             if (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
@@ -123,6 +127,9 @@ function getDailyManagerPIN(PDO $db): string {
 // ============================================================
 class DbSessionHandler implements SessionHandlerInterface {
     private PDO $pdo;
+    private string $originalData = '';
+    private int $originalTime = 0;
+    private bool $recordExists = false;
 
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
@@ -138,16 +145,38 @@ class DbSessionHandler implements SessionHandlerInterface {
 
     public function read(string $id): string|false {
         try {
-            $stmt = $this->pdo->prepare("SELECT data FROM tbl_sessions WHERE id = ? AND last_activity > ? LIMIT 1");
+            $stmt = $this->pdo->prepare("SELECT data, last_activity FROM tbl_sessions WHERE id = ? AND last_activity > ? LIMIT 1");
             $stmt->execute([$id, time() - 604800]); // 7 days validity
-            $val = $stmt->fetchColumn();
-            return $val !== false ? (string)$val : '';
+            $row = $stmt->fetch(PDO::FETCH_NUM);
+            if ($row) {
+                $this->originalData = (string)$row[0];
+                $this->originalTime = (int)$row[1];
+                $this->recordExists = true;
+                return $this->originalData;
+            }
+            $this->originalData = '';
+            $this->originalTime = 0;
+            $this->recordExists = false;
+            return '';
         } catch (Throwable $e) {
+            $this->originalData = '';
+            $this->originalTime = 0;
+            $this->recordExists = false;
             return '';
         }
     }
 
     public function write(string $id, string $data): bool {
+        // Optimization 1: Do not write empty sessions to DB (e.g. guests / unauthenticated hits)
+        if ($data === '' && !$this->recordExists) {
+            return true;
+        }
+
+        // Optimization 2: Dirty checking - skip DB write if session hasn't changed and last updated < 5 mins ago
+        if ($this->recordExists && $data === $this->originalData && (time() - $this->originalTime) < 300) {
+            return true;
+        }
+
         try {
             $stmt = $this->pdo->prepare("REPLACE INTO tbl_sessions (id, data, last_activity) VALUES (?, ?, ?)");
             return $stmt->execute([$id, $data, time()]);

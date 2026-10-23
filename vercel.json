@@ -1,4 +1,7 @@
 {
+  "regions": [
+    "sin1"
+  ],
   "functions": {
     "api/*.php": {
       "runtime": "vercel-php@0.7.2"
@@ -7,10 +10,16 @@
   "routes": [
     {
       "src": "/sharonstore3.0/assets/(.*)",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      },
       "dest": "/assets/$1"
     },
     {
       "src": "/assets/(.*)",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      },
       "dest": "/assets/$1"
     },
     {

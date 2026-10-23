@@ -32,6 +32,7 @@ CREATE TABLE `tbl_audit_logs` (
   `log_time` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`log_id`),
   KEY `fk_log_user` (`user_id`),
+  KEY `idx_audit_time` (`log_time`),
   CONSTRAINT `fk_log_user` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=135 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -126,6 +127,8 @@ CREATE TABLE `tbl_inventory` (
   PRIMARY KEY (`item_id`),
   UNIQUE KEY `uq_barcode` (`barcode`),
   KEY `fk_inv_category` (`category_id`),
+  KEY `idx_inv_active_stock` (`is_active`,`stock_qty`),
+  KEY `idx_inv_active_expiry` (`is_active`,`expiry_date`),
   CONSTRAINT `fk_inv_category` FOREIGN KEY (`category_id`) REFERENCES `tbl_categories` (`category_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -277,6 +280,8 @@ CREATE TABLE `tbl_transactions` (
   PRIMARY KEY (`transaction_id`),
   UNIQUE KEY `uq_txn_code` (`transaction_code`),
   KEY `fk_txn_user` (`user_id`),
+  KEY `idx_txn_date` (`transaction_date`),
+  KEY `idx_txn_shift` (`shift_id`),
   CONSTRAINT `fk_txn_user` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`user_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=230 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

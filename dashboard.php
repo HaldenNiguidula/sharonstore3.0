@@ -199,20 +199,23 @@ Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
 
 let salesChart, catChart, topChart;
 
-// -- Fetch Stats -----------------------------------------------
+// -- Render Stats ----------------------------------------------
+function renderStats(d) {
+    if (!d) return;
+    animateCounter('statTodayRevenue',   parseFloat(d.today_revenue)    || 0, true);
+    animateCounter('statMonthlyRevenue', parseFloat(d.monthly_revenue)  || 0, true);
+    animateCounter('statTodayTx',        parseInt(d.today_transactions) || 0, false);
+    animateCounter('statTotalItems',     parseInt(d.total_items)        || 0, false);
+    animateCounter('statLowStock',       parseInt(d.low_stock)          || 0, false);
+    animateCounter('statExpiring',       parseInt(d.expiring_soon)      || 0, false);
+    animateCounter('statStockValue',     parseFloat(d.total_stock_value)|| 0, true);
+}
+
 async function loadStats() {
     try {
         const r = await fetch('/sharonstore3.0/api/dashboard.php?action=stats');
         const j = await r.json();
-        if (!j.success) return;
-        const d = j.data;
-        animateCounter('statTodayRevenue',  parseFloat(d.today_revenue)   || 0, true);
-        animateCounter('statMonthlyRevenue', parseFloat(d.monthly_revenue) || 0, true);
-        animateCounter('statTodayTx',       parseInt(d.today_transactions) || 0, false);
-        animateCounter('statTotalItems',    parseInt(d.total_items)        || 0, false);
-        animateCounter('statLowStock',      parseInt(d.low_stock)          || 0, false);
-        animateCounter('statExpiring',      parseInt(d.expiring_soon)      || 0, false);
-        animateCounter('statStockValue',    parseFloat(d.total_stock_value) || 0, true);
+        if (j.success) renderStats(j.data);
     } catch(e) { console.error('stats error', e); }
 }
 
@@ -232,176 +235,202 @@ function animateCounter(id, target, isCurrency) {
 }
 
 // -- Sales Trend Chart -----------------------------------------
+function renderSalesTrend(data) {
+    if (!data) return;
+    const loadingEl = document.getElementById('salesTrendLoading');
+    const chartEl = document.getElementById('salesTrendChart');
+    if (loadingEl) loadingEl.style.display = 'none';
+    if (chartEl) chartEl.style.display = '';
+    const ctx = chartEl.getContext('2d');
+    if (salesChart) salesChart.destroy();
+    salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Daily Sales (\u20b1)',
+                data: data.data,
+                borderColor: EMERALD,
+                backgroundColor: 'rgba(16,185,129,0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: EMERALD,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: { legend: { display: false }, tooltip: {
+                callbacks: { label: ctx => '\u20b1' + parseFloat(ctx.parsed.y).toLocaleString('en-PH',{minimumFractionDigits:2}) }
+            }},
+            scales: {
+                x: {
+                    grid: { color: 'rgba(0,0,0,0.07)' },
+                    ticks: { maxTicksLimit: 10, color: '#555657', font: { size: 11 } }
+                },
+                y: {
+                    grid: { color: 'rgba(0,0,0,0.07)' },
+                    ticks: {
+                        color: '#555657',
+                        font: { size: 11 },
+                        callback: function(v) { return '\u20b1' + Number(v).toLocaleString('en-PH', {minimumFractionDigits: 0}); }
+                    }
+                }
+            }
+        }
+    });
+}
+
 async function loadSalesTrend() {
     try {
         const r = await fetch('/sharonstore3.0/api/dashboard.php?action=sales_trend');
         const j = await r.json();
-        document.getElementById('salesTrendLoading').style.display = 'none';
-        document.getElementById('salesTrendChart').style.display = '';
-        if (!j.success) return;
-        const ctx = document.getElementById('salesTrendChart').getContext('2d');
-        if (salesChart) salesChart.destroy();
-        salesChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: j.data.labels,
-                datasets: [{
-                    label: 'Daily Sales (\u20b1)',
-                    data: j.data.data,
-                    borderColor: EMERALD,
-                    backgroundColor: 'rgba(16,185,129,0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: EMERALD,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { display: false }, tooltip: {
-                    callbacks: { label: ctx => '\u20b1' + parseFloat(ctx.parsed.y).toLocaleString('en-PH',{minimumFractionDigits:2}) }
-                }},
-                scales: {
-                    x: {
-                        grid: { color: 'rgba(0,0,0,0.07)' },
-                        ticks: { maxTicksLimit: 10, color: '#555657', font: { size: 11 } }
-                    },
-                    y: {
-                        grid: { color: 'rgba(0,0,0,0.07)' },
-                        ticks: {
-                            color: '#555657',
-                            font: { size: 11 },
-                            callback: function(v) { return '\u20b1' + Number(v).toLocaleString('en-PH', {minimumFractionDigits: 0}); }
-                        }
-                    }
-                }
-            }
-        });
+        if (j.success) renderSalesTrend(j.data);
     } catch(e) { console.error('trend error', e); }
 }
 
 // -- Category Chart --------------------------------------------
+function renderCategoryChart(data) {
+    if (!data) return;
+    const loadingEl = document.getElementById('catLoading');
+    const chartEl = document.getElementById('categoryChart');
+    if (loadingEl) loadingEl.style.display = 'none';
+    if (chartEl) chartEl.style.display = '';
+    const ctx = chartEl.getContext('2d');
+    if (catChart) catChart.destroy();
+    catChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.labels,
+            datasets: [{ data: data.data, backgroundColor: COLORS, borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 12, color: '#2C2D2D', font: { size: 11 } } },
+                tooltip: { callbacks: { label: ctx => ctx.label + ': \u20b1' + parseFloat(ctx.parsed).toLocaleString('en-PH',{minimumFractionDigits:2}) } }
+            }
+        }
+    });
+}
+
 async function loadCategoryChart() {
     try {
         const r = await fetch('/sharonstore3.0/api/dashboard.php?action=category_sales');
         const j = await r.json();
-        document.getElementById('catLoading').style.display = 'none';
-        document.getElementById('categoryChart').style.display = '';
-        if (!j.success) return;
-        const ctx = document.getElementById('categoryChart').getContext('2d');
-        if (catChart) catChart.destroy();
-        catChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: j.data.labels,
-                datasets: [{ data: j.data.data, backgroundColor: COLORS, borderWidth: 2, borderColor: '#fff' }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: true,
-                plugins: {
-                    legend: { position: 'bottom', labels: { padding: 12, color: '#2C2D2D', font: { size: 11 } } },
-                    tooltip: { callbacks: { label: ctx => ctx.label + ': \u20b1' + parseFloat(ctx.parsed).toLocaleString('en-PH',{minimumFractionDigits:2}) } }
-                }
-            }
-        });
+        if (j.success) renderCategoryChart(j.data);
     } catch(e) { console.error('category error', e); }
 }
 
 // -- Top Items Chart -------------------------------------------
+function renderTopItems(data) {
+    if (!data) return;
+    const loadingEl = document.getElementById('topItemsLoading');
+    const chartEl = document.getElementById('topItemsChart');
+    if (loadingEl) loadingEl.style.display = 'none';
+    if (chartEl) chartEl.style.display = '';
+    const ctx = chartEl.getContext('2d');
+    if (topChart) topChart.destroy();
+    const labels = (data.labels || []).map(l => l.length > 20 ? l.substring(0,20)+'...' : l);
+    topChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Units Sold',
+                data: data.data,
+                backgroundColor: COLORS.slice(0, (data.data || []).length),
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(0,0,0,0.07)' },
+                    ticks: { precision: 0, color: '#555657', font: { size: 11 } }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: '#2C2D2D', font: { size: 11, weight: '600' } }
+                }
+            }
+        }
+    });
+}
+
 async function loadTopItems() {
     try {
         const r = await fetch('/sharonstore3.0/api/dashboard.php?action=top_items');
         const j = await r.json();
-        document.getElementById('topItemsLoading').style.display = 'none';
-        document.getElementById('topItemsChart').style.display = '';
-        if (!j.success) return;
-        const ctx = document.getElementById('topItemsChart').getContext('2d');
-        if (topChart) topChart.destroy();
-        const labels = j.data.labels.map(l => l.length > 20 ? l.substring(0,20)+'' : l);
-        topChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Units Sold',
-                    data: j.data.data,
-                    backgroundColor: COLORS.slice(0, j.data.data.length),
-                    borderRadius: 6,
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: {
-                        grid: { color: 'rgba(0,0,0,0.07)' },
-                        ticks: { precision: 0, color: '#555657', font: { size: 11 } }
-                    },
-                    y: {
-                        grid: { display: false },
-                        ticks: { color: '#2C2D2D', font: { size: 11, weight: '600' } }
-                    }
-                }
-            }
-        });
+        if (j.success) renderTopItems(j.data);
     } catch(e) { console.error('top items error', e); }
 }
 
 // -- Low Stock Table -------------------------------------------
+function renderLowStock(data) {
+    const el = document.getElementById('lowStockTable');
+    if (!data || !data.length) {
+        el.innerHTML = '<div class="empty-state p-4"><i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i><p class="text-muted mb-0">All items are sufficiently stocked!</p></div>';
+        return;
+    }
+    let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th class="sortable-th">Item <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th></tr></thead><tbody>';
+    data.forEach(row => {
+        const badge = row.status === 'out'
+            ? '<span class="badge badge-danger">Out of Stock</span>'
+            : '<span class="badge badge-warning">Low Stock</span>';
+        const rowCls = row.status === 'out' ? 'table-row-danger' : 'table-row-warning';
+        html += `<tr class="${rowCls}">
+            <td data-sort-value="${esc(row.item_name)}"><span class="fw-600">${esc(row.item_name)}</span></td>
+            <td data-sort-value="${esc(row.category_name)}"><span class="text-muted-sm">${esc(row.category_name)}</span></td>
+            <td data-sort-value="${parseFloat(row.stock_qty)}"><span class="fw-700">${parseFloat(row.stock_qty)} ${row.unit}</span></td>
+            <td data-sort-value="${row.status}">${badge}</td>
+        </tr>`;
+    });
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+}
+
 async function loadLowStock() {
     try {
         const r = await fetch('/sharonstore3.0/api/dashboard.php?action=low_stock');
         const j = await r.json();
-        const el = document.getElementById('lowStockTable');
-        if (!j.success || !j.data.length) {
-            el.innerHTML = '<div class="empty-state p-4"><i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i><p class="text-muted mb-0">All items are sufficiently stocked!</p></div>';
-            return;
-        }
-        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th class="sortable-th">Item <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th></tr></thead><tbody>';
-        j.data.forEach(row => {
-            const badge = row.status === 'out'
-                ? '<span class="badge badge-danger">Out of Stock</span>'
-                : '<span class="badge badge-warning">Low Stock</span>';
-            const rowCls = row.status === 'out' ? 'table-row-danger' : 'table-row-warning';
-            html += `<tr class="${rowCls}">
-                <td data-sort-value="${esc(row.item_name)}"><span class="fw-600">${esc(row.item_name)}</span></td>
-                <td data-sort-value="${esc(row.category_name)}"><span class="text-muted-sm">${esc(row.category_name)}</span></td>
-                <td data-sort-value="${parseFloat(row.stock_qty)}"><span class="fw-700">${parseFloat(row.stock_qty)} ${row.unit}</span></td>
-                <td data-sort-value="${row.status}">${badge}</td>
-            </tr>`;
-        });
-        html += '</tbody></table></div>';
-        el.innerHTML = html;
+        if (j.success) renderLowStock(j.data);
     } catch(e) { console.error('low stock error', e); }
 }
 
 // -- Expiring Table --------------------------------------------
+function renderExpiring(data) {
+    const el = document.getElementById('expiringTable');
+    if (!data || !data.length) {
+        el.innerHTML = '<div class="empty-state p-4"><i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i><p class="text-muted mb-0">No items expiring within 30 days.</p></div>';
+        return;
+    }
+    let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th class="sortable-th">Item <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Expiry Date <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Days Left <i class="fa-solid fa-sort sort-icon no-print"></i></th></tr></thead><tbody>';
+    data.forEach(row => {
+        const days = parseInt(row.days_left);
+        const daysCls = days <= 7 ? 'text-danger fw-700' : days <= 14 ? 'text-warning fw-600' : 'text-info';
+        const rowCls  = days <= 0 ? 'table-row-danger' : days <= 7 ? 'table-row-warning' : '';
+        html += `<tr class="${rowCls}">
+            <td class="fw-600" data-sort-value="${esc(row.item_name)}">${esc(row.item_name)}</td>
+            <td class="text-muted-sm" data-sort-value="${esc(row.category_name)}">${esc(row.category_name)}</td>
+            <td data-sort-value="${parseFloat(row.stock_qty)}">${parseFloat(row.stock_qty)} ${row.unit}</td>
+            <td data-sort-value="${row.expiry_date}">${row.expiry_date}</td>
+            <td data-sort-value="${days}"><span class="${daysCls}">${days <= 0 ? 'EXPIRED' : days + ' days'}</span></td>
+        </tr>`;
+    });
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+}
+
 async function loadExpiring() {
     try {
         const r = await fetch('/sharonstore3.0/api/dashboard.php?action=expiring_soon');
         const j = await r.json();
-        const el = document.getElementById('expiringTable');
-        if (!j.success || !j.data.length) {
-            el.innerHTML = '<div class="empty-state p-4"><i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i><p class="text-muted mb-0">No items expiring within 30 days.</p></div>';
-            return;
-        }
-        let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th class="sortable-th">Item <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Expiry Date <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Days Left <i class="fa-solid fa-sort sort-icon no-print"></i></th></tr></thead><tbody>';
-        j.data.forEach(row => {
-            const days = parseInt(row.days_left);
-            const daysCls = days <= 7 ? 'text-danger fw-700' : days <= 14 ? 'text-warning fw-600' : 'text-info';
-            const rowCls  = days <= 0 ? 'table-row-danger' : days <= 7 ? 'table-row-warning' : '';
-            html += `<tr class="${rowCls}">
-                <td class="fw-600" data-sort-value="${esc(row.item_name)}">${esc(row.item_name)}</td>
-                <td class="text-muted-sm" data-sort-value="${esc(row.category_name)}">${esc(row.category_name)}</td>
-                <td data-sort-value="${parseFloat(row.stock_qty)}">${parseFloat(row.stock_qty)} ${row.unit}</td>
-                <td data-sort-value="${row.expiry_date}">${row.expiry_date}</td>
-                <td data-sort-value="${days}"><span class="${daysCls}">${days <= 0 ? 'EXPIRED' : days + ' days'}</span></td>
-            </tr>`;
-        });
-        html += '</tbody></table></div>';
-        el.innerHTML = html;
+        if (j.success) renderExpiring(j.data);
     } catch(e) { console.error('expiring error', e); }
 }
 
@@ -411,7 +440,25 @@ function esc(s) {
     return d.innerHTML;
 }
 
-function loadAll() {
+// Single-trip fast loader
+async function loadAll() {
+    try {
+        const r = await fetch('/sharonstore3.0/api/dashboard.php?action=overview');
+        const j = await r.json();
+        if (j.success && j.data) {
+            if (j.data.stats) renderStats(j.data.stats);
+            if (j.data.sales_trend) renderSalesTrend(j.data.sales_trend);
+            if (j.data.category_sales) renderCategoryChart(j.data.category_sales);
+            if (j.data.top_items) renderTopItems(j.data.top_items);
+            if (j.data.low_stock) renderLowStock(j.data.low_stock);
+            if (j.data.expiring_soon) renderExpiring(j.data.expiring_soon);
+            return;
+        }
+    } catch(e) {
+        console.warn('Dashboard batch load failed, falling back to individual calls', e);
+    }
+
+    // Fallback if needed
     loadStats();
     loadSalesTrend();
     loadCategoryChart();
