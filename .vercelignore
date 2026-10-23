@@ -1,0 +1,8 @@
+# Vercel Deployment Ignore File
+# Exclude heavy academic documents, papers, and local docs from serverless builds
+papers/
+doc_content.txt
+system_diagrams.html
+*.docx
+*.pdf
+.git/
