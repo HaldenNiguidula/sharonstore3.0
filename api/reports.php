@@ -20,34 +20,45 @@ if ($action === 'sales_report') {
     
     $query = "";
     if ($type === 'daily') {
+        // Safe with ONLY_FULL_GROUP_BY: all selected expressions are in GROUP BY
         $query = "
-            SELECT DATE(transaction_date) as raw_date, DATE_FORMAT(transaction_date, '%b %d, %Y') as label, SUM(total_amount) as total, COUNT(*) as tx_count
+            SELECT DATE(transaction_date) AS raw_date,
+                   DATE_FORMAT(transaction_date, '%b %d, %Y') AS label,
+                   COALESCE(SUM(total_amount), 0) AS total,
+                   COUNT(*) AS tx_count
             FROM tbl_transactions
-            WHERE (status IS NULL OR status != 'voided') AND transaction_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-            GROUP BY DATE(transaction_date)
-            ORDER BY DATE(transaction_date) ASC
+            WHERE (status IS NULL OR status != 'voided')
+            GROUP BY DATE(transaction_date), DATE_FORMAT(transaction_date, '%b %d, %Y')
+            ORDER BY DATE(transaction_date) DESC
+            LIMIT 30
         ";
     } elseif ($type === 'weekly') {
         $query = "
             SELECT 
-                YEAR(transaction_date) as yr,
-                WEEK(transaction_date, 1) as wk,
-                CONCAT(YEAR(transaction_date), '-', LPAD(WEEK(transaction_date, 1), 2, '0')) as raw_date, 
-                CONCAT('Week ', WEEK(transaction_date, 1), ', ', YEAR(transaction_date)) as label, 
-                SUM(total_amount) as total, 
-                COUNT(*) as tx_count
+                YEAR(transaction_date) AS yr,
+                WEEK(transaction_date, 1) AS wk,
+                CONCAT(YEAR(transaction_date), '-', LPAD(WEEK(transaction_date, 1), 2, '0')) AS raw_date, 
+                CONCAT('Week ', WEEK(transaction_date, 1), ', ', YEAR(transaction_date)) AS label, 
+                COALESCE(SUM(total_amount), 0) AS total, 
+                COUNT(*) AS tx_count
             FROM tbl_transactions
-            WHERE (status IS NULL OR status != 'voided') AND transaction_date >= DATE_SUB(CURDATE(), INTERVAL 12 WEEK)
-            GROUP BY YEAR(transaction_date), WEEK(transaction_date, 1)
-            ORDER BY YEAR(transaction_date) ASC, WEEK(transaction_date, 1) ASC
+            WHERE (status IS NULL OR status != 'voided')
+            GROUP BY YEAR(transaction_date), WEEK(transaction_date, 1), raw_date, label
+            ORDER BY yr DESC, wk DESC
+            LIMIT 12
         ";
     } elseif ($type === 'monthly') {
         $query = "
-            SELECT DATE_FORMAT(transaction_date, '%Y-%m') as raw_date, DATE_FORMAT(transaction_date, '%M %Y') as label, SUM(total_amount) as total, COUNT(*) as tx_count
+            SELECT 
+                DATE_FORMAT(transaction_date, '%Y-%m') AS raw_date,
+                DATE_FORMAT(transaction_date, '%M %Y') AS label,
+                COALESCE(SUM(total_amount), 0) AS total,
+                COUNT(*) AS tx_count
             FROM tbl_transactions
-            WHERE (status IS NULL OR status != 'voided') AND transaction_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-            GROUP BY YEAR(transaction_date), MONTH(transaction_date)
-            ORDER BY YEAR(transaction_date) ASC, MONTH(transaction_date) ASC
+            WHERE (status IS NULL OR status != 'voided')
+            GROUP BY raw_date, label, YEAR(transaction_date), MONTH(transaction_date)
+            ORDER BY raw_date DESC
+            LIMIT 12
         ";
     } else {
         respond(false, 'Invalid report type.');
@@ -55,41 +66,46 @@ if ($action === 'sales_report') {
 
     try {
         $stmt = $db->query($query);
-        $results = $stmt->fetchAll();
-        
+        $rawRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Reverse so chart displays chronologically (oldest to newest)
+        $chronological = array_reverse($rawRows);
         $labels = [];
         $totals = [];
-        $tableData = [];
-        
-        foreach ($results as $r) {
+        foreach ($chronological as $r) {
             $labels[] = $r['label'];
             $totals[] = (float)$r['total'];
-            
+        }
+
+        // Table data: newest first
+        $tableData = [];
+        foreach ($rawRows as $r) {
             $item = [
                 'raw_date' => $r['raw_date'],
-                'period' => $r['label'],
+                'period'   => $r['label'],
                 'tx_count' => (int)$r['tx_count'],
-                'revenue' => (float)$r['total']
+                'revenue'  => (float)$r['total']
             ];
 
             if ($type === 'weekly') {
-                $dto = new DateTime();
-                $dto->setISODate((int)$r['yr'], (int)$r['wk']);
-                $startStr = $dto->format('M d, Y');
-                $dto->modify('+6 days');
-                $endStr = $dto->format('M d, Y');
-                $item['date_range'] = "$startStr – $endStr";
+                try {
+                    $dto = new DateTime();
+                    $dto->setISODate((int)$r['yr'], (int)$r['wk']);
+                    $startStr = $dto->format('M d, Y');
+                    $dto->modify('+6 days');
+                    $endStr = $dto->format('M d, Y');
+                    $item['date_range'] = "$startStr – $endStr";
+                } catch (\Throwable $e) {
+                    $item['date_range'] = $r['label'];
+                }
             }
 
             $tableData[] = $item;
         }
-        
-        // Reverse table data so newest is at the top
-        $tableData = array_reverse($tableData);
 
         respond(true, 'Report generated', [
-            'labels' => $labels,
-            'totals' => $totals,
+            'labels'    => $labels,
+            'totals'    => $totals,
             'tableData' => $tableData
         ]);
     } catch (Exception $e) {
@@ -121,8 +137,8 @@ if ($action === 'item_breakdown') {
         $parts = explode('-', $raw_date);
         if (count($parts) !== 2) respond(false, 'Invalid date format.');
         $where .= " AND YEAR(t.transaction_date) = ? AND MONTH(t.transaction_date) = ?";
-        $params[] = $parts[0];
-        $params[] = $parts[1];
+        $params[] = (int)$parts[0];
+        $params[] = (int)$parts[1];
     } else {
         respond(false, 'Invalid report type.');
     }
