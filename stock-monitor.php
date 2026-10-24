@@ -479,8 +479,20 @@ if ($currentRole === 'cashier') {
 <script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
 <?php require_once __DIR__ . '/includes/shift_modals.php'; ?>
 <script>
+const isCashierRole = <?= json_encode($currentRole === 'cashier') ?>;
+let hasOpenShift = <?= json_encode($hasOpenShift) ?>;
 
-async function loadAll() { await Promise.all([loadStats(), loadLowStock(), loadExpiring(), loadFullList()]); }
+let isLoadingStock = false;
+async function loadAll() {
+    if (isLoadingStock) return;
+    isLoadingStock = true;
+    try {
+        await Promise.all([loadStats(), loadLowStock(), loadExpiring(), loadFullList()]);
+    } finally {
+        isLoadingStock = false;
+    }
+}
+window.loadAll = loadAll;
 
 async function loadStats() {
     try {
@@ -489,8 +501,14 @@ async function loadStats() {
         if (!j.success) {
             if (j.message && j.message.includes('Shift not started')) {
                 hasOpenShift = false;
-                document.getElementById('shiftLockContainer').style.display = 'flex';
-                document.getElementById('stockMonitorContent').style.display = 'none';
+                if (typeof window.updateProfileAccess === 'function') {
+                    window.updateProfileAccess(false);
+                } else {
+                    const lockCont = document.getElementById('shiftLockContainer');
+                    const content = document.getElementById('stockMonitorContent');
+                    if (lockCont) lockCont.style.display = 'flex';
+                    if (content) content.style.display = 'none';
+                }
             }
             return;
         }

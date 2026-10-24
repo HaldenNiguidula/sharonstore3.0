@@ -228,9 +228,8 @@
             });
 
             // Trigger stock monitor loader if present
-            if (typeof loadAll === 'function' && !window.__stockMonitorLoaded) {
-                window.__stockMonitorLoaded = true;
-                loadAll();
+            if (typeof window.loadAll === 'function') {
+                window.loadAll();
             }
         } else {
             // Lock user profile dropdown
