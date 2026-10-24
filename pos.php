@@ -19,9 +19,25 @@ $userRole       = currentRole();
     <title>POS - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=35">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=40">
 <style>
-/* Hamburger is hidden on desktop by global style.css (>=768px), and visible on mobile (<768px) */
+/* Ensure mobile hamburger is visibly displayed on mobile screens (< 768px) */
+@media (max-width: 767px) {
+    .ss-hamburger,
+    #sidebarToggleBtn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
+@media (min-width: 768px) {
+    .ss-hamburger,
+    #sidebarToggleBtn {
+        display: none !important;
+    }
+}
 
 /* ============================================================
    POS-specific styles  Light Theme aligned to system design
@@ -918,9 +934,11 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                         <button class="btn btn-outline-secondary w-100 fw-bold" style="font-size: 0.85rem;" onclick="viewShiftSummary()">
                             <i class="fa-solid fa-list-check me-2"></i>Live Summary
                         </button>
-                        <button class="btn btn-danger w-100 fw-bold" style="font-size: 0.85rem;" onclick="shiftModals.end.show()">
+                        <?php if ($userRole === 'cashier'): ?>
+                        <button class="btn btn-danger w-100 fw-bold" id="posEndShiftBtn" style="font-size: 0.85rem;" onclick="shiftModals.end.show()">
                             <i class="fa-solid fa-lock me-2"></i>End Shift
                         </button>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -1105,8 +1123,14 @@ function updateProfileAccess(hasShift) {
     const userProfileBtn = document.getElementById('userProfileBtn');
     const endShiftItem   = document.getElementById('headerEndShiftItem');
     const endShiftDiv    = document.getElementById('headerEndShiftDivider');
+    const posEndBtn      = document.getElementById('posEndShiftBtn');
 
-    if (!isAdmin) {
+    if (isAdmin) {
+        if (endShiftItem) endShiftItem.style.display = 'none';
+        if (endShiftDiv)  endShiftDiv.style.display  = 'none';
+        if (posEndBtn)    posEndBtn.style.display    = 'none';
+        return;
+    }
         if (userProfileBtn) {
             if (hasShift) {
                 userProfileBtn.disabled = false;

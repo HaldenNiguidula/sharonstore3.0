@@ -33,9 +33,10 @@ if ($__role === 'cashier') {
     <?php if (empty($hideHamburger)): ?>
     <!-- Hamburger (mobile only: hidden when sidebar is visible on desktop / >=768px) -->
     <button class="btn ss-hamburger d-md-none me-2 p-0" id="sidebarToggleBtn"
-            style="width:36px;height:36px;"
+            type="button"
+            style="width:36px;height:36px;min-width:36px;border-radius:8px;"
             aria-label="Toggle menu">
-        <i class="fa-solid fa-bars" style="font-size:15px;"></i>
+        <i class="fa-solid fa-bars" style="font-size:16px;"></i>
     </button>
     <?php endif; ?>
 
@@ -122,14 +123,16 @@ if ($__role === 'cashier') {
                         <i class="fa-solid fa-list-check me-2" style="color:#0abf8a;width:16px;"></i>Live Shift Summary
                     </a>
                 </li>
-                <li id="headerEndShiftDivider" style="<?= ($__role === 'cashier' && !$__hasOpenShift) ? 'display:none;' : '' ?>">
+                <?php if ($__role === 'cashier'): ?>
+                <li id="headerEndShiftDivider" style="<?= !$__hasOpenShift ? 'display:none;' : '' ?>">
                     <hr class="dropdown-divider ss-divider my-2">
                 </li>
-                <li id="headerEndShiftItem" style="<?= ($__role === 'cashier' && !$__hasOpenShift) ? 'display:none;' : '' ?>">
+                <li id="headerEndShiftItem" style="<?= !$__hasOpenShift ? 'display:none;' : '' ?>">
                     <a href="#" class="dropdown-item ss-dropdown-item py-2" onclick="shiftModals.end.show(); return false;">
                         <i class="fa-solid fa-lock me-2" style="color:#ef4444;width:16px;"></i>End Shift
                     </a>
                 </li>
+                <?php endif; ?>
                 <?php endif; ?>
                 <li><hr class="dropdown-divider ss-divider my-2"></li>
                 <li>

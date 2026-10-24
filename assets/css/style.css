@@ -257,12 +257,12 @@ a { text-decoration: none; color: inherit; }
 
 /* Hamburger (mobile only) */
 .ss-hamburger {
-  display: none !important;
-  width: 34px; height: 34px;
+  display: inline-flex;
+  width: 36px; height: 36px;
   background: var(--surface-2); border: 1.5px solid var(--bd);
   border-radius: 8px; cursor: pointer;
   align-items: center; justify-content: center;
-  color: var(--txt-2); font-size: 0.9rem; flex-shrink: 0;
+  color: var(--txt-2); font-size: 0.95rem; flex-shrink: 0;
   transition: all 0.16s;
 }
 .ss-hamburger:hover { background: var(--accent-lt); border-color: var(--accent-bd); color: var(--accent); }
@@ -844,8 +844,11 @@ code, .barcode-text {
   .main-content {
     margin-left: 0 !important;
   }
-  .ss-hamburger {
-    display: flex !important;
+  .ss-hamburger,
+  #sidebarToggleBtn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 }
 
