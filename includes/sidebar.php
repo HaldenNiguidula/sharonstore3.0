@@ -178,7 +178,7 @@ function sidebarActive(string $page, string $current): string {
                     <span class="ss-nav-icon"><i class="fa-solid fa-cash-register"></i></span>
                     <span class="ss-nav-label">Point of Sale</span>
                     <?php if (!$__hasOpenShift): ?>
-                    <i class="fa-solid fa-lock text-muted ms-auto" style="font-size:0.75rem;" title="Shift not started"></i>
+                    <i class="fa-solid fa-lock text-muted ms-auto ss-shift-lock-icon" style="font-size:0.75rem;" title="Shift not started"></i>
                     <?php elseif ($__currentPage === 'pos.php'): ?>
                     <span class="ss-nav-active-dot ms-auto"></span>
                     <?php endif; ?>
@@ -191,7 +191,7 @@ function sidebarActive(string $page, string $current): string {
                     <span class="ss-nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span>
                     <span class="ss-nav-label">Stock Monitor</span>
                     <?php if (!$__hasOpenShift): ?>
-                    <i class="fa-solid fa-lock text-muted ms-auto" style="font-size:0.75rem;" title="Shift not started"></i>
+                    <i class="fa-solid fa-lock text-muted ms-auto ss-shift-lock-icon" style="font-size:0.75rem;" title="Shift not started"></i>
                     <?php elseif ($__currentPage === 'stock-monitor.php'): ?>
                     <span class="ss-nav-active-dot ms-auto"></span>
                     <?php endif; ?>

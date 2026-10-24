@@ -27,7 +27,7 @@ if ($currentRole === 'cashier') {
     <title>Stock Monitoring - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=40">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=41">
 <style>
 /* Screen adjustments */
 @media(max-width:767px){
@@ -283,7 +283,7 @@ if ($currentRole === 'cashier') {
                 </p>
                 <div class="d-flex flex-column gap-2 w-100">
                     <button type="button" class="btn btn-primary btn-lg fw-bold w-100 py-2 d-flex align-items-center justify-content-center gap-2"
-                            onclick="startShiftModal.show()" style="border-radius: 10px;">
+                            onclick="openStartShiftModal()" style="border-radius: 10px;">
                         <i class="fa-solid fa-key"></i>
                         <span>Start Shift (Manager)</span>
                     </button>
@@ -474,115 +474,11 @@ if ($currentRole === 'cashier') {
     </div>
 </div>
 
-<!-- ══ START SHIFT MODAL ═══════════════════════════════════════ -->
-<div class="modal fade" id="startShiftModal" data-bs-backdrop="static" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
-        <div class="modal-content border-0 shadow-lg text-start" style="border-radius: 16px; overflow: hidden; background: #ffffff;">
-            <div class="modal-header bg-light border-0 py-3 px-4">
-                <h5 class="modal-title fw-bold" style="color: #1e293b;"><i class="fa-solid fa-key text-primary me-2"></i>Manager Authorization</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="startShiftForm">
-                <div class="modal-body p-4">
-                    <p class="text-muted mb-4" style="font-size: 0.92rem;">Please enter the Daily Manager PIN and the starting petty cash amount to start the shift and unlock Stock Monitoring.</p>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-dark">Manager PIN <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control form-control-lg text-center fw-bold" id="startPin" required maxlength="4" placeholder="****" autocomplete="off">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-dark">Starting Cash (₱) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control form-control-lg text-end" id="startCash" required placeholder="0.00">
-                    </div>
-                </div>
-                <div class="modal-footer border-0 bg-light py-3 px-4 d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
-                    <button type="submit" class="btn btn-primary fw-bold" id="btnStartShift" style="border-radius: 8px;">Open Shift</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
+<?php require_once __DIR__ . '/includes/shift_modals.php'; ?>
 <script>
-const isCashierRole = <?= json_encode($currentRole === 'cashier') ?>;
-let hasOpenShift = <?= json_encode($hasOpenShift) ?>;
-const startShiftModal = new bootstrap.Modal(document.getElementById('startShiftModal'));
-
-// ── Start Shift Form Submit ───────────────────────────────────
-document.getElementById('startShiftForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btnStartShift');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Verifying...';
-
-    const fd = new FormData();
-    fd.append('action', 'start');
-    fd.append('pin', document.getElementById('startPin').value);
-    fd.append('starting_cash', document.getElementById('startCash').value);
-
-    try {
-        const res = await fetch('/sharonstore3.0/api/shifts.php', { method: 'POST', body: fd });
-        const json = await res.json();
-        if (json.success) {
-            hasOpenShift = true;
-            startShiftModal.hide();
-            document.getElementById('shiftLockContainer').style.display = 'none';
-            document.getElementById('stockMonitorContent').style.display = 'block';
-
-            // Unlock user profile dropdown in header
-            const userProfileBtn = document.getElementById('userProfileBtn');
-            if (userProfileBtn) {
-                userProfileBtn.removeAttribute('disabled');
-                userProfileBtn.removeAttribute('style');
-                userProfileBtn.removeAttribute('title');
-                userProfileBtn.setAttribute('data-bs-toggle', 'dropdown');
-                userProfileBtn.setAttribute('aria-expanded', 'false');
-            }
-
-            // Remove lock icons from sidebar
-            document.querySelectorAll('.ss-nav-item .fa-lock').forEach(icon => icon.remove());
-
-            showToast('Shift opened successfully! Stock monitoring unlocked.', 'success');
-            loadAll();
-        } else {
-            showToast(json.message || 'Failed to start shift.', 'error');
-        }
-    } catch (err) {
-        showToast('Error connecting to server.', 'error');
-    }
-    btn.disabled = false;
-    btn.innerHTML = 'Open Shift';
-});
-
-// ── Check Shift Status Dynamically (e.g. if opened in another tab) ──
-async function checkShiftStatus() {
-    if (!isCashierRole) return;
-    try {
-        const res = await fetch('/sharonstore3.0/api/shifts.php?action=check');
-        const json = await res.json();
-        if (json.success) {
-            if (!hasOpenShift) {
-                hasOpenShift = true;
-                document.getElementById('shiftLockContainer').style.display = 'none';
-                document.getElementById('stockMonitorContent').style.display = 'block';
-                loadAll();
-            }
-        } else {
-            if (hasOpenShift) {
-                hasOpenShift = false;
-                document.getElementById('shiftLockContainer').style.display = 'flex';
-                document.getElementById('stockMonitorContent').style.display = 'none';
-            }
-        }
-    } catch (e) {
-        console.error('Failed to check shift status', e);
-    }
-}
-
-window.addEventListener('focus', checkShiftStatus);
 
 async function loadAll() { await Promise.all([loadStats(), loadLowStock(), loadExpiring(), loadFullList()]); }
 

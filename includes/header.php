@@ -55,7 +55,7 @@ if ($__role === 'cashier') {
 
         <div class="ss-vr d-none d-md-block"></div>
 
-        <?php if (isset($pageTitle) && $pageTitle === 'Point of Sale'): ?>
+        <?php if (isset($pageTitle) && in_array($pageTitle, ['Point of Sale', 'Stock Monitoring'])): ?>
         <!-- Quick Live Summary Shortcut (Mobile & Desktop) -->
         <button type="button" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 py-1 px-2"
                 id="topbarLiveSummaryBtn" onclick="if(typeof viewShiftSummary === 'function') viewShiftSummary();" title="View Live Shift Summary"
@@ -116,8 +116,13 @@ if ($__role === 'cashier') {
                         <i class="fa-solid fa-cash-register me-2" style="color:#0abf8a;width:16px;"></i>Point of Sale
                     </a>
                 </li>
+                <li>
+                    <a href="/sharonstore3.0/stock-monitor.php" class="dropdown-item ss-dropdown-item py-2">
+                        <i class="fa-solid fa-magnifying-glass-chart me-2" style="color:#0284c7;width:16px;"></i>Stock Monitoring
+                    </a>
+                </li>
                 <?php endif; ?>
-                <?php if (isset($pageTitle) && $pageTitle === 'Point of Sale'): ?>
+                <?php if (isset($pageTitle) && in_array($pageTitle, ['Point of Sale', 'Stock Monitoring'])): ?>
                 <li id="headerLiveSummaryItem">
                     <a href="#" class="dropdown-item ss-dropdown-item py-2" onclick="if(typeof viewShiftSummary === 'function') viewShiftSummary(); return false;">
                         <i class="fa-solid fa-list-check me-2" style="color:#0abf8a;width:16px;"></i>Live Shift Summary
