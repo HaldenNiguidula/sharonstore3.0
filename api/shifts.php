@@ -127,6 +127,10 @@ if ($action === 'summary') {
                 $txnCount = (int)$totals['txn_count'];
                 $expectedCash = $startingCash + $totalSales;
 
+                $cNameStmt = $db->prepare("SELECT full_name FROM tbl_users WHERE user_id = ?");
+                $cNameStmt->execute([$openShift['cashier_id']]);
+                $cashierName = $cNameStmt->fetchColumn() ?: 'Cashier';
+
                 respond(true, 'Live open shift summary retrieved.', [
                     'start_time' => $openShift['start_time'],
                     'starting_cash' => $startingCash,
@@ -134,12 +138,13 @@ if ($action === 'summary') {
                     'total_sales' => $totalSales,
                     'expected_cash' => $expectedCash,
                     'is_admin' => true,
-                    'cashier_id' => $openShift['cashier_id']
+                    'cashier_id' => $openShift['cashier_id'],
+                    'cashier_name' => $cashierName
                 ]);
             } else {
                 // No open shift, summarize today's transactions store-wide
                 $today = date('Y-m-d');
-                $stmt = $db->prepare("SELECT COUNT(*) as txn_count, COALESCE(SUM(total_amount), 0) as total_sales FROM tbl_transactions WHERE DATE(created_at) = ? AND (status IS NULL OR status != 'voided')");
+                $stmt = $db->prepare("SELECT COUNT(*) as txn_count, COALESCE(SUM(total_amount), 0) as total_sales FROM tbl_transactions WHERE DATE(transaction_date) = ? AND (status IS NULL OR status != 'voided')");
                 $stmt->execute([$today]);
                 $totals = $stmt->fetch();
                 $totalSales = (float)$totals['total_sales'];

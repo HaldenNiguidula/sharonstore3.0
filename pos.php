@@ -19,7 +19,7 @@ $userRole       = currentRole();
     <title>POS - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=40">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=41">
 <style>
 /* Ensure mobile hamburger is visibly displayed on mobile screens (< 768px) */
 @media (max-width: 767px) {
@@ -701,7 +701,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                         Your shift has not been started or has ended.<br>Manager authorization is required to access the register.
                     </p>
                     <div class="d-flex flex-column gap-2 w-100">
-                        <button class="btn btn-primary btn-lg fw-bold w-100 py-2" onclick="shiftModals.start.show()" style="border-radius: 10px;">
+                        <button class="btn btn-primary btn-lg fw-bold w-100 py-2" onclick="openStartShiftModal()" style="border-radius: 10px;">
                             <i class="fa-solid fa-key me-2"></i>Start Shift (Manager)
                         </button>
                         <button type="button" class="btn btn-outline-danger fw-bold w-100 py-2 mt-1" data-bs-toggle="modal" data-bs-target="#logoutModal" style="border-radius: 10px;">
@@ -935,7 +935,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                             <i class="fa-solid fa-list-check me-2"></i>Live Summary
                         </button>
                         <?php if ($userRole === 'cashier'): ?>
-                        <button class="btn btn-danger w-100 fw-bold" id="posEndShiftBtn" style="font-size: 0.85rem;" onclick="shiftModals.end.show()">
+                        <button class="btn btn-danger w-100 fw-bold" id="posEndShiftBtn" style="font-size: 0.85rem;" onclick="openEndShiftModal()">
                             <i class="fa-solid fa-lock me-2"></i>End Shift
                         </button>
                         <?php endif; ?>
@@ -1107,13 +1107,37 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
-<script src="/sharonstore3.0/assets/js/pos.js?v=32"></script>
+<script src="/sharonstore3.0/assets/js/pos.js?v=33"></script>
 <script>
+const getModal = (id) => {
+    const el = document.getElementById(id);
+    return el && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(el) : null;
+};
+
 const shiftModals = {
-    start: new bootstrap.Modal(document.getElementById('startShiftModal')),
-    end: new bootstrap.Modal(document.getElementById('endShiftModal')),
-    summary: new bootstrap.Modal(document.getElementById('shiftSummaryModal')),
-    live: new bootstrap.Modal(document.getElementById('liveShiftModal'))
+    start: getModal('startShiftModal'),
+    end: getModal('endShiftModal'),
+    summary: getModal('shiftSummaryModal'),
+    live: getModal('liveShiftModal')
+};
+window.shiftModals = shiftModals;
+
+window.openStartShiftModal = function() {
+    if (window.shiftModals && window.shiftModals.start) {
+        window.shiftModals.start.show();
+    } else {
+        const el = document.getElementById('startShiftModal');
+        if (el && typeof bootstrap !== 'undefined') new bootstrap.Modal(el).show();
+    }
+};
+
+window.openEndShiftModal = function() {
+    if (window.shiftModals && window.shiftModals.end) {
+        window.shiftModals.end.show();
+    } else {
+        const el = document.getElementById('endShiftModal');
+        if (el && typeof bootstrap !== 'undefined') new bootstrap.Modal(el).show();
+    }
 };
 
 let currentShiftId = null;
@@ -1131,35 +1155,37 @@ function updateProfileAccess(hasShift) {
         if (posEndBtn)    posEndBtn.style.display    = 'none';
         return;
     }
-        if (userProfileBtn) {
-            if (hasShift) {
-                userProfileBtn.disabled = false;
-                userProfileBtn.style.pointerEvents = 'auto';
-                userProfileBtn.style.opacity = '1';
-                userProfileBtn.style.cursor = 'pointer';
-                userProfileBtn.setAttribute('data-bs-toggle', 'dropdown');
-                userProfileBtn.removeAttribute('title');
-            } else {
-                userProfileBtn.disabled = true;
-                userProfileBtn.style.pointerEvents = 'none';
-                userProfileBtn.style.opacity = '0.55';
-                userProfileBtn.style.cursor = 'not-allowed';
-                userProfileBtn.removeAttribute('data-bs-toggle');
-                userProfileBtn.setAttribute('title', 'Shift not started — Manager authorization required');
-                if (window.bootstrap) {
-                    const dd = bootstrap.Dropdown.getInstance(userProfileBtn);
-                    if (dd) dd.hide();
-                }
+
+    if (userProfileBtn) {
+        if (hasShift) {
+            userProfileBtn.disabled = false;
+            userProfileBtn.style.pointerEvents = 'auto';
+            userProfileBtn.style.opacity = '1';
+            userProfileBtn.style.cursor = 'pointer';
+            userProfileBtn.setAttribute('data-bs-toggle', 'dropdown');
+            userProfileBtn.removeAttribute('title');
+        } else {
+            userProfileBtn.disabled = true;
+            userProfileBtn.style.pointerEvents = 'none';
+            userProfileBtn.style.opacity = '0.55';
+            userProfileBtn.style.cursor = 'not-allowed';
+            userProfileBtn.removeAttribute('data-bs-toggle');
+            userProfileBtn.setAttribute('title', 'Shift not started — Manager authorization required');
+            if (window.bootstrap) {
+                const dd = bootstrap.Dropdown.getInstance(userProfileBtn);
+                if (dd) dd.hide();
             }
         }
-        if (endShiftItem) endShiftItem.style.display = hasShift ? '' : 'none';
-        if (endShiftDiv)  endShiftDiv.style.display  = hasShift ? '' : 'none';
     }
+    if (endShiftItem) endShiftItem.style.display = hasShift ? '' : 'none';
+    if (endShiftDiv)  endShiftDiv.style.display  = hasShift ? '' : 'none';
+    if (posEndBtn)    posEndBtn.style.display    = hasShift ? '' : 'none';
 }
 
 async function checkShiftStatus() {
     if (isAdmin) {
-        document.getElementById('shiftOverlay').style.display = 'none';
+        const overlay = document.getElementById('shiftOverlay');
+        if (overlay) overlay.style.display = 'none';
         updateProfileAccess(true);
         return; // Admins don't need a shift to operate the POS
     }
@@ -1169,11 +1195,13 @@ async function checkShiftStatus() {
         const json = await res.json();
         if (json.success) {
             currentShiftId = json.data.shift_id;
-            document.getElementById('shiftOverlay').style.display = 'none';
+            const overlay = document.getElementById('shiftOverlay');
+            if (overlay) overlay.style.display = 'none';
             updateProfileAccess(true);
         } else {
             currentShiftId = null;
-            document.getElementById('shiftOverlay').style.display = 'flex';
+            const overlay = document.getElementById('shiftOverlay');
+            if (overlay) overlay.style.display = 'flex';
             updateProfileAccess(false);
         }
     } catch (e) {
@@ -1187,108 +1215,141 @@ document.addEventListener('DOMContentLoaded', () => {
     checkShiftStatus();
 });
 
-document.getElementById('startShiftForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('btnStartShift');
-    btn.disabled = true;
-    
-    const fd = new FormData();
-    fd.append('action', 'start');
-    fd.append('pin', document.getElementById('startPin').value);
-    fd.append('starting_cash', document.getElementById('startCash').value);
-    
-    try {
-        const res = await fetch('/sharonstore3.0/api/shifts.php', { method: 'POST', body: fd });
-        const json = await res.json();
-        if (json.success) {
-            currentShiftId = json.data.shift_id;
-            shiftModals.start.hide();
-            document.getElementById('shiftOverlay').style.display = 'none';
-            updateProfileAccess(true);
-            showToast('Shift opened successfully.', 'success');
-        } else {
-            showToast(json.message, 'error');
-        }
-    } catch (err) {
-        showToast('Error connecting to server.', 'error');
-    }
-    btn.disabled = false;
-});
-
-document.getElementById('endShiftForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('btnEndShift');
-    btn.disabled = true;
-    
-    const fd = new FormData();
-    fd.append('action', 'end');
-    fd.append('pin', document.getElementById('endPin').value);
-    fd.append('actual_cash', document.getElementById('endCash').value);
-    
-    try {
-        const res = await fetch('/sharonstore3.0/api/shifts.php', { method: 'POST', body: fd });
-        const json = await res.json();
-        if (json.success) {
-            shiftModals.end.hide();
-            currentShiftId = null;
-            document.getElementById('shiftOverlay').style.display = 'flex';
-            updateProfileAccess(false);
-            
-            document.getElementById('sumExpected').textContent = '₱' + parseFloat(json.data.expected_cash).toLocaleString('en-US', {minimumFractionDigits:2});
-            document.getElementById('sumActual').textContent = '₱' + parseFloat(json.data.actual_cash).toLocaleString('en-US', {minimumFractionDigits:2});
-            
-            const variance = parseFloat(json.data.short_over);
-            const varEl = document.getElementById('sumVariance');
-            varEl.textContent = '₱' + variance.toLocaleString('en-US', {minimumFractionDigits:2});
-            if (variance < 0) {
-                varEl.className = 'fw-bold fs-5 text-danger';
-            } else if (variance > 0) {
-                varEl.className = 'fw-bold fs-5 text-success';
+const startForm = document.getElementById('startShiftForm');
+if (startForm) {
+    startForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnStartShift');
+        if (btn) btn.disabled = true;
+        
+        const fd = new FormData();
+        fd.append('action', 'start');
+        fd.append('pin', document.getElementById('startPin').value);
+        fd.append('starting_cash', document.getElementById('startCash').value);
+        
+        try {
+            const res = await fetch('/sharonstore3.0/api/shifts.php', { method: 'POST', body: fd });
+            const json = await res.json();
+            if (json.success) {
+                currentShiftId = json.data.shift_id;
+                if (shiftModals.start) shiftModals.start.hide();
+                const overlay = document.getElementById('shiftOverlay');
+                if (overlay) overlay.style.display = 'none';
+                updateProfileAccess(true);
+                showToast('Shift opened successfully.', 'success');
             } else {
-                varEl.className = 'fw-bold fs-5 text-muted';
+                showToast(json.message, 'error');
             }
-            
-            shiftModals.summary.show();
-        } else {
-            showToast(json.message, 'error');
-            btn.disabled = false;
+        } catch (err) {
+            showToast('Error connecting to server.', 'error');
         }
-    } catch (err) {
-        showToast('Error connecting to server.', 'error');
-        btn.disabled = false;
-    }
-});
+        if (btn) btn.disabled = false;
+    });
+}
 
-async function viewShiftSummary() {
+const endForm = document.getElementById('endShiftForm');
+if (endForm) {
+    endForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnEndShift');
+        if (btn) btn.disabled = true;
+        
+        const fd = new FormData();
+        fd.append('action', 'end');
+        fd.append('pin', document.getElementById('endPin').value);
+        fd.append('actual_cash', document.getElementById('endCash').value);
+        
+        try {
+            const res = await fetch('/sharonstore3.0/api/shifts.php', { method: 'POST', body: fd });
+            const json = await res.json();
+            if (json.success) {
+                if (shiftModals.end) shiftModals.end.hide();
+                currentShiftId = null;
+                const overlay = document.getElementById('shiftOverlay');
+                if (overlay) overlay.style.display = 'flex';
+                updateProfileAccess(false);
+                
+                document.getElementById('sumExpected').textContent = '₱' + parseFloat(json.data.expected_cash).toLocaleString('en-US', {minimumFractionDigits:2});
+                document.getElementById('sumActual').textContent = '₱' + parseFloat(json.data.actual_cash).toLocaleString('en-US', {minimumFractionDigits:2});
+                
+                const variance = parseFloat(json.data.short_over);
+                const varEl = document.getElementById('sumVariance');
+                varEl.textContent = '₱' + variance.toLocaleString('en-US', {minimumFractionDigits:2});
+                if (variance < 0) {
+                    varEl.className = 'fw-bold fs-5 text-danger';
+                } else if (variance > 0) {
+                    varEl.className = 'fw-bold fs-5 text-success';
+                } else {
+                    varEl.className = 'fw-bold fs-5 text-muted';
+                }
+                
+                if (shiftModals.summary) shiftModals.summary.show();
+            } else {
+                showToast(json.message, 'error');
+                if (btn) btn.disabled = false;
+            }
+        } catch (err) {
+            showToast('Error connecting to server.', 'error');
+            if (btn) btn.disabled = false;
+        }
+    });
+}
+
+window.viewShiftSummary = async function() {
     try {
         const res = await fetch('/sharonstore3.0/api/shifts.php?action=summary');
         const json = await res.json();
         
         if (json.success && json.data) {
             const isStoreOverview = json.data.is_admin && !json.data.cashier_id;
-            
-            if (isStoreOverview) {
-                document.getElementById('liveShiftStarted').textContent = 'Today (Store Overview)';
-                document.getElementById('liveStartingCash').textContent = 'N/A';
-            } else {
-                document.getElementById('liveShiftStarted').textContent = json.data.start_time 
-                    ? new Date(json.data.start_time.replace(/-/g, '/')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                    : '--';
-                document.getElementById('liveStartingCash').textContent = '₱' + parseFloat(json.data.starting_cash || 0).toLocaleString('en-US', {minimumFractionDigits:2});
+            const startedEl   = document.getElementById('liveShiftStarted');
+            const startCashEl = document.getElementById('liveStartingCash');
+            const txnCountEl  = document.getElementById('liveTxnCount');
+            const salesEl     = document.getElementById('liveTotalSales');
+            const expectedEl  = document.getElementById('liveExpectedCash');
+
+            if (startedEl) {
+                if (isStoreOverview) {
+                    startedEl.textContent = "Today's Store Overview";
+                } else if (json.data.cashier_name && json.data.is_admin) {
+                    const timeStr = json.data.start_time 
+                        ? new Date(json.data.start_time.replace(/-/g, '/')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                        : '--';
+                    startedEl.textContent = `${json.data.cashier_name} (since ${timeStr})`;
+                } else {
+                    startedEl.textContent = json.data.start_time 
+                        ? new Date(json.data.start_time.replace(/-/g, '/')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                        : '--';
+                }
+            }
+
+            if (startCashEl) {
+                startCashEl.textContent = isStoreOverview ? 'N/A' : ('₱' + parseFloat(json.data.starting_cash || 0).toLocaleString('en-US', {minimumFractionDigits:2}));
+            }
+            if (txnCountEl) {
+                txnCountEl.textContent = json.data.txn_count || 0;
+            }
+            if (salesEl) {
+                salesEl.textContent = '₱' + parseFloat(json.data.total_sales || 0).toLocaleString('en-US', {minimumFractionDigits:2});
+            }
+            if (expectedEl) {
+                expectedEl.textContent = '₱' + parseFloat(json.data.expected_cash || 0).toLocaleString('en-US', {minimumFractionDigits:2});
             }
             
-            document.getElementById('liveTxnCount').textContent = json.data.txn_count || 0;
-            document.getElementById('liveTotalSales').textContent = '₱' + parseFloat(json.data.total_sales || 0).toLocaleString('en-US', {minimumFractionDigits:2});
-            document.getElementById('liveExpectedCash').textContent = '₱' + parseFloat(json.data.expected_cash || 0).toLocaleString('en-US', {minimumFractionDigits:2});
-            
-            shiftModals.live.show();
+            if (window.shiftModals && window.shiftModals.live) {
+                window.shiftModals.live.show();
+            } else {
+                const el = document.getElementById('liveShiftModal');
+                if (el && typeof bootstrap !== 'undefined') new bootstrap.Modal(el).show();
+            }
         } else {
             showToast(json.message || 'Unable to retrieve summary.', 'warning');
         }
     } catch (err) {
+        console.error(err);
         showToast('Error retrieving summary.', 'error');
     }
-}
+};
 </script>
 </body>
 </html>

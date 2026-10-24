@@ -128,7 +128,7 @@ if ($__role === 'cashier') {
                     <hr class="dropdown-divider ss-divider my-2">
                 </li>
                 <li id="headerEndShiftItem" style="<?= !$__hasOpenShift ? 'display:none;' : '' ?>">
-                    <a href="#" class="dropdown-item ss-dropdown-item py-2" onclick="shiftModals.end.show(); return false;">
+                    <a href="#" class="dropdown-item ss-dropdown-item py-2" onclick="if(typeof openEndShiftModal==='function'){openEndShiftModal();}else if(window.shiftModals&&window.shiftModals.end){window.shiftModals.end.show();}return false;">
                         <i class="fa-solid fa-lock me-2" style="color:#ef4444;width:16px;"></i>End Shift
                     </a>
                 </li>
