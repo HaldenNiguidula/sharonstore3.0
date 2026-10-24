@@ -47,8 +47,9 @@ if ($action === 'start') {
     // Check if they already have an open shift
     $stmt = $db->prepare("SELECT shift_id FROM tbl_shifts WHERE cashier_id = ? AND status = 'open'");
     $stmt->execute([$userId]);
-    if ($stmt->fetch()) {
-        respond(false, 'You already have an open shift.');
+    $existing = $stmt->fetch();
+    if ($existing) {
+        respond(true, 'Shift is already open and ready.', ['shift_id' => $existing['shift_id']]);
     }
 
     $stmt = $db->prepare("INSERT INTO tbl_shifts (cashier_id, starting_cash, status) VALUES (?, ?, 'open')");

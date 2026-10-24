@@ -10,7 +10,7 @@
         <div class="modal-content border-0 shadow-lg text-start" style="border-radius: 16px; overflow: hidden; background: #ffffff;">
             <div class="modal-header bg-light border-0 py-3 px-4">
                 <h5 class="modal-title fw-bold" style="color: #1e293b;"><i class="fa-solid fa-key text-primary me-2"></i>Manager Authorization</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeModal('startShiftModal')"></button>
             </div>
             <form id="startShiftForm">
                 <div class="modal-body p-4">
@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 bg-light py-3 px-4 d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal" onclick="closeModal('startShiftModal')" style="border-radius: 8px;">Cancel</button>
                     <button type="submit" class="btn btn-primary fw-bold" id="btnStartShift" style="border-radius: 8px;">Open Shift</button>
                 </div>
             </form>
@@ -39,7 +39,7 @@
         <div class="modal-content border-0 shadow-lg text-start" style="border-radius: 16px; overflow: hidden; background: #ffffff;">
             <div class="modal-header bg-light border-0 py-3 px-4">
                 <h5 class="modal-title fw-bold" style="color: #1e293b;"><i class="fa-solid fa-lock text-danger me-2"></i>Close Shift</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeModal('endShiftModal')"></button>
             </div>
             <form id="endShiftForm">
                 <div class="modal-body p-4">
@@ -54,7 +54,7 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 bg-light py-3 px-4 d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal" onclick="closeModal('endShiftModal')" style="border-radius: 8px;">Cancel</button>
                     <button type="submit" class="btn btn-danger fw-bold" id="btnEndShift" style="border-radius: 8px;">Close Drawer</button>
                 </div>
             </form>
@@ -127,16 +127,40 @@
 <!-- ══ SHARED SHIFT JAVASCRIPT LOGIC ═══════════════════════════ -->
 <script>
 (function() {
-    const getModal = (id) => {
+    window.getModal = function(id) {
         const el = document.getElementById(id);
-        return el && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(el) : null;
+        if (!el || typeof bootstrap === 'undefined') return null;
+        return bootstrap.Modal.getOrCreateInstance(el);
+    };
+
+    window.closeModal = function(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        try {
+            if (typeof bootstrap !== 'undefined') {
+                const inst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+                if (inst) inst.hide();
+            }
+        } catch (e) {
+            console.error('Error hiding modal with bootstrap', e);
+        }
+        setTimeout(() => {
+            el.classList.remove('show');
+            el.style.display = 'none';
+            el.setAttribute('aria-hidden', 'true');
+            el.removeAttribute('aria-modal');
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+            document.body.style.removeProperty('overflow');
+        }, 150);
     };
 
     window.shiftModals = {
-        get start() { return getModal('startShiftModal'); },
-        get end() { return getModal('endShiftModal'); },
-        get summary() { return getModal('shiftSummaryModal'); },
-        get live() { return getModal('liveShiftModal'); }
+        get start() { return window.getModal('startShiftModal'); },
+        get end() { return window.getModal('endShiftModal'); },
+        get summary() { return window.getModal('shiftSummaryModal'); },
+        get live() { return window.getModal('liveShiftModal'); }
     };
 
     window.openStartShiftModal = function() {
@@ -289,10 +313,13 @@
                     const json = await res.json();
                     if (json.success) {
                         window.currentShiftId = json.data.shift_id;
-                        const sm = window.shiftModals.start;
-                        if (sm) sm.hide();
+                        window.closeModal('startShiftModal');
                         window.updateProfileAccess(true);
                         showToast('Shift opened successfully.', 'success');
+                    } else if (json.message && json.message.toLowerCase().includes('already have an open shift')) {
+                        window.closeModal('startShiftModal');
+                        window.updateProfileAccess(true);
+                        showToast('Shift is already active.', 'info');
                     } else {
                         showToast(json.message || 'Failed to start shift.', 'error');
                     }
@@ -320,8 +347,7 @@
                     const res = await fetch('/sharonstore3.0/api/shifts.php', { method: 'POST', body: fd });
                     const json = await res.json();
                     if (json.success) {
-                        const em = window.shiftModals.end;
-                        if (em) em.hide();
+                        window.closeModal('endShiftModal');
                         window.currentShiftId = null;
                         window.updateProfileAccess(false);
 
