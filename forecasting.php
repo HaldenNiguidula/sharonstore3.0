@@ -537,15 +537,40 @@ async function loadItems() {
     const j = await r.json();
     if (!j.success) return;
     allForecastItems = j.data || [];
+    const selectedId = document.getElementById('selectedItemId') ? document.getElementById('selectedItemId').value : '';
+    if (selectedId) {
+        const selItem = allForecastItems.find(i => String(i.item_id) === String(selectedId));
+        updateProductSearchBadge('selected', selItem ? selItem.category_name : 'Selected');
+    } else {
+        updateProductSearchBadge('idle', allForecastItems.length);
+    }
+}
+
+function updateProductSearchBadge(status, val) {
     const badge = document.getElementById('productSearchBadge');
-    if (badge) {
-        badge.textContent = `${allForecastItems.length} products`;
+    if (!badge) return;
+
+    if (status === 'selected') {
+        badge.className = 'badge badge-emerald';
+        badge.innerHTML = `<i class="fa-solid fa-check me-1"></i>${esc(val || 'Selected')}`;
+    } else if (status === 'searching') {
+        const count = typeof val === 'number' ? val : 0;
+        if (count > 0) {
+            badge.className = 'badge badge-emerald';
+            badge.textContent = `${count} found`;
+        } else {
+            badge.className = 'badge badge-danger';
+            badge.textContent = '0 found';
+        }
+    } else {
+        const count = typeof val === 'number' ? val : allForecastItems.length;
+        badge.className = 'text-muted small';
+        badge.textContent = `${count} products`;
     }
 }
 
 function renderProductSuggestions(query = '') {
     const list = document.getElementById('productSuggestionsList');
-    const badge = document.getElementById('productSearchBadge');
     const clearBtn = document.getElementById('clearProductSearchBtn');
     const selectedId = document.getElementById('selectedItemId') ? document.getElementById('selectedItemId').value : '';
     activeSuggestionIndex = -1;
@@ -565,17 +590,13 @@ function renderProductSuggestions(query = '') {
         });
     }
 
-    if (badge) {
-        if (selectedId) {
-            const selItem = allForecastItems.find(i => String(i.item_id) === String(selectedId));
-            badge.innerHTML = `<span class="badge bg-success text-white"><i class="fa-solid fa-check me-1"></i>${esc(selItem ? selItem.category_name || 'Selected' : 'Selected')}</span>`;
-        } else if (q) {
-            badge.textContent = `${filtered.length} found`;
-            badge.className = filtered.length > 0 ? 'badge bg-emerald text-white' : 'badge bg-danger text-white';
-        } else {
-            badge.textContent = `${allForecastItems.length} products`;
-            badge.className = 'text-muted small';
-        }
+    if (selectedId) {
+        const selItem = allForecastItems.find(i => String(i.item_id) === String(selectedId));
+        updateProductSearchBadge('selected', selItem ? selItem.category_name : 'Selected');
+    } else if (q) {
+        updateProductSearchBadge('searching', filtered.length);
+    } else {
+        updateProductSearchBadge('idle', allForecastItems.length);
     }
 
     if (!list) return;
@@ -621,14 +642,11 @@ function selectProductById(itemId) {
     const hiddenId = document.getElementById('selectedItemId');
     const input = document.getElementById('productSearchInput');
     const clearBtn = document.getElementById('clearProductSearchBtn');
-    const badge = document.getElementById('productSearchBadge');
 
     if (hiddenId) hiddenId.value = item.item_id;
     if (input) input.value = item.item_name;
     if (clearBtn) clearBtn.classList.remove('d-none');
-    if (badge) {
-        badge.innerHTML = `<span class="badge bg-success text-white"><i class="fa-solid fa-check me-1"></i>${esc(item.category_name || 'Selected')}</span>`;
-    }
+    updateProductSearchBadge('selected', item.category_name);
 
     hideProductSuggestions();
 }
@@ -655,11 +673,7 @@ function clearProductSearch() {
     const clearBtn = document.getElementById('clearProductSearchBtn');
     if (clearBtn) clearBtn.classList.add('d-none');
 
-    const badge = document.getElementById('productSearchBadge');
-    if (badge) {
-        badge.textContent = `${allForecastItems.length} products`;
-        badge.className = 'text-muted small';
-    }
+    updateProductSearchBadge('idle', allForecastItems.length);
 
     renderProductSuggestions('');
 }
