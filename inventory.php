@@ -304,7 +304,8 @@ $pageTitle = 'Inventory Management';
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
     </div>
     <div class="modal-body p-0">
-        <table class="table table-custom mb-0" id="catTable">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0" id="catTable">
             <thead>
                 <tr>
                     <th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
@@ -318,7 +319,8 @@ $pageTitle = 'Inventory Management';
                     <div class="loading-spinner mx-auto mb-2"></div>Loading
                 </td></tr>
             </tbody>
-        </table>
+            </table>
+        </div>
     </div>
     <div class="modal-footer">
         <small class="text-muted me-auto">

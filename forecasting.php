@@ -519,6 +519,18 @@ let allForecastItems = [];
 
 let activeSuggestionIndex = -1;
 
+// ── Format Quantity Helper (removes unnecessary decimals on pieces & whole units) ──
+function formatQty(val, unit) {
+    if (val === null || val === undefined || val === '' || isNaN(val)) return '—';
+    const num = parseFloat(val);
+    const u = (unit || '').toString().toLowerCase().trim();
+    const isPiece = ['pieces', 'pcs', 'piece', 'packs', 'pack', 'bottles', 'cans', 'boxes', 'sachets', 'items', 'units'].includes(u);
+    if (isPiece || Number.isInteger(num) || num % 1 === 0) {
+        return Math.round(num).toString();
+    }
+    return parseFloat(num.toFixed(2)).toString();
+}
+
 // ── Load item list ──────────────────────────────────────────
 async function loadItems() {
     const r = await fetch('/sharonstore3.0/api/forecasting.php?action=items_list');
@@ -593,7 +605,7 @@ function renderProductSuggestions(query = '') {
                     </div>
                 </div>
                 <div class="text-end flex-shrink-0">
-                    <span class="badge bg-light text-dark border">Stock: ${i.stock_qty} ${esc(i.unit)}</span>
+                    <span class="badge bg-light text-dark border">Stock: ${formatQty(i.stock_qty, i.unit)} ${esc(i.unit)}</span>
                 </div>
             </button>`;
     });
@@ -793,10 +805,10 @@ document.getElementById('btnForecast').addEventListener('click', async () => {
     document.getElementById('forecastResults').style.display = 'block';
 
     // Populate method cards
-    document.getElementById('smaForecastVal').textContent = d.sma_forecast ? Math.round(d.sma_forecast) : '—';
-    document.getElementById('wmaForecastVal').textContent = d.wma_forecast ? Math.round(d.wma_forecast) : '—';
-    document.getElementById('smaRestockVal').textContent  = d.sma_restock  ? Math.round(d.sma_restock)  : '0';
-    document.getElementById('wmaRestockVal').textContent  = d.wma_restock  ? Math.round(d.wma_restock)  : '0';
+    document.getElementById('smaForecastVal').textContent = d.sma_forecast ? formatQty(d.sma_forecast, d.unit) : '—';
+    document.getElementById('wmaForecastVal').textContent = d.wma_forecast ? formatQty(d.wma_forecast, d.unit) : '—';
+    document.getElementById('smaRestockVal').textContent  = (d.sma_restock && d.sma_restock > 0) ? formatQty(d.sma_restock, d.unit) : '0';
+    document.getElementById('wmaRestockVal').textContent  = (d.wma_restock && d.wma_restock > 0) ? formatQty(d.wma_restock, d.unit) : '0';
     document.getElementById('smaUnit').textContent        = d.unit;
     document.getElementById('wmaUnit').textContent        = d.unit;
     document.getElementById('chartItemName').textContent  = d.item_name;
@@ -804,45 +816,83 @@ document.getElementById('btnForecast').addEventListener('click', async () => {
     // Build Chart
     const labels   = d.history.map(h => h.month_label);
     const actuals  = d.history.map(h => parseFloat(h.qty_sold));
-    const smaLine  = d.history.map(h => null);
-    const wmaLine  = d.history.map(h => null);
+    const smaBars  = d.history.map(h => null);
+    const wmaBars  = d.history.map(h => null);
 
     labels.push('Next Month (' + d.next_period + ')');
     actuals.push(null);
-    smaLine.push(d.sma_forecast);
-    wmaLine.push(d.wma_forecast);
+    smaBars.push(d.sma_forecast !== null && d.sma_forecast !== undefined ? parseFloat(d.sma_forecast) : null);
+    wmaBars.push(d.wma_forecast !== null && d.wma_forecast !== undefined ? parseFloat(d.wma_forecast) : null);
 
     if (forecastChart) forecastChart.destroy();
     const ctx = document.getElementById('forecastChart').getContext('2d');
     forecastChart = new Chart(ctx, {
+        type: 'bar',
         data: {
             labels,
             datasets: [
                 {
-                    type: 'bar', label: 'Actual Qty Sold',
-                    data: actuals, backgroundColor: 'rgba(16,185,129,0.25)',
-                    borderColor: '#10b981', borderWidth: 1, borderRadius: 4,
+                    type: 'bar',
+                    label: 'Actual Qty Sold',
+                    data: actuals,
+                    backgroundColor: 'rgba(16, 185, 129, 0.35)',
+                    borderColor: '#10b981',
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                    maxBarThickness: 45,
+                    skipNull: true
                 },
                 {
-                    type: 'line', label: 'SMA Forecast',
-                    data: smaLine, borderColor: '#3b82f6', borderWidth: 2,
-                    borderDash: [6,3], fill: false, tension: 0,
-                    pointBackgroundColor: '#3b82f6', pointRadius: 5,
+                    type: 'bar',
+                    label: 'SMA Forecast',
+                    data: smaBars,
+                    backgroundColor: 'rgba(59, 130, 246, 0.75)',
+                    borderColor: '#2563eb',
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                    maxBarThickness: 45,
+                    skipNull: true
                 },
                 {
-                    type: 'line', label: 'WMA Forecast',
-                    data: wmaLine, borderColor: '#10b981', borderWidth: 2,
-                    borderDash: [0], fill: false, tension: 0,
-                    pointBackgroundColor: '#10b981', pointRadius: 5,
+                    type: 'bar',
+                    label: 'WMA Forecast',
+                    data: wmaBars,
+                    backgroundColor: 'rgba(16, 185, 129, 0.85)',
+                    borderColor: '#047857',
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                    maxBarThickness: 45,
+                    skipNull: true
                 },
             ],
         },
         options: {
             responsive: true,
-            plugins: { legend: { labels: { color: '#94a3b8', font: {size:12} } } },
+            skipNull: true,
+            plugins: {
+                legend: {
+                    labels: { color: '#334155', font: {size: 12, weight: '600'} }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const val = context.parsed.y;
+                            if (val === null || val === undefined) return '';
+                            return ` ${context.dataset.label}: ${formatQty(val, d.unit)} ${d.unit || ''}`;
+                        }
+                    }
+                }
+            },
             scales: {
-                x: { grid: {color:'rgba(255,255,255,0.04)'} },
-                y: { grid: {color:'rgba(255,255,255,0.04)'}, ticks: {precision:0} },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b', font: {size: 11} }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.06)' },
+                    ticks: { color: '#64748b', precision: 0 }
+                },
             },
         },
     });
@@ -852,16 +902,16 @@ document.getElementById('btnForecast').addEventListener('click', async () => {
     d.history.forEach(h => {
         tbody += `<tr>
             <td class="fw-600" data-sort-value="${esc(h.month_key || h.month_label)}">${esc(h.month_label)}</td>
-            <td class="text-center fw-700" data-sort-value="${parseFloat(h.qty_sold)}">${parseFloat(h.qty_sold)}</td>
-            <td class="text-center" style="color:#3b82f6;" data-sort-value="${d.sma_forecast || 0}">${d.sma_forecast ? Math.round(d.sma_forecast) : '-'}</td>
-            <td class="text-center" style="color:#10b981;" data-sort-value="${d.wma_forecast || 0}">${d.wma_forecast ? Math.round(d.wma_forecast) : '-'}</td>
+            <td class="text-center fw-700" data-sort-value="${parseFloat(h.qty_sold)}">${formatQty(h.qty_sold, d.unit)}</td>
+            <td class="text-center" style="color:#3b82f6;" data-sort-value="${d.sma_forecast || 0}">${d.sma_forecast ? formatQty(d.sma_forecast, d.unit) : '-'}</td>
+            <td class="text-center" style="color:#10b981;" data-sort-value="${d.wma_forecast || 0}">${d.wma_forecast ? formatQty(d.wma_forecast, d.unit) : '-'}</td>
         </tr>`;
     });
     tbody += `<tr class="no-sort-row" style="background:rgba(16,185,129,0.08); font-weight:800;">
         <td>Next Month (${esc(d.next_period)})</td>
         <td class="text-center text-muted">—</td>
-        <td class="text-center" style="color:#3b82f6;">${d.sma_forecast ? Math.round(d.sma_forecast) : '-'}</td>
-        <td class="text-center" style="color:#10b981;">${d.wma_forecast ? Math.round(d.wma_forecast) : '-'}</td>
+        <td class="text-center" style="color:#3b82f6;">${d.sma_forecast ? formatQty(d.sma_forecast, d.unit) : '-'}</td>
+        <td class="text-center" style="color:#10b981;">${d.wma_forecast ? formatQty(d.wma_forecast, d.unit) : '-'}</td>
     </tr>`;
     document.getElementById('forecastTableBody').innerHTML = tbody;
 
@@ -887,14 +937,17 @@ async function loadOverview() {
         j.data.forEach(row => {
             if (row.needs_restock) {
                 needsRestockCount++;
-                totalRestockQty += (row.sma_restock > 0 ? row.sma_restock : row.wma_restock);
+                const restock = (row.sma_restock > 0 ? row.sma_restock : row.wma_restock);
+                totalRestockQty += parseFloat(restock) || 0;
             }
         });
+
+        const formattedRestockTotal = formatQty(totalRestockQty, 'pieces');
 
         // Update Print KPI Strip
         document.getElementById('pTotalForecasted').textContent = totalItems + ' Items';
         document.getElementById('pNeedsRestock').textContent     = needsRestockCount + ' Items';
-        document.getElementById('pEstUnits').textContent         = totalRestockQty + ' Units';
+        document.getElementById('pEstUnits').textContent         = formattedRestockTotal + ' Units';
 
         let html = `
             <div class="row g-3 mb-3 p-3 pb-0 no-print" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; margin:0;">
@@ -918,7 +971,7 @@ async function loadOverview() {
                     <div class="card h-100" style="border:none;box-shadow:0 2px 8px rgba(0,0,0,0.04);border-left:4px solid #3b82f6;">
                         <div class="card-body p-3">
                             <h6 class="text-muted mb-1" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;">Est. Units to Order</h6>
-                            <h3 class="mb-0" style="font-weight:800;color:#3b82f6;">${totalRestockQty} <small class="text-muted" style="font-size:0.8rem;">Units</small></h3>
+                            <h3 class="mb-0" style="font-weight:800;color:#3b82f6;">${formattedRestockTotal} <small class="text-muted" style="font-size:0.8rem;">Units</small></h3>
                         </div>
                     </div>
                 </div>
@@ -950,11 +1003,11 @@ async function loadOverview() {
                     </a>
                 </td>
                 <td class="text-muted" data-sort-value="${esc(row.category_name)}">${esc(row.category_name)}</td>
-                <td class="text-center" data-sort-value="${parseFloat(row.stock_qty)}">${parseFloat(row.stock_qty)} ${esc(row.unit)}</td>
-                <td class="text-center" style="color:#3b82f6;" data-sort-value="${row.sma_forecast || 0}">${row.sma_forecast ? Math.round(row.sma_forecast) : '—'}</td>
-                <td class="text-center" style="color:#10b981;" data-sort-value="${row.wma_forecast || 0}">${row.wma_forecast ? Math.round(row.wma_forecast) : '—'}</td>
-                <td class="text-center fw-700" style="color:#f59e0b;" data-sort-value="${row.sma_restock || 0}">${row.sma_restock > 0 ? row.sma_restock : '—'}</td>
-                <td class="text-center fw-700" style="color:#f59e0b;" data-sort-value="${row.wma_restock || 0}">${row.wma_restock > 0 ? row.wma_restock : '—'}</td>
+                <td class="text-center" data-sort-value="${parseFloat(row.stock_qty)}">${formatQty(row.stock_qty, row.unit)} ${esc(row.unit)}</td>
+                <td class="text-center" style="color:#3b82f6;" data-sort-value="${row.sma_forecast || 0}">${row.sma_forecast ? formatQty(row.sma_forecast, row.unit) : '—'}</td>
+                <td class="text-center" style="color:#10b981;" data-sort-value="${row.wma_forecast || 0}">${row.wma_forecast ? formatQty(row.wma_forecast, row.unit) : '—'}</td>
+                <td class="text-center fw-700" style="color:#f59e0b;" data-sort-value="${row.sma_restock || 0}">${row.sma_restock > 0 ? formatQty(row.sma_restock, row.unit) : '—'}</td>
+                <td class="text-center fw-700" style="color:#f59e0b;" data-sort-value="${row.wma_restock || 0}">${row.wma_restock > 0 ? formatQty(row.wma_restock, row.unit) : '—'}</td>
                 <td class="text-center" data-sort-value="${needsRestock ? 2 : (row.sma_forecast ? 1 : 0)}">${badge}</td>
             </tr>`;
         });

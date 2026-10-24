@@ -30,7 +30,7 @@ if ($__role === 'cashier') {
 <!-- ══ TOPBAR ══════════════════════════════════════════════ -->
 <header class="ss-topbar" id="appTopbar">
 
-    <?php if (empty($hideHamburger) && ($pageTitle !== 'Point of Sale')): ?>
+    <?php if (empty($hideHamburger)): ?>
     <!-- Hamburger (mobile only: hidden when sidebar is visible on desktop / >=768px) -->
     <button class="btn ss-hamburger d-md-none me-2 p-0" id="sidebarToggleBtn"
             style="width:36px;height:36px;"
@@ -53,6 +53,17 @@ if ($__role === 'cashier') {
         </div>
 
         <div class="ss-vr d-none d-md-block"></div>
+
+        <?php if (isset($pageTitle) && $pageTitle === 'Point of Sale'): ?>
+        <!-- Quick Live Summary Shortcut (Mobile & Desktop) -->
+        <button type="button" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 py-1 px-2"
+                id="topbarLiveSummaryBtn" onclick="if(typeof viewShiftSummary === 'function') viewShiftSummary();" title="View Live Shift Summary"
+                style="border-radius:8px;font-size:0.8rem;font-weight:700;">
+            <i class="fa-solid fa-list-check"></i>
+            <span class="d-none d-sm-inline">Live Summary</span>
+            <span class="d-inline d-sm-none">Summary</span>
+        </button>
+        <?php endif; ?>
 
         <!-- User Dropdown -->
         <div class="dropdown" id="userProfileDropdownContainer">
@@ -106,6 +117,11 @@ if ($__role === 'cashier') {
                 </li>
                 <?php endif; ?>
                 <?php if (isset($pageTitle) && $pageTitle === 'Point of Sale'): ?>
+                <li id="headerLiveSummaryItem">
+                    <a href="#" class="dropdown-item ss-dropdown-item py-2" onclick="if(typeof viewShiftSummary === 'function') viewShiftSummary(); return false;">
+                        <i class="fa-solid fa-list-check me-2" style="color:#0abf8a;width:16px;"></i>Live Shift Summary
+                    </a>
+                </li>
                 <li id="headerEndShiftDivider" style="<?= ($__role === 'cashier' && !$__hasOpenShift) ? 'display:none;' : '' ?>">
                     <hr class="dropdown-divider ss-divider my-2">
                 </li>

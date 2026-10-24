@@ -16,6 +16,14 @@ function respond(bool $s, string $m = '', mixed $d = null): never {
     exit();
 }
 
+/**
+ * Check if the unit represents discrete countable items (pieces, packs, etc.)
+ */
+function isPieceUnit(?string $unit): bool {
+    $u = strtolower(trim((string)$unit));
+    return in_array($u, ['pieces', 'pcs', 'piece', 'packs', 'pack', 'bottles', 'cans', 'boxes', 'sachets', 'items', 'units'], true);
+}
+
 $action = $_GET['action'] ?? '';
 $db     = getDB();
 
@@ -23,7 +31,14 @@ $db     = getDB();
 if ($action === 'items_list') {
     try {
         $stmt = $db->query("SELECT i.item_id, i.barcode, i.item_name, c.category_name, i.stock_qty, i.unit FROM tbl_inventory i LEFT JOIN tbl_categories c ON c.category_id = i.category_id WHERE i.is_active = 1 ORDER BY i.item_name ASC");
-        respond(true, 'OK', $stmt->fetchAll());
+        $items = $stmt->fetchAll();
+        foreach ($items as &$item) {
+            $isPiece = isPieceUnit($item['unit'] ?? '');
+            $qty = (float)$item['stock_qty'];
+            $item['stock_qty'] = ($isPiece || $qty == (int)$qty) ? (int)$qty : $qty;
+        }
+        unset($item);
+        respond(true, 'OK', $items);
     } catch (Throwable $e) {
         respond(false, 'Database error: ' . $e->getMessage());
     }
@@ -67,11 +82,30 @@ if ($action === 'forecast_report') {
         $stmt = $db->query($sql);
         $rows = $stmt->fetchAll();
         foreach ($rows as &$row) {
-            $sma = (float)($row['sma_forecast'] ?? 0);
-            $wma = (float)($row['wma_forecast'] ?? 0);
+            $isPiece = isPieceUnit($row['unit'] ?? '');
+            $sma = $row['sma_forecast'] !== null ? (float)$row['sma_forecast'] : null;
+            $wma = $row['wma_forecast'] !== null ? (float)$row['wma_forecast'] : null;
             $qty = (float)$row['stock_qty'];
-            $row['sma_restock']   = max(0, round($sma - $qty, 2));
-            $row['wma_restock']   = max(0, round($wma - $qty, 2));
+
+            if ($isPiece) {
+                $row['stock_qty']    = (int)round($qty);
+                $row['sma_forecast'] = $sma !== null ? (int)round($sma) : null;
+                $row['wma_forecast'] = $wma !== null ? (int)round($wma) : null;
+                $smaVal = $row['sma_forecast'] ?? 0;
+                $wmaVal = $row['wma_forecast'] ?? 0;
+                $row['sma_restock']  = max(0, (int)($smaVal - $row['stock_qty']));
+                $row['wma_restock']  = max(0, (int)($wmaVal - $row['stock_qty']));
+            } else {
+                $row['stock_qty']    = ($qty == (int)$qty) ? (int)$qty : round($qty, 2);
+                $row['sma_forecast'] = $sma !== null ? (($sma == (int)$sma) ? (int)$sma : round($sma, 2)) : null;
+                $row['wma_forecast'] = $wma !== null ? (($wma == (int)$wma) ? (int)$wma : round($wma, 2)) : null;
+                $smaVal = $sma ?? 0;
+                $wmaVal = $wma ?? 0;
+                $row['sma_restock']  = max(0, round($smaVal - $qty, 2));
+                $row['wma_restock']  = max(0, round($wmaVal - $qty, 2));
+                if ($row['sma_restock'] == (int)$row['sma_restock']) $row['sma_restock'] = (int)$row['sma_restock'];
+                if ($row['wma_restock'] == (int)$row['wma_restock']) $row['wma_restock'] = (int)$row['wma_restock'];
+            }
             $row['needs_restock'] = ($row['sma_restock'] > 0 || $row['wma_restock'] > 0);
         }
         unset($row);
@@ -120,11 +154,10 @@ if ($action === 'forecast') {
         $qtys = array_map(fn($r) => (float)$r['qty_sold'], $history);
         $n    = count($qtys);
 
-        // ── SMA: Simple Moving Average ──────────────────────────
-        $sma_forecast = $n > 0 ? round(array_sum($qtys) / $n, 2) : 0;
+        $isPiece = isPieceUnit($item['unit'] ?? '');
+        $currentStock = (float)$item['stock_qty'];
 
-        // ── WMA: Weighted Moving Average ────────────────────────
-        // Most recent month gets weight N, oldest gets weight 1
+        // ── SMA & WMA Calculations ──────────────────────────────
         $wma_numerator   = 0;
         $wma_denominator = 0;
         foreach ($qtys as $i => $qty) {
@@ -132,11 +165,24 @@ if ($action === 'forecast') {
             $wma_numerator   += $weight * $qty;
             $wma_denominator += $weight;
         }
-        $wma_forecast = $wma_denominator > 0 ? round($wma_numerator / $wma_denominator, 2) : 0;
 
-        $currentStock  = (float)$item['stock_qty'];
-        $sma_restock   = max(0, round($sma_forecast - $currentStock, 2));
-        $wma_restock   = max(0, round($wma_forecast - $currentStock, 2));
+        if ($isPiece) {
+            $sma_forecast = $n > 0 ? (int)round(array_sum($qtys) / $n) : 0;
+            $wma_forecast = $wma_denominator > 0 ? (int)round($wma_numerator / $wma_denominator) : 0;
+            $currentStock = (int)round($currentStock);
+            $sma_restock  = max(0, (int)($sma_forecast - $currentStock));
+            $wma_restock  = max(0, (int)($wma_forecast - $currentStock));
+        } else {
+            $sma_forecast = $n > 0 ? round(array_sum($qtys) / $n, 2) : 0;
+            $wma_forecast = $wma_denominator > 0 ? round($wma_numerator / $wma_denominator, 2) : 0;
+            $sma_restock  = max(0, round($sma_forecast - $currentStock, 2));
+            $wma_restock  = max(0, round($wma_forecast - $currentStock, 2));
+            if ($currentStock == (int)$currentStock) $currentStock = (int)$currentStock;
+            if ($sma_forecast == (int)$sma_forecast) $sma_forecast = (int)$sma_forecast;
+            if ($wma_forecast == (int)$wma_forecast) $wma_forecast = (int)$wma_forecast;
+            if ($sma_restock == (int)$sma_restock) $sma_restock = (int)$sma_restock;
+            if ($wma_restock == (int)$wma_restock) $wma_restock = (int)$wma_restock;
+        }
 
         // Save to tbl_forecasts
         $nextMonth = date('Y-m-01', strtotime('first day of next month'));
@@ -173,7 +219,7 @@ if ($action === 'forecast_all') {
     $periods = in_array($periods, [3,6,12], true) ? $periods : 6;
 
     try {
-        $items = $db->query("SELECT item_id FROM tbl_inventory WHERE is_active = 1")->fetchAll();
+        $items = $db->query("SELECT item_id, unit FROM tbl_inventory WHERE is_active = 1")->fetchAll();
         $nextMonth = date('Y-m-01', strtotime('first day of next month'));
 
         $histStmt = $db->prepare("
@@ -192,21 +238,29 @@ if ($action === 'forecast_all') {
 
         foreach ($items as $item) {
             $itemId = (int)$item['item_id'];
+            $isPiece = isPieceUnit($item['unit'] ?? '');
             
             $histStmt->execute([':id' => $itemId]);
             $rawQtys = array_map(fn($r) => (float)$r['qty_sold'], $histStmt->fetchAll());
             $qtys = array_reverse($rawQtys);
             $n = count($qtys);
 
-            $sma_forecast = $n > 0 ? round(array_sum($qtys) / $n, 2) : 0;
-            
             $wma_numerator = 0; $wma_denominator = 0;
             foreach ($qtys as $i => $qty) {
                 $w = $i + 1;
                 $wma_numerator += $w * $qty;
                 $wma_denominator += $w;
             }
-            $wma_forecast = $wma_denominator > 0 ? round($wma_numerator / $wma_denominator, 2) : 0;
+
+            if ($isPiece) {
+                $sma_forecast = $n > 0 ? (int)round(array_sum($qtys) / $n) : 0;
+                $wma_forecast = $wma_denominator > 0 ? (int)round($wma_numerator / $wma_denominator) : 0;
+            } else {
+                $sma_forecast = $n > 0 ? round(array_sum($qtys) / $n, 2) : 0;
+                $wma_forecast = $wma_denominator > 0 ? round($wma_numerator / $wma_denominator, 2) : 0;
+                if ($sma_forecast == (int)$sma_forecast) $sma_forecast = (int)$sma_forecast;
+                if ($wma_forecast == (int)$wma_forecast) $wma_forecast = (int)$wma_forecast;
+            }
 
             $delStmt->execute([':id' => $itemId, ':period' => $nextMonth]);
             $insStmt->execute([':id' => $itemId, ':period' => $nextMonth, ':qty' => $sma_forecast, ':method' => 'SMA']);

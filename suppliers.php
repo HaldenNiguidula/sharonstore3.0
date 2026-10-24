@@ -335,8 +335,13 @@ sort($allCategories, SORT_NATURAL | SORT_FLAG_CASE);
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label fw-bold mb-0">Supplier Categories</label>
-                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-semibold" onclick="addCategoryRow()" style="font-size:0.8rem;">
-                                <i class="fa-solid fa-plus me-1"></i>Add Another Category
+                            <button type="button" class="btn btn-sm text-white fw-bold d-inline-flex align-items-center gap-1 shadow-sm px-3 py-1"
+                                    id="btnAddCategoryRow"
+                                    onclick="addCategoryRow()"
+                                    style="background:#0abf8a; border:1px solid #089e72; border-radius:8px; font-size:0.84rem; transition:all 0.15s ease;"
+                                    onmouseover="this.style.background='#089e72'"
+                                    onmouseout="this.style.background='#0abf8a'">
+                                <i class="fa-solid fa-plus me-1"></i>Add Another
                             </button>
                         </div>
                         <small class="text-muted d-block mb-2">Assign one or multiple product categories supplied by this vendor.</small>

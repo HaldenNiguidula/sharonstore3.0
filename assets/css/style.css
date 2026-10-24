@@ -820,11 +820,8 @@ code, .barcode-text {
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE & FULL-SCREEN OVERRIDES
    ═══════════════════════════════════════════════════════════ */
-/* Never show hamburger on POS or pages marked no-hamburger */
-.no-hamburger .ss-hamburger,
-body.pos-page .ss-hamburger,
-.pos-body .ss-hamburger,
-.app-wrapper:has(.pos-body) .ss-hamburger {
+/* Never show hamburger on pages marked no-hamburger */
+.no-hamburger .ss-hamburger {
   display: none !important;
 }
 

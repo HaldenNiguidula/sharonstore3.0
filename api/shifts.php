@@ -113,6 +113,50 @@ if ($action === 'summary') {
     $shift = $stmt->fetch();
 
     if (!$shift) {
+        if (currentRole() === 'admin') {
+            // Admin view: check if any shift is currently open, or summarize today's transactions
+            $stmt = $db->query("SELECT * FROM tbl_shifts WHERE status = 'open' ORDER BY shift_id DESC LIMIT 1");
+            $openShift = $stmt->fetch();
+            if ($openShift) {
+                $shiftId = $openShift['shift_id'];
+                $startingCash = (float)$openShift['starting_cash'];
+                $stmt = $db->prepare("SELECT COUNT(*) as txn_count, COALESCE(SUM(total_amount), 0) as total_sales FROM tbl_transactions WHERE shift_id = ? AND (status IS NULL OR status != 'voided')");
+                $stmt->execute([$shiftId]);
+                $totals = $stmt->fetch();
+                $totalSales = (float)$totals['total_sales'];
+                $txnCount = (int)$totals['txn_count'];
+                $expectedCash = $startingCash + $totalSales;
+
+                respond(true, 'Live open shift summary retrieved.', [
+                    'start_time' => $openShift['start_time'],
+                    'starting_cash' => $startingCash,
+                    'txn_count' => $txnCount,
+                    'total_sales' => $totalSales,
+                    'expected_cash' => $expectedCash,
+                    'is_admin' => true,
+                    'cashier_id' => $openShift['cashier_id']
+                ]);
+            } else {
+                // No open shift, summarize today's transactions store-wide
+                $today = date('Y-m-d');
+                $stmt = $db->prepare("SELECT COUNT(*) as txn_count, COALESCE(SUM(total_amount), 0) as total_sales FROM tbl_transactions WHERE DATE(created_at) = ? AND (status IS NULL OR status != 'voided')");
+                $stmt->execute([$today]);
+                $totals = $stmt->fetch();
+                $totalSales = (float)$totals['total_sales'];
+                $txnCount = (int)$totals['txn_count'];
+
+                respond(true, "Today's storewide overview.", [
+                    'start_time' => date('Y-m-d 00:00:00'),
+                    'starting_cash' => 0.00,
+                    'txn_count' => $txnCount,
+                    'total_sales' => $totalSales,
+                    'expected_cash' => $totalSales,
+                    'is_admin' => true,
+                    'cashier_id' => null
+                ]);
+            }
+        }
+
         respond(false, 'No open shift found.');
     }
 
@@ -132,7 +176,9 @@ if ($action === 'summary') {
         'starting_cash' => $startingCash,
         'txn_count' => $txnCount,
         'total_sales' => $totalSales,
-        'expected_cash' => $expectedCash
+        'expected_cash' => $expectedCash,
+        'is_admin' => false,
+        'cashier_id' => $shift['cashier_id']
     ]);
 }
 

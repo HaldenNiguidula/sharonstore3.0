@@ -9,7 +9,7 @@ requireLogin();
 $pageTitle      = 'Point of Sale';
 $userFullName   = currentUserName();
 $userRole       = currentRole();
-$hideHamburger  = true;
+// $hideHamburger removed to allow mobile sidebar toggle
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,8 +21,7 @@ $hideHamburger  = true;
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=35">
 <style>
-/* Never show hamburger on POS full-screen page */
-.ss-hamburger, #sidebarToggleBtn { display: none !important; }
+/* Hamburger is hidden on desktop by global style.css (>=768px), and visible on mobile (<768px) */
 
 /* ============================================================
    POS-specific styles  Light Theme aligned to system design
@@ -553,13 +552,31 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
     .pcard-price { font-size: 0.8rem; }
 }
 
-/* Mobile (< 768px): stack vertically */
+/* Mobile (< 768px): stack vertically with smooth native scrolling */
 @media (max-width: 767px) {
+    html, body {
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+    .app-wrapper {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    .main-content {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
     /* Full-height body becomes scrollable column */
     .pos-body {
         flex-direction: column;
-        overflow-y: auto;
+        overflow-y: visible !important;
         overflow-x: hidden;
+        height: auto !important;
+        min-height: calc(100vh - 56px);
     }
 
     /* Left panel (cart): natural height, no overflow:hidden */
@@ -592,6 +609,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
         min-width: 0;
         flex: none;
         overflow-y: visible;
+        padding-bottom: 50px;
     }
     .pos-right-section { padding: 10px 14px; }
 
@@ -1218,25 +1236,30 @@ document.getElementById('endShiftForm').addEventListener('submit', async (e) => 
 });
 
 async function viewShiftSummary() {
-    if (isAdmin) {
-        showToast('Admins do not have active shifts.', 'info');
-        return;
-    }
-    
     try {
         const res = await fetch('/sharonstore3.0/api/shifts.php?action=summary');
         const json = await res.json();
         
-        if (json.success) {
-            document.getElementById('liveShiftStarted').textContent = new Date(json.data.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('liveStartingCash').textContent = '₱' + parseFloat(json.data.starting_cash).toLocaleString('en-US', {minimumFractionDigits:2});
-            document.getElementById('liveTxnCount').textContent = json.data.txn_count;
-            document.getElementById('liveTotalSales').textContent = '₱' + parseFloat(json.data.total_sales).toLocaleString('en-US', {minimumFractionDigits:2});
-            document.getElementById('liveExpectedCash').textContent = '₱' + parseFloat(json.data.expected_cash).toLocaleString('en-US', {minimumFractionDigits:2});
+        if (json.success && json.data) {
+            const isStoreOverview = json.data.is_admin && !json.data.cashier_id;
+            
+            if (isStoreOverview) {
+                document.getElementById('liveShiftStarted').textContent = 'Today (Store Overview)';
+                document.getElementById('liveStartingCash').textContent = 'N/A';
+            } else {
+                document.getElementById('liveShiftStarted').textContent = json.data.start_time 
+                    ? new Date(json.data.start_time.replace(/-/g, '/')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                    : '--';
+                document.getElementById('liveStartingCash').textContent = '₱' + parseFloat(json.data.starting_cash || 0).toLocaleString('en-US', {minimumFractionDigits:2});
+            }
+            
+            document.getElementById('liveTxnCount').textContent = json.data.txn_count || 0;
+            document.getElementById('liveTotalSales').textContent = '₱' + parseFloat(json.data.total_sales || 0).toLocaleString('en-US', {minimumFractionDigits:2});
+            document.getElementById('liveExpectedCash').textContent = '₱' + parseFloat(json.data.expected_cash || 0).toLocaleString('en-US', {minimumFractionDigits:2});
             
             shiftModals.live.show();
         } else {
-            showToast(json.message, 'error');
+            showToast(json.message || 'Unable to retrieve summary.', 'warning');
         }
     } catch (err) {
         showToast('Error retrieving summary.', 'error');
