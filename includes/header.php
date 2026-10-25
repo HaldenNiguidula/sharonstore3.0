@@ -123,11 +123,13 @@ if ($__role === 'cashier') {
                 </li>
                 <?php endif; ?>
                 <?php if (isset($pageTitle) && in_array($pageTitle, ['Point of Sale', 'Stock Monitoring'])): ?>
+                <?php if ($__role === 'admin'): ?>
                 <li id="headerLiveSummaryItem">
                     <a href="#" class="dropdown-item ss-dropdown-item py-2" onclick="if(typeof viewShiftSummary === 'function') viewShiftSummary(); return false;">
                         <i class="fa-solid fa-list-check me-2" style="color:#0abf8a;width:16px;"></i>Live summary
                     </a>
                 </li>
+                <?php endif; ?>
                 <?php if ($__role === 'cashier'): ?>
                 <li id="headerEndShiftDivider" style="<?= !$__hasOpenShift ? 'display:none;' : '' ?>">
                     <hr class="dropdown-divider ss-divider my-2">
