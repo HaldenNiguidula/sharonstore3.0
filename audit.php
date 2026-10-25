@@ -431,11 +431,12 @@ async function loadLogs(page = 1) {
 
         document.getElementById('logCount').textContent = `${j.total} entries`;
         document.getElementById('pTotalEntries').textContent = `${j.total} entries`;
-        document.getElementById('pageInfo').textContent = `Page ${j.page} of ${j.total_pages}`;
+        document.getElementById('pageInfo').textContent = (j.total_pages > 1 && j.total > 0) ? `Page ${j.page} of ${j.total_pages}` : '';
         document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
 
         if (!j.data.length) {
             document.getElementById('auditBody').innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted"><i class="fa-solid fa-shield-halved fa-2x mb-2"></i><br>No log entries found.</td></tr>`;
+            document.getElementById('pageInfo').textContent = '';
             document.getElementById('pagination').innerHTML = '';
             return;
         }

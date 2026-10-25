@@ -503,7 +503,7 @@ async function loadItems(page = 1) {
     const totalPages = parseInt(j.data.total_pages) || 1;
 
     document.getElementById('itemCount').textContent = `${total} items`;
-    document.getElementById('pageInfo').textContent  = `Page ${j.data.page} of ${totalPages}`;
+    document.getElementById('pageInfo').textContent  = (totalPages > 1 && total > 0) ? `Page ${j.data.page} of ${totalPages}` : '';
 
     if (!items.length) {
         document.getElementById('inventoryBody').innerHTML = `<tr><td colspan="10" class="text-center py-5"><i class="fa-solid fa-box-open fa-2x text-muted mb-2"></i><br>No items found.</td></tr>`;
@@ -519,15 +519,28 @@ async function loadItems(page = 1) {
                 ? '<span class="badge badge-warning">Low Stock</span>'
                 : '<span class="badge badge-success">In Stock</span>';
 
-            // Safe local-date expiry parse (avoid UTC off-by-one)
+            // Safe calendar-day expiry calculation
             let expHtml = '<span style="color:#888888;">\u2014</span>';
-            if (item.expiry_date) {
+            if (item.expiry_date && item.expiry_date !== '0000-00-00') {
                 const [ey,em,ed] = item.expiry_date.split('-').map(Number);
-                const expDate = new Date(ey, em-1, ed);
-                const days = Math.ceil((expDate - new Date()) / 86400000);
-                const col = days <= 0 ? '#b91c1c' : days <= 30 ? '#b45309' : '#4a5568';
-                const label = days <= 0 ? ' (EXPIRED)' : days <= 30 ? ` (${days}d)` : '';
-                expHtml = `<span style="color:${col};font-weight:${days<=30?700:500};">${item.expiry_date}${label}</span>`;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const expDate = new Date(ey, em - 1, ed, 0, 0, 0, 0);
+                const days = Math.round((expDate - today) / 86400000);
+
+                let badgeHtml = '';
+                let textCol = '#4a5568';
+                if (days <= 0) {
+                    textCol = '#dc2626';
+                    badgeHtml = `<span class="badge badge-danger ms-1" style="font-size:0.72rem;letter-spacing:0.3px;">EXPIRED</span>`;
+                } else if (days <= 30) {
+                    const isUrgent = days <= 7;
+                    textCol = isUrgent ? '#dc2626' : '#b45309';
+                    const bgCol = isUrgent ? '#fee2e2' : '#fef3c7';
+                    const fgCol = isUrgent ? '#b91c1c' : '#92400e';
+                    badgeHtml = `<span class="badge ms-1" style="background:${bgCol};color:${fgCol};font-weight:700;font-size:0.72rem;">${days} ${days === 1 ? 'day' : 'days'} left</span>`;
+                }
+                expHtml = `<span style="color:${textCol};font-weight:${days<=30 ? 700 : 500};font-size:0.83rem;">${item.expiry_date}</span>${badgeHtml}`;
             }
 
             html += `<tr class="${rowCls}">

@@ -171,6 +171,9 @@ function handleCompleteSale(array $body): never {
     $userId         = currentUserId();
 
     // ── Validate input ────────────────────────────────────────
+    if ($userId <= 0) {
+        jsonOut(['success' => false, 'message' => 'User session invalid. Please log in again.'], 401);
+    }
     if (empty($items) || !is_array($items)) {
         jsonOut(['success' => false, 'message' => 'Cart is empty.'], 400);
     }
@@ -252,14 +255,33 @@ function handleCompleteSale(array $body): never {
     $seq     = $maxSeq + 1;
     $transactionCode = $prefix . str_pad((string)$seq, 4, '0', STR_PAD_LEFT);
 
+    // Collision safety guard: ensure generated transaction code is truly unique
+    $chkCode = $db->prepare("SELECT 1 FROM tbl_transactions WHERE transaction_code = ? LIMIT 1");
+    for ($i = 0; $i < 100; $i++) {
+        $chkCode->execute([$transactionCode]);
+        if (!$chkCode->fetchColumn()) {
+            break;
+        }
+        $seq++;
+        $transactionCode = $prefix . str_pad((string)$seq, 4, '0', STR_PAD_LEFT);
+    }
+
     // ── PDO transaction: INSERT + stock deduction ─────────────
     try {
         $db->beginTransaction();
 
-        // Fetch active shift
+        // Fetch active shift for current user (cashier); if manager/admin, check if any register shift is currently open
         $shiftStmt = $db->prepare("SELECT shift_id FROM tbl_shifts WHERE cashier_id = :uid AND status = 'open' ORDER BY shift_id DESC LIMIT 1");
         $shiftStmt->execute([':uid' => $userId]);
         $activeShift = $shiftStmt->fetchColumn();
+
+        if (!$activeShift && isAdmin()) {
+            $anyShiftStmt = $db->query("SELECT shift_id FROM tbl_shifts WHERE status = 'open' ORDER BY shift_id DESC LIMIT 1");
+            $anyShift = $anyShiftStmt->fetchColumn();
+            if ($anyShift) {
+                $activeShift = $anyShift;
+            }
+        }
         $shiftIdVal = $activeShift ? (int)$activeShift : null;
 
         // Insert header
@@ -269,14 +291,17 @@ function handleCompleteSale(array $body): never {
              VALUES
                 (:code, :uid, :shift_id, :total, :tendered, :change, NOW())"
         );
-        $insHdr->execute([
-            ':code'     => $transactionCode,
-            ':uid'      => $userId,
-            ':shift_id' => $shiftIdVal,
-            ':total'    => $grandTotal,
-            ':tendered' => $amountTendered,
-            ':change'   => $changeAmount,
-        ]);
+        $insHdr->bindValue(':code',     $transactionCode, PDO::PARAM_STR);
+        $insHdr->bindValue(':uid',      $userId, PDO::PARAM_INT);
+        if ($shiftIdVal === null) {
+            $insHdr->bindValue(':shift_id', null, PDO::PARAM_NULL);
+        } else {
+            $insHdr->bindValue(':shift_id', $shiftIdVal, PDO::PARAM_INT);
+        }
+        $insHdr->bindValue(':total',    $grandTotal);
+        $insHdr->bindValue(':tendered', $amountTendered);
+        $insHdr->bindValue(':change',   $changeAmount);
+        $insHdr->execute();
         $transactionId = (int)$db->lastInsertId();
 
         // Insert details + deduct stock
@@ -309,9 +334,11 @@ function handleCompleteSale(array $body): never {
         $db->commit();
 
     } catch (\Throwable $e) {
-        $db->rollBack();
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
         error_log('complete_sale error: ' . $e->getMessage());
-        jsonOut(['success' => false, 'message' => 'Transaction failed. Please try again.'], 500);
+        jsonOut(['success' => false, 'message' => 'Transaction failed: ' . $e->getMessage()], 500);
     }
 
     // ── Audit log ─────────────────────────────────────────────

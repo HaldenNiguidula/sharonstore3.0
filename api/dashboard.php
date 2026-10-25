@@ -72,6 +72,7 @@ function getDashboardSalesTrend(PDO $db): array {
 }
 
 function getDashboardTopItems(PDO $db): array {
+    // Attempt recent 30-day window first
     $stmt = $db->query("
         SELECT i.item_name, SUM(d.quantity) AS total_qty, SUM(d.subtotal) AS total_sales
         FROM tbl_transaction_details d
@@ -84,6 +85,25 @@ function getDashboardTopItems(PDO $db): array {
         LIMIT 10
     ");
     $rows = $stmt->fetchAll();
+
+    // If 30-day window has fewer than 10 items, fall back to all-time completed transactions to guarantee 10 items
+    if (count($rows) < 10) {
+        $stmtAll = $db->query("
+            SELECT i.item_name, SUM(d.quantity) AS total_qty, SUM(d.subtotal) AS total_sales
+            FROM tbl_transaction_details d
+            JOIN tbl_inventory i ON i.item_id = d.item_id
+            JOIN tbl_transactions t ON t.transaction_id = d.transaction_id
+            WHERE (t.status IS NULL OR t.status != 'voided')
+            GROUP BY i.item_id, i.item_name
+            ORDER BY total_qty DESC
+            LIMIT 10
+        ");
+        $allRows = $stmtAll->fetchAll();
+        if (count($allRows) > count($rows)) {
+            $rows = $allRows;
+        }
+    }
+
     return [
         'labels' => array_column($rows, 'item_name'),
         'data'   => array_map(fn($r) => (float)$r['total_qty'], $rows),

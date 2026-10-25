@@ -122,19 +122,23 @@ if ($action === 'list') {
         if ($sortMap[$sortBy] === 'stock_status_order') {
             $orderSql = ($sortDir === 'ASC')
                 ? "(CASE 
-                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date <= CURDATE() THEN 1 
+                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE() THEN 1 
                     WHEN i.stock_qty <= 0 THEN 2 
                     WHEN i.stock_qty <= i.low_stock_threshold THEN 3 
                     ELSE 4 END) ASC, i.item_name ASC"
                 : "(CASE 
-                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date <= CURDATE() THEN 1 
+                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE() THEN 1 
                     WHEN i.stock_qty <= 0 THEN 2 
                     WHEN i.stock_qty <= i.low_stock_threshold THEN 3 
                     ELSE 4 END) DESC, i.item_name ASC";
         } elseif ($sortMap[$sortBy] === 'i.expiry_date') {
             $orderSql = ($sortDir === 'ASC')
-                ? "(i.expiry_date IS NULL) ASC, i.expiry_date ASC, i.item_name ASC"
-                : "(i.expiry_date IS NULL) ASC, i.expiry_date DESC, i.item_name ASC";
+                ? "(i.expiry_date IS NULL OR i.expiry_date = '' OR i.expiry_date = '0000-00-00') ASC, i.expiry_date ASC, i.item_name ASC"
+                : "(i.expiry_date IS NULL OR i.expiry_date = '' OR i.expiry_date = '0000-00-00') ASC, i.expiry_date DESC, i.item_name ASC";
+        } elseif ($sortMap[$sortBy] === 'i.barcode') {
+            $orderSql = ($sortDir === 'ASC')
+                ? "(i.barcode IS NULL OR i.barcode = '') ASC, i.barcode ASC, i.item_name ASC"
+                : "(i.barcode IS NULL OR i.barcode = '') ASC, i.barcode DESC, i.item_name ASC";
         } else {
             $colName = $sortMap[$sortBy];
             $orderSql = "{$colName} {$sortDir}, i.item_name ASC";

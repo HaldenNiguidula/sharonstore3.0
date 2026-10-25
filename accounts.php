@@ -263,11 +263,33 @@ function openDelete(id, name) {
 }
 
 document.getElementById('btnDelConfirm').addEventListener('click', async () => {
-    const body = new FormData(); body.append('action','delete'); body.append('user_id',document.getElementById('delUserId').value);
-    const r = await fetch('/sharonstore3.0/api/accounts.php',{method:'POST',body});
-    const j = await r.json();
-    if (j.success) { delModal.hide(); showToast(j.message,'success'); loadUsers(); }
-    else showToast(j.message,'error');
+    const btn = document.getElementById('btnDelConfirm');
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+
+    try {
+        const body = new FormData();
+        body.append('action', 'delete');
+        body.append('user_id', document.getElementById('delUserId').value);
+
+        const r = await fetch('/sharonstore3.0/api/accounts.php', { method: 'POST', body });
+        const j = await r.json();
+
+        if (j.success) {
+            delModal.hide();
+            showToast(j.message || 'Account deleted successfully.', 'success');
+            loadUsers();
+        } else {
+            showToast(j.message || 'Failed to delete account.', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error communicating with server.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+    }
 });
 
 

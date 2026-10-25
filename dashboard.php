@@ -146,7 +146,7 @@ $pageTitle = 'Business Intelligence Dashboard';
                     </div>
                     <div class="card-body p-0">
                         <div id="topItemsLoading" class="chart-loading p-4"><div class="loading-spinner"></div></div>
-                        <canvas id="topItemsChart" height="160" style="display:none; padding:16px; max-height:300px;"></canvas>
+                        <canvas id="topItemsChart" height="340" style="display:none; padding:12px 16px; width:100%; min-height:320px; max-height:380px;"></canvas>
                     </div>
                 </div>
             </div>
@@ -332,7 +332,7 @@ function renderTopItems(data) {
     if (chartEl) chartEl.style.display = '';
     const ctx = chartEl.getContext('2d');
     if (topChart) topChart.destroy();
-    const labels = (data.labels || []).map(l => l.length > 20 ? l.substring(0,20)+'...' : l);
+    const labels = data.labels || [];
     topChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -346,8 +346,21 @@ function renderTopItems(data) {
         },
         options: {
             indexAxis: 'y',
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { left: 4, right: 12, top: 4, bottom: 4 }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            return (labels && labels[context[0].dataIndex]) ? labels[context[0].dataIndex] : '';
+                        }
+                    }
+                }
+            },
             scales: {
                 x: {
                     grid: { color: 'rgba(0,0,0,0.07)' },
@@ -355,7 +368,11 @@ function renderTopItems(data) {
                 },
                 y: {
                     grid: { display: false },
-                    ticks: { color: '#2C2D2D', font: { size: 11, weight: '600' } }
+                    ticks: {
+                        color: '#2C2D2D',
+                        font: { size: 11, weight: '600' },
+                        autoSkip: false
+                    }
                 }
             }
         }

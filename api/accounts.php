@@ -136,9 +136,39 @@ if ($action === 'delete') {
     $u = $chk->fetch();
     if (!$u) respond(false, 'User not found.');
 
-    $db->prepare("DELETE FROM tbl_users WHERE user_id = :id")->execute([':id'=>$targetId]);
-    logAudit($userId, 'DELETE_USER', 'Accounts', "Deleted user #{$targetId}: {$u['username']}");
-    respond(true, 'Account deleted.');
+    try {
+        $db->beginTransaction();
+
+        // 1. Reassign any existing transactions to active administrator to satisfy fk_txn_user foreign key
+        $db->prepare("UPDATE tbl_transactions SET user_id = :adminId WHERE user_id = :targetId")
+           ->execute([':adminId' => $userId, ':targetId' => $targetId]);
+
+        // 2. Reassign any cashier shifts to active administrator
+        $db->prepare("UPDATE tbl_shifts SET cashier_id = :adminId WHERE cashier_id = :targetId")
+           ->execute([':adminId' => $userId, ':targetId' => $targetId]);
+
+        // 3. Clear sessions for target user if tbl_sessions exists
+        try {
+            $db->prepare("DELETE FROM tbl_sessions WHERE data LIKE :needle")
+               ->execute([':needle' => '%user_id|i:' . $targetId . ';%']);
+        } catch (\Throwable $t) {
+            // ignore if sessions table differs
+        }
+
+        // 4. Delete user record
+        $db->prepare("DELETE FROM tbl_users WHERE user_id = :id")->execute([':id'=>$targetId]);
+
+        $db->commit();
+
+        logAudit($userId, 'DELETE_USER', 'Accounts', "Deleted user #{$targetId}: {$u['username']} (historical transactions reassigned to admin #{$userId})");
+        respond(true, 'Account deleted successfully.');
+    } catch (\Throwable $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        error_log('Account deletion error: ' . $e->getMessage());
+        respond(false, 'Failed to delete account: ' . $e->getMessage());
+    }
 }
 
 respond(false, 'Unknown action.');

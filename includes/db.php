@@ -329,6 +329,11 @@ function ensureSchema(PDO $pdo): void {
             INDEX (`last_activity`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
+        // Ensure shift_id in tbl_transactions allows NULL
+        try {
+            $pdo->exec("ALTER TABLE tbl_transactions MODIFY COLUMN shift_id INT(11) DEFAULT NULL");
+        } catch (Throwable $e) {}
+
         // 2. Check if inventory or transactions have data
         $invCount = 0;
         try {
