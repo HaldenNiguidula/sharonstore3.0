@@ -139,15 +139,32 @@ if ($action === 'delete') {
     try {
         $db->beginTransaction();
 
-        // 1. Reassign any existing transactions to active administrator to satisfy fk_txn_user foreign key
-        $db->prepare("UPDATE tbl_transactions SET user_id = :adminId WHERE user_id = :targetId")
-           ->execute([':adminId' => $userId, ':targetId' => $targetId]);
+        // Find a valid administrator ID from tbl_users to reassign records to (if any exist)
+        $realAdminId = null;
+        if ($userId > 0) {
+            $chkAdmin = $db->prepare("SELECT user_id FROM tbl_users WHERE user_id = :uid LIMIT 1");
+            $chkAdmin->execute([':uid' => $userId]);
+            $realAdminId = $chkAdmin->fetchColumn() ?: null;
+        }
+        if (!$realAdminId) {
+            $firstAdmin = $db->query("SELECT user_id FROM tbl_users WHERE role = 'admin' AND is_active = 1 AND user_id != {$targetId} ORDER BY user_id ASC LIMIT 1")->fetchColumn();
+            $realAdminId = $firstAdmin ? (int)$firstAdmin : null;
+        }
 
-        // 2. Reassign any cashier shifts to active administrator
-        $db->prepare("UPDATE tbl_shifts SET cashier_id = :adminId WHERE cashier_id = :targetId")
-           ->execute([':adminId' => $userId, ':targetId' => $targetId]);
+        // 1. Reassign or disassociate transactions and shifts
+        if ($realAdminId) {
+            $db->prepare("UPDATE tbl_transactions SET user_id = :adminId WHERE user_id = :targetId")
+               ->execute([':adminId' => $realAdminId, ':targetId' => $targetId]);
+            $db->prepare("UPDATE tbl_shifts SET cashier_id = :adminId WHERE cashier_id = :targetId")
+               ->execute([':adminId' => $realAdminId, ':targetId' => $targetId]);
+        } else {
+            $db->prepare("UPDATE tbl_transactions SET user_id = NULL WHERE user_id = :targetId")
+               ->execute([':targetId' => $targetId]);
+            $db->prepare("UPDATE tbl_shifts SET cashier_id = NULL WHERE cashier_id = :targetId")
+               ->execute([':targetId' => $targetId]);
+        }
 
-        // 3. Clear sessions for target user if tbl_sessions exists
+        // 2. Clear sessions for target user if tbl_sessions exists
         try {
             $db->prepare("DELETE FROM tbl_sessions WHERE data LIKE :needle")
                ->execute([':needle' => '%user_id|i:' . $targetId . ';%']);
@@ -155,12 +172,12 @@ if ($action === 'delete') {
             // ignore if sessions table differs
         }
 
-        // 4. Delete user record
+        // 3. Delete user record
         $db->prepare("DELETE FROM tbl_users WHERE user_id = :id")->execute([':id'=>$targetId]);
 
         $db->commit();
 
-        logAudit($userId, 'DELETE_USER', 'Accounts', "Deleted user #{$targetId}: {$u['username']} (historical transactions reassigned to admin #{$userId})");
+        logAudit($realAdminId ?? 0, 'DELETE_USER', 'Accounts', "Deleted user #{$targetId}: {$u['username']}");
         respond(true, 'Account deleted successfully.');
     } catch (\Throwable $e) {
         if ($db->inTransaction()) {

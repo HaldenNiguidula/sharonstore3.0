@@ -493,10 +493,10 @@ function handleRecentTransactions(): never {
         "SELECT t.transaction_id, t.transaction_code, t.total_amount,
                 t.amount_tendered, t.change_amount,
                 t.transaction_date, t.status,
-                u.full_name AS cashier_name,
+                COALESCE(u.full_name, 'Former Employee') AS cashier_name,
                 COUNT(d.detail_id) AS item_count
          FROM   tbl_transactions t
-         JOIN   tbl_users u ON u.user_id = t.user_id
+         LEFT   JOIN tbl_users u ON u.user_id = t.user_id
          LEFT   JOIN tbl_transaction_details d ON d.transaction_id = t.transaction_id
          GROUP  BY t.transaction_id
          ORDER  BY t.transaction_date DESC

@@ -329,9 +329,22 @@ function ensureSchema(PDO $pdo): void {
             INDEX (`last_activity`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
-        // Ensure shift_id in tbl_transactions allows NULL
+        // Ensure shift_id, user_id in tbl_transactions and cashier_id in tbl_shifts allow NULL
         try {
             $pdo->exec("ALTER TABLE tbl_transactions MODIFY COLUMN shift_id INT(11) DEFAULT NULL");
+            $pdo->exec("ALTER TABLE tbl_transactions MODIFY COLUMN user_id INT(11) DEFAULT NULL");
+            $pdo->exec("ALTER TABLE tbl_shifts MODIFY COLUMN cashier_id INT(11) DEFAULT NULL");
+            // Clean any orphaned user_ids before establishing/updating constraint
+            $pdo->exec("UPDATE tbl_transactions SET user_id = NULL WHERE user_id NOT IN (SELECT user_id FROM tbl_users)");
+
+            // Ensure fk_txn_user constraint uses ON DELETE SET NULL
+            $fkInfo = $pdo->query("SELECT DELETE_RULE FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME = 'fk_txn_user' AND CONSTRAINT_SCHEMA = DATABASE()")->fetchColumn();
+            if ($fkInfo && strtoupper($fkInfo) !== 'SET NULL') {
+                $pdo->exec("ALTER TABLE tbl_transactions DROP FOREIGN KEY fk_txn_user");
+                $pdo->exec("ALTER TABLE tbl_transactions ADD CONSTRAINT fk_txn_user FOREIGN KEY (user_id) REFERENCES tbl_users (user_id) ON DELETE SET NULL ON UPDATE CASCADE");
+            } elseif (!$fkInfo) {
+                $pdo->exec("ALTER TABLE tbl_transactions ADD CONSTRAINT fk_txn_user FOREIGN KEY (user_id) REFERENCES tbl_users (user_id) ON DELETE SET NULL ON UPDATE CASCADE");
+            }
         } catch (Throwable $e) {}
 
         // 2. Check if inventory or transactions have data

@@ -7,9 +7,11 @@ $pageTitle = 'Shift History';
 $db = getDB();
 
 $stmt = $db->query("
-    SELECT s.*, u.full_name as cashier_name, u.username as cashier_username
+    SELECT s.*, 
+           COALESCE(u.full_name, 'Former Employee') as cashier_name, 
+           COALESCE(u.username, 'deleted') as cashier_username
     FROM tbl_shifts s
-    JOIN tbl_users u ON u.user_id = s.cashier_id
+    LEFT JOIN tbl_users u ON u.user_id = s.cashier_id
     ORDER BY s.shift_id DESC
 ");
 $shifts = $stmt->fetchAll();

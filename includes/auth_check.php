@@ -5,6 +5,33 @@
 require_once __DIR__ . '/db.php';
 startAppSession();
 
+function syncSessionUser(): void {
+    if (isset($_SESSION['user_id'])) {
+        static $synced = false;
+        if ($synced) return;
+        $synced = true;
+
+        try {
+            $db = getDB();
+            $chk = $db->prepare("SELECT user_id, role, is_active FROM tbl_users WHERE user_id = ? LIMIT 1");
+            $chk->execute([$_SESSION['user_id']]);
+            $row = $chk->fetch();
+
+            if (!$row && !empty($_SESSION['username'])) {
+                // User ID in session doesn't match DB (e.g. after a DB restore or import) - resync by username
+                $byUser = $db->prepare("SELECT user_id, role, is_active FROM tbl_users WHERE username = ? LIMIT 1");
+                $byUser->execute([$_SESSION['username']]);
+                $uRow = $byUser->fetch();
+                if ($uRow) {
+                    $_SESSION['user_id'] = (int)$uRow['user_id'];
+                    $_SESSION['role']    = $uRow['role'];
+                }
+            }
+        } catch (\Throwable $e) {}
+    }
+}
+syncSessionUser();
+
 function requireLogin(): void {
     if (!isset($_SESSION['user_id'])) {
         // If it's an API/AJAX request, return JSON 401 instead of redirect
