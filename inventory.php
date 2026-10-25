@@ -126,7 +126,7 @@ $pageTitle = 'Inventory Management';
                     <table class="table table-custom mb-0" id="inventoryTable" data-server-sort="true" style="min-width:1050px;width:100%;">
                         <thead>
                             <tr>
-                                <th class="sortable-th" data-col="item_id" style="width:50px;min-width:50px;"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="no-sort" style="width:50px;min-width:50px;">#</th>
                                 <th class="sortable-th" data-col="barcode" style="width:130px;min-width:130px;">Barcode <i class="fa-solid fa-sort sort-icon no-print"></i></th>
                                 <th class="sortable-th" data-col="item_name" style="min-width:200px;">Item Name <i class="fa-solid fa-sort sort-icon no-print"></i></th>
                                 <th class="sortable-th" data-col="category_name" style="width:135px;min-width:135px;">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
