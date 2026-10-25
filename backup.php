@@ -11,7 +11,7 @@ $pageTitle = 'Database Backup';
     <title>Database Backup - Sharon Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=40">
+    <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=42">
 <style>
 @media(max-width:767px){
   .page-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;}
@@ -56,35 +56,80 @@ $pageTitle = 'Database Backup';
     color: #0f172a;
     margin: 0;
 }
-.code-box {
+.step-card code {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.82em;
+}
+.code-editor-box {
     background: #0f172a;
-    color: #f8fafc;
-    padding: 16px;
     border-radius: 10px;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 0.82rem;
-    line-height: 1.55;
-    max-height: 210px;
-    overflow-y: auto;
-    position: relative;
     border: 1px solid #334155;
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
-.copy-badge-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+.code-editor-header {
+    background: #1e293b;
+    padding: 8px 14px;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.code-editor-dots {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.code-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.code-dot.red { background: #ef4444; }
+.code-dot.yellow { background: #f59e0b; }
+.code-dot.green { background: #10b981; }
+.code-editor-filename {
+    color: #94a3b8;
     font-size: 0.78rem;
-    font-weight: 700;
-    padding: 5px 12px;
-    border-radius: 6px;
-    background: #ffffff;
-    color: #0f172a;
-    border: 1px solid #cbd5e1;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-weight: 600;
+    margin-left: 6px;
 }
-.copy-badge-btn:hover {
-    background: #f1f5f9;
+.code-editor-body {
+    padding: 14px 16px;
+    max-height: 250px;
+    overflow-y: auto;
+    background: #0f172a;
 }
+.code-editor-body pre,
+.code-editor-body code,
+.code-box pre,
+.code-box code {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #f8fafc !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    font-family: 'Consolas', 'Courier New', 'Fira Code', monospace !important;
+    font-size: 0.84rem !important;
+    line-height: 1.6 !important;
+    box-shadow: none !important;
+    display: block !important;
+    white-space: pre !important;
+}
+.code-kw { color: #f472b6 !important; font-weight: 600; }
+.code-fn { color: #60a5fa !important; font-weight: 600; }
+.code-str { color: #34d399 !important; }
+.code-cm { color: #94a3b8 !important; font-style: italic; }
+.code-obj { color: #38bdf8 !important; }
+.code-num { color: #fbbf24 !important; }
 .deploy-table {
     width: 100%;
     border-collapse: separate;
@@ -272,68 +317,78 @@ $pageTitle = 'Database Backup';
                         Erase any existing code in the editor (e.g. <code>function myFunction() {...}</code>) and replace it with the script below:
                     </p>
                     <div class="ps-4">
-                        <div class="code-box mb-2">
-                            <button class="btn btn-sm copy-badge-btn" id="btnCopyScript" onclick="copyAppsScript()">
-                                <i class="fa-regular fa-copy me-1"></i>Copy Full Script
-                            </button>
-                            <pre class="mb-0" id="appsScriptCode"><code>function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({
-    status: "success",
-    message: "Sharon Store Google Apps Script Webhook is active and reachable!"
-  })).setMimeType(ContentService.MimeType.JSON);
+                        <div class="code-editor-box">
+                            <div class="code-editor-header">
+                                <div class="code-editor-dots">
+                                    <span class="code-dot red"></span>
+                                    <span class="code-dot yellow"></span>
+                                    <span class="code-dot green"></span>
+                                    <span class="code-editor-filename"><i class="fa-brands fa-google me-1 text-primary"></i>Code.gs</span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-light py-1 px-3 fw-bold shadow-sm" id="btnCopyScript" onclick="copyAppsScript()">
+                                    <i class="fa-regular fa-copy me-1"></i>Copy Script
+                                </button>
+                            </div>
+                            <div class="code-editor-body">
+                                <pre class="mb-0" id="appsScriptCode"><code><span class="code-kw">function</span> <span class="code-fn">doGet</span>(e) {
+  <span class="code-kw">return</span> <span class="code-obj">ContentService</span>.<span class="code-fn">createTextOutput</span>(<span class="code-obj">JSON</span>.<span class="code-fn">stringify</span>({
+    status: <span class="code-str">"success"</span>,
+    message: <span class="code-str">"Sharon Store Google Apps Script Webhook is active and reachable!"</span>
+  })).<span class="code-fn">setMimeType</span>(<span class="code-obj">ContentService</span>.<span class="code-obj">MimeType</span>.<span class="code-obj">JSON</span>);
 }
 
-function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var filename = data.filename || ("sharonstore_backup_" + Utilities.formatDate(new Date(), "GMT+8", "yyyy-MM-dd_HH-mm-ss") + ".sql");
-    var folderName = "SharonStore_Backups";
-    var folders = DriveApp.getFoldersByName(folderName);
-    var targetFolder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
-    var blob = Utilities.newBlob(Utilities.base64Decode(data.base64), "application/sql", filename);
-    var file = targetFolder.createFile(blob);
+<span class="code-kw">function</span> <span class="code-fn">doPost</span>(e) {
+  <span class="code-kw">try</span> {
+    <span class="code-kw">var</span> data = <span class="code-obj">JSON</span>.<span class="code-fn">parse</span>(e.postData.contents);
+    <span class="code-kw">var</span> filename = data.filename || (<span class="code-str">"sharonstore_backup_"</span> + <span class="code-obj">Utilities</span>.<span class="code-fn">formatDate</span>(<span class="code-kw">new</span> <span class="code-obj">Date</span>(), <span class="code-str">"GMT+8"</span>, <span class="code-str">"yyyy-MM-dd_HH-mm-ss"</span>) + <span class="code-str">".sql"</span>);
+    <span class="code-kw">var</span> folderName = <span class="code-str">"SharonStore_Backups"</span>;
+    <span class="code-kw">var</span> folders = <span class="code-obj">DriveApp</span>.<span class="code-fn">getFoldersByName</span>(folderName);
+    <span class="code-kw">var</span> targetFolder = folders.<span class="code-fn">hasNext</span>() ? folders.<span class="code-fn">next</span>() : <span class="code-obj">DriveApp</span>.<span class="code-fn">createFolder</span>(folderName);
+    <span class="code-kw">var</span> blob = <span class="code-obj">Utilities</span>.<span class="code-fn">newBlob</span>(<span class="code-obj">Utilities</span>.<span class="code-fn">base64Decode</span>(data.base64), <span class="code-str">"application/sql"</span>, filename);
+    <span class="code-kw">var</span> file = targetFolder.<span class="code-fn">createFile</span>(blob);
 
-    // Auto-prune: Keep only the 5 most recent backups in Google Drive
-    var maxBackups = data.max_files || 5;
-    var backupFiles = [];
-    var files = targetFolder.getFiles();
-    while (files.hasNext()) {
-      var f = files.next();
-      if (f.getName().indexOf('.sql') !== -1) {
-        backupFiles.push({
+    <span class="code-cm">// Auto-prune: Keep only the 5 most recent backups in Google Drive</span>
+    <span class="code-kw">var</span> maxBackups = data.max_files || <span class="code-num">5</span>;
+    <span class="code-kw">var</span> backupFiles = [];
+    <span class="code-kw">var</span> files = targetFolder.<span class="code-fn">getFiles</span>();
+    <span class="code-kw">while</span> (files.<span class="code-fn">hasNext</span>()) {
+      <span class="code-kw">var</span> f = files.<span class="code-fn">next</span>();
+      <span class="code-kw">if</span> (f.<span class="code-fn">getName</span>().<span class="code-fn">indexOf</span>(<span class="code-str">'.sql'</span>) !== -<span class="code-num">1</span>) {
+        backupFiles.<span class="code-fn">push</span>({
           file: f,
-          created: f.getDateCreated().getTime()
+          created: f.<span class="code-fn">getDateCreated</span>().<span class="code-fn">getTime</span>()
         });
       }
     }
 
-    // Sort newest to oldest
-    backupFiles.sort(function(a, b) {
-      return b.created - a.created;
+    <span class="code-cm">// Sort newest to oldest</span>
+    backupFiles.<span class="code-fn">sort</span>(<span class="code-kw">function</span>(a, b) {
+      <span class="code-kw">return</span> b.created - a.created;
     });
 
-    // Move older backups beyond 5 to Google Drive Trash
-    var prunedCount = 0;
-    for (var i = maxBackups; i < backupFiles.length; i++) {
-      backupFiles[i].file.setTrashed(true);
+    <span class="code-cm">// Move older backups beyond 5 to Google Drive Trash</span>
+    <span class="code-kw">var</span> prunedCount = <span class="code-num">0</span>;
+    <span class="code-kw">for</span> (<span class="code-kw">var</span> i = maxBackups; i &lt; backupFiles.length; i++) {
+      backupFiles[i].file.<span class="code-fn">setTrashed</span>(<span class="code-kw">true</span>);
       prunedCount++;
     }
 
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "success",
-      message: "Backup uploaded to Google Drive!" + (prunedCount > 0 ? " (Auto-cleaned " + prunedCount + " older backup" + (prunedCount > 1 ? "s" : "") + ", keeping latest 5)" : ""),
-      fileId: file.getId(),
-      fileUrl: file.getUrl(),
+    <span class="code-kw">return</span> <span class="code-obj">ContentService</span>.<span class="code-fn">createTextOutput</span>(<span class="code-obj">JSON</span>.<span class="code-fn">stringify</span>({
+      status: <span class="code-str">"success"</span>,
+      message: <span class="code-str">"Backup uploaded to Google Drive!"</span> + (prunedCount &gt; <span class="code-num">0</span> ? <span class="code-str">" (Auto-cleaned "</span> + prunedCount + <span class="code-str">" older backup"</span> + (prunedCount &gt; <span class="code-num">1</span> ? <span class="code-str">"s"</span> : <span class="code-str">""</span>) + <span class="code-str">", keeping latest 5)"</span> : <span class="code-str">""</span>),
+      fileId: file.<span class="code-fn">getId</span>(),
+      fileUrl: file.<span class="code-fn">getUrl</span>(),
       fileName: filename,
       pruned: prunedCount
-    })).setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "error",
-      message: err.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
+    })).<span class="code-fn">setMimeType</span>(<span class="code-obj">ContentService</span>.<span class="code-obj">MimeType</span>.<span class="code-obj">JSON</span>);
+  } <span class="code-kw">catch</span> (err) {
+    <span class="code-kw">return</span> <span class="code-obj">ContentService</span>.<span class="code-fn">createTextOutput</span>(<span class="code-obj">JSON</span>.<span class="code-fn">stringify</span>({
+      status: <span class="code-str">"error"</span>,
+      message: err.<span class="code-fn">toString</span>()
+    })).<span class="code-fn">setMimeType</span>(<span class="code-obj">ContentService</span>.<span class="code-obj">MimeType</span>.<span class="code-obj">JSON</span>);
   }
 }</code></pre>
+                            </div>
                         </div>
                         <div class="alert alert-success py-2 px-3 small mb-0 border-0 d-flex align-items-center gap-2" style="background:#ecfdf5; color:#065f46; border-left:4px solid #10b981 !important; border-radius: 8px;">
                             <i class="fa-solid fa-clock-rotate-left fs-6"></i>
@@ -820,11 +875,36 @@ document.getElementById('btnConfirmRestore').addEventListener('click', async fun
 // ── Copy Script Helper ────────────────────────────────────────
 function copyAppsScript() {
     const code = document.getElementById('appsScriptCode').textContent;
-    navigator.clipboard.writeText(code).then(() => {
-        const btn = document.getElementById('btnCopyScript');
-        btn.innerHTML = '<i class="fa-solid fa-check text-success me-1"></i>Copied!';
-        setTimeout(() => { btn.innerHTML = '<i class="fa-regular fa-copy me-1"></i>Copy Script'; }, 2000);
-    });
+    const btn = document.getElementById('btnCopyScript');
+    const onCopied = () => {
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-check text-success me-1"></i>Copied!';
+        if (typeof showToast === 'function') showToast('Apps Script code copied to clipboard!', 'success');
+        setTimeout(() => { if (btn) btn.innerHTML = '<i class="fa-regular fa-copy me-1"></i>Copy Script'; }, 2000);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(onCopied).catch(() => {
+            fallbackCopy(code, onCopied);
+        });
+    } else {
+        fallbackCopy(code, onCopied);
+    }
+}
+
+function fallbackCopy(text, cb) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+        document.execCommand('copy');
+        cb();
+    } catch (e) {
+        if (typeof showToast === 'function') showToast('Please select and copy the code manually.', 'warning');
+    }
+    document.body.removeChild(ta);
 }
 
 // Initial Loads

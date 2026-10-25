@@ -537,6 +537,13 @@ code, .barcode-text {
   border-radius: 4px;
   border: 1px solid var(--bd);
 }
+pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: inherit !important;
+  color: inherit !important;
+}
 
 /* ═══════════════════════════════════════════════════════════
    BUTTONS
@@ -929,6 +936,13 @@ code {
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid var(--bd);
+}
+pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: inherit !important;
+  color: inherit !important;
 }
 
 /* ── Input placeholder contrast ─────────────────────────── */
