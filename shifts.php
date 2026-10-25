@@ -169,6 +169,20 @@ tr.shift-row.page-hidden {
     white-space: nowrap;
 }
 
+#shiftsPaginationContainer {
+    position: sticky;
+    bottom: 0;
+    z-index: 25;
+    background: #ffffff !important;
+    box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
+    border-top: 1px solid var(--bd) !important;
+}
+
+#shiftsTopPaginationWrapper .pagination .page-link,
+#shiftsPaginationContainer .pagination .page-link {
+    font-weight: 600;
+}
+
 /* ============================================================
    OFFICIAL PRINT TABLE REPORT STYLING
    ============================================================ */
@@ -607,13 +621,23 @@ tr.shift-row.page-hidden {
 
         <!-- Shift History Records Table -->
         <div class="card shadow-sm border-0">
-            <div class="card-header d-flex justify-content-between align-items-center no-print">
-                <h5 class="mb-0">
-                    <i class="fa-solid fa-clock-rotate-left me-2 text-emerald"></i>Shift Log Records
-                </h5>
-                <span class="badge badge-emerald" id="recordCountBadge">
-                    <?= number_format($totalShifts) ?> Recorded <?= $totalShifts === 1 ? 'Shift' : 'Shifts' ?>
-                </span>
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2 no-print">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-clock-rotate-left me-2 text-emerald"></i>Shift Log Records
+                    </h5>
+                    <span class="badge badge-emerald" id="recordCountBadge">
+                        <?= number_format($totalShifts) ?> Recorded <?= $totalShifts === 1 ? 'Shift' : 'Shifts' ?>
+                    </span>
+                </div>
+                <!-- Top Pagination Controls -->
+                <div class="d-flex align-items-center gap-2" id="shiftsTopPaginationWrapper" style="display:none;">
+                    <span class="text-muted small d-none d-md-inline" id="shiftPaginationInfoTop"></span>
+                    <nav aria-label="Top Shift history pagination">
+                        <ul class="pagination pagination-sm mb-0" id="shiftPaginationUlTop">
+                        </ul>
+                    </nav>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" style="min-height: 480px;">
@@ -846,6 +870,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const recordCountBadge = document.getElementById('recordCountBadge');
     const paginationInfo = document.getElementById('shiftPaginationInfo');
     const paginationUl = document.getElementById('shiftPaginationUl');
+    const paginationInfoTop = document.getElementById('shiftPaginationInfoTop');
+    const paginationUlTop = document.getElementById('shiftPaginationUlTop');
+    const topPaginationWrapper = document.getElementById('shiftsTopPaginationWrapper');
 
     let currentShiftPage = 1;
 
@@ -930,18 +957,20 @@ document.addEventListener('DOMContentLoaded', () => {
             recordCountBadge.textContent = `${totalMatched} Recorded ${totalMatched === 1 ? 'Shift' : 'Shifts'}`;
         }
 
-        // Pagination Info
-        if (paginationInfo) {
-            if (totalMatched === 0) {
-                paginationInfo.textContent = 'Showing 0 of 0 shifts';
-            } else if (perPageVal === 'all') {
-                paginationInfo.textContent = `Showing all ${totalMatched} shifts` + (totalMatched !== rows.length ? ` (filtered from ${rows.length})` : '');
-            } else {
-                const start = (currentShiftPage - 1) * limit + 1;
-                const end = Math.min(totalMatched, currentShiftPage * limit);
-                paginationInfo.textContent = `Showing ${start} to ${end} of ${totalMatched} shifts` + (totalMatched !== rows.length ? ` (filtered from ${rows.length})` : '');
-            }
+        // Pagination Info (Top & Bottom)
+        let infoStr = '';
+        if (totalMatched === 0) {
+            infoStr = 'Showing 0 of 0 shifts';
+        } else if (perPageVal === 'all') {
+            infoStr = `Showing all ${totalMatched} shifts` + (totalMatched !== rows.length ? ` (filtered from ${rows.length})` : '');
+        } else {
+            const start = (currentShiftPage - 1) * limit + 1;
+            const end = Math.min(totalMatched, currentShiftPage * limit);
+            infoStr = `Showing ${start} to ${end} of ${totalMatched} shifts` + (totalMatched !== rows.length ? ` (filtered from ${rows.length})` : '');
         }
+
+        if (paginationInfo) paginationInfo.textContent = infoStr;
+        if (paginationInfoTop) paginationInfoTop.textContent = infoStr;
 
         // Render Pagination UI
         renderShiftPagination(totalPages);
@@ -950,20 +979,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function goToShiftPage(targetPage) {
         currentShiftPage = targetPage;
         applyFilters(false);
-        const cardEl = document.getElementById('shiftsTable')?.closest('.card');
-        if (cardEl) {
-            const rect = cardEl.getBoundingClientRect();
-            if (rect.top < 60) {
-                window.scrollTo({ top: window.scrollY + rect.top - 70, behavior: 'smooth' });
-            }
-        }
     }
 
-    function renderShiftPagination(totalPages) {
-        if (!paginationUl) return;
-        paginationUl.innerHTML = '';
+    function buildShiftPaginationUl(containerUl, totalPages) {
+        if (!containerUl) return;
+        containerUl.innerHTML = '';
 
-        // If only 1 page or all shown, do not render page numbers (no unnecessary page numbers)
         if (totalPages <= 1) {
             return;
         }
@@ -978,7 +999,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 goToShiftPage(currentShiftPage - 1);
             });
         }
-        paginationUl.appendChild(prevLi);
+        containerUl.appendChild(prevLi);
 
         // Page buttons (sliding window)
         const maxVisible = 5;
@@ -996,13 +1017,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 goToShiftPage(1);
             });
-            paginationUl.appendChild(p1);
+            containerUl.appendChild(p1);
 
             if (startPage > 2) {
                 const dots = document.createElement('li');
                 dots.className = 'page-item disabled';
                 dots.innerHTML = `<span class="page-link">&hellip;</span>`;
-                paginationUl.appendChild(dots);
+                containerUl.appendChild(dots);
             }
         }
 
@@ -1015,7 +1036,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 goToShiftPage(targetP);
             });
-            paginationUl.appendChild(li);
+            containerUl.appendChild(li);
         }
 
         if (endPage < totalPages) {
@@ -1023,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dots = document.createElement('li');
                 dots.className = 'page-item disabled';
                 dots.innerHTML = `<span class="page-link">&hellip;</span>`;
-                paginationUl.appendChild(dots);
+                containerUl.appendChild(dots);
             }
             const pLast = document.createElement('li');
             pLast.className = 'page-item';
@@ -1032,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 goToShiftPage(totalPages);
             });
-            paginationUl.appendChild(pLast);
+            containerUl.appendChild(pLast);
         }
 
         // Next button
@@ -1045,7 +1066,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 goToShiftPage(currentShiftPage + 1);
             });
         }
-        paginationUl.appendChild(nextLi);
+        containerUl.appendChild(nextLi);
+    }
+
+    function renderShiftPagination(totalPages) {
+        buildShiftPaginationUl(paginationUl, totalPages);
+        buildShiftPaginationUl(paginationUlTop, totalPages);
+
+        if (topPaginationWrapper) {
+            topPaginationWrapper.style.display = totalPages <= 1 ? 'none' : 'flex';
+        }
     }
 
     // Quick Date Range Preset Helper
