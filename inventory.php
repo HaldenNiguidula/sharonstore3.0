@@ -93,6 +93,7 @@ $pageTitle = 'Inventory Management';
                             <option value="">All Status</option>
                             <option value="ok">In Stock</option>
                             <option value="low">Low Stock</option>
+                            <option value="expiring">Expiring Soon (30d)</option>
                             <option value="out">Out of Stock</option>
                             <option value="expired">Expired</option>
                         </select>
@@ -888,6 +889,24 @@ if (cardTotal) {
 }
 
 // -- Init ------------------------------------------------------
+const invUrlParams = new URLSearchParams(window.location.search);
+if (invUrlParams.has('status')) {
+    const s = invUrlParams.get('status');
+    const sf = document.getElementById('statusFilter');
+    if (sf) sf.value = s;
+}
+if (invUrlParams.has('sort')) {
+    currentSortColumn = invUrlParams.get('sort');
+}
+if (invUrlParams.has('order')) {
+    currentSortOrder = invUrlParams.get('order').toLowerCase() === 'desc' ? 'desc' : 'asc';
+}
+if (invUrlParams.has('q')) {
+    const q = invUrlParams.get('q');
+    const qi = document.getElementById('searchInput');
+    if (qi) qi.value = q;
+}
+
 loadCategories();
 loadStats();
 initInventorySorting();

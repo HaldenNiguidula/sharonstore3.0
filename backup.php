@@ -23,23 +23,90 @@ $pageTitle = 'Database Backup';
 @media(max-width:575px){
   .card-header h5{font-size:0.88rem!important;}
 }
+.step-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.step-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #047857;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.step-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
 .code-box {
     background: #0f172a;
-    color: #38bdf8;
-    padding: 12px;
-    border-radius: 8px;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 0.76rem;
-    max-height: 180px;
+    color: #f8fafc;
+    padding: 16px;
+    border-radius: 10px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    max-height: 210px;
     overflow-y: auto;
     position: relative;
+    border: 1px solid #334155;
 }
 .copy-badge-btn {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 0.7rem;
-    padding: 3px 8px;
+    top: 10px;
+    right: 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.copy-badge-btn:hover {
+    background: #f1f5f9;
+}
+.deploy-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    margin-top: 10px;
+}
+.deploy-table td {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+.deploy-table tr:last-child td {
+    border-bottom: none;
+}
+.deploy-table td:first-child {
+    font-weight: 700;
+    color: #334155;
+    width: 150px;
+    background: #f8fafc;
 }
 </style>
 </head>
@@ -165,25 +232,51 @@ $pageTitle = 'Database Backup';
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
             <div class="modal-header py-3 px-4 bg-light border-bottom">
-                <h5 class="modal-title fw-bold" style="font-size: 1.1rem; color: #1e293b;">
-                    <i class="fa-brands fa-google-drive me-2" style="color: #4285F4;"></i>Google Drive Setup &amp; Webhook
-                </h5>
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(66, 133, 244, 0.12); display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-brands fa-google-drive fs-5" style="color: #4285F4;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0" style="font-size: 1.1rem; color: #1e293b;">Google Drive Setup &amp; Webhook</h5>
+                        <small class="text-muted">Connect your personal Google Drive for automated off-site cloud backups</small>
+                    </div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4">
-                <div class="mb-4">
-                    <h6 class="fw-bold mb-2 text-dark"><i class="fa-solid fa-circle-question text-primary me-2"></i>How to connect your personal Google Drive (3 steps):</h6>
-                    <ol class="small text-muted ps-3 mb-0" style="line-height: 1.6;">
-                        <li>Open <a href="https://script.google.com/home/start" target="_blank" class="fw-bold text-decoration-none">script.google.com</a> and click <strong>"New project"</strong>.</li>
-                        <li>Delete any template code and paste the script below:</li>
-                    </ol>
+            <div class="modal-body p-4" style="max-height: calc(85vh - 120px); overflow-y: auto;">
+                
+                <!-- STEP 1 -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <span class="step-badge">1</span>
+                        <h6 class="step-title">Create a New Google Apps Script Project</h6>
+                    </div>
+                    <p class="text-muted small mb-2 ps-4" style="line-height: 1.6;">
+                        Sign in to your Google Account and create a blank Apps Script project.
+                    </p>
+                    <div class="ps-4">
+                        <a href="https://script.google.com/home/start" target="_blank" class="btn btn-outline-primary btn-sm fw-bold">
+                            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Open Google Apps Script (script.google.com)
+                        </a>
+                        <span class="small text-muted ms-2">&rarr; Click <strong>"New project"</strong></span>
+                    </div>
                 </div>
 
-                <div class="code-box mb-3">
-                    <button class="btn btn-light btn-sm copy-badge-btn" id="btnCopyScript" onclick="copyAppsScript()">
-                        <i class="fa-regular fa-copy me-1"></i>Copy Script
-                    </button>
-                    <pre class="mb-0" id="appsScriptCode"><code>function doGet(e) {
+                <!-- STEP 2 -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <span class="step-badge">2</span>
+                        <h6 class="step-title">Paste the Backup Automation Script</h6>
+                    </div>
+                    <p class="text-muted small mb-2 ps-4" style="line-height: 1.6;">
+                        Erase any existing code in the editor (e.g. <code>function myFunction() {...}</code>) and replace it with the script below:
+                    </p>
+                    <div class="ps-4">
+                        <div class="code-box mb-2">
+                            <button class="btn btn-sm copy-badge-btn" id="btnCopyScript" onclick="copyAppsScript()">
+                                <i class="fa-regular fa-copy me-1"></i>Copy Full Script
+                            </button>
+                            <pre class="mb-0" id="appsScriptCode"><code>function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     status: "success",
     message: "Sharon Store Google Apps Script Webhook is active and reachable!"
@@ -241,45 +334,74 @@ function doPost(e) {
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }</code></pre>
+                        </div>
+                        <div class="alert alert-success py-2 px-3 small mb-0 border-0 d-flex align-items-center gap-2" style="background:#ecfdf5; color:#065f46; border-left:4px solid #10b981 !important; border-radius: 8px;">
+                            <i class="fa-solid fa-clock-rotate-left fs-6"></i>
+                            <div><strong>Automatic 5-File Retention:</strong> Automatically saves files into a <code>SharonStore_Backups</code> folder and keeps the latest 5 backups to conserve Google Drive space.</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="alert alert-info py-2 px-3 small mb-3 border-0" style="background:#f0fdf4; color:#166534; border-left:4px solid #10b981 !important; border-radius: 8px;">
-                    <i class="fa-solid fa-clock-rotate-left me-1"></i><strong>Automatic 5-File Retention Policy:</strong> The script automatically retains the 5 newest database backups and sends older backups to your Google Drive Trash.
+                <!-- STEP 3 -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <span class="step-badge">3</span>
+                        <h6 class="step-title">Deploy as a Web App (Important Settings)</h6>
+                    </div>
+                    <p class="text-muted small mb-2 ps-4" style="line-height: 1.6;">
+                        In the Google Apps Script top toolbar, click <strong>Deploy</strong> &gt; <strong>New deployment</strong>, click the gear icon &gt; select <strong>Web app</strong>, and configure with these exact values:
+                    </p>
+                    <div class="ps-4">
+                        <table class="deploy-table">
+                            <tr>
+                                <td>Description</td>
+                                <td><code>Sharon Store Backup</code></td>
+                            </tr>
+                            <tr>
+                                <td>Execute as</td>
+                                <td><strong>Me (your google account email)</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Who has access</td>
+                                <td>
+                                    <span class="badge bg-danger text-white px-2 py-1 fw-bold fs-7">Anyone</span>
+                                    <span class="text-danger small ms-2 fw-semibold"><i class="fa-solid fa-triangle-exclamation me-1"></i>Required! Setting to "Only myself" causes 403 Forbidden errors.</span>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="text-muted small mt-2">
+                            Click <strong>Deploy</strong>, grant permissions (click <em>Advanced &gt; Go to Sharon Store Backup (unsafe)</em> if prompted), and copy the resulting <strong>Web app URL</strong>.
+                        </div>
+                    </div>
                 </div>
 
-                <div class="alert alert-warning py-2 px-3 small mb-3 border-0" style="background:#fffbeb; color:#92400e; border-left:4px solid #f59e0b !important; border-radius: 8px;">
-                    <strong><i class="fa-solid fa-triangle-exclamation me-1"></i>Crucial Step to Avoid Error 403:</strong><br>
-                    When deploying in Google Apps Script, you <strong>MUST</strong> set <strong>"Who has access"</strong> to <strong>"Anyone"</strong> (do not leave as "Only myself"). Ensure your Web App URL ends with <code>/exec</code> (not <code>/dev</code>).
+                <!-- STEP 4 -->
+                <div class="step-card mb-2">
+                    <div class="step-header">
+                        <span class="step-badge">4</span>
+                        <h6 class="step-title">Paste Web App URL &amp; Connect</h6>
+                    </div>
+                    <div class="ps-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-dark">Google Apps Script Web App URL <span class="text-danger">*</span></label>
+                            <input type="url" id="gdriveWebhookInput" class="form-control" placeholder="https://script.google.com/macros/s/AKfycbx.../exec" required>
+                            <div id="urlWarning" class="d-none text-danger small mt-1 fw-bold">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i>Warning: Your URL ends with <code>/dev</code> (Test deployment). Please use the production Web App URL that ends with <code>/exec</code> instead!
+                            </div>
+                            <div class="form-text small text-muted">The URL must start with <code>https://script.google.com/macros/s/</code> and end with <code>/exec</code></div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="gdriveAutoBackup">
+                            <label class="form-check-label small fw-bold text-dark" for="gdriveAutoBackup">
+                                Automatically upload a copy to Google Drive whenever a backup is created
+                            </label>
+                        </div>
+
+                        <div id="testConnResult" class="d-none alert py-2 small mb-0"></div>
+                    </div>
                 </div>
 
-                <div class="mb-4">
-                    <ol start="3" class="small text-muted ps-3 mb-0" style="line-height: 1.6;">
-                        <li>Click <strong>Deploy &gt; New deployment &gt; Select type: Web app</strong>:
-                            <ul class="ps-3 mt-1">
-                                <li>Description: <em>Sharon Store Backup</em></li>
-                                <li>Execute as: <strong>Me (your google account)</strong></li>
-                                <li>Who has access: <strong class="text-danger" style="background:rgba(239,68,68,0.1); padding:1px 6px; border-radius:4px;">Anyone</strong> (Required!)</li>
-                            </ul>
-                        </li>
-                        <li>Click <strong>Deploy</strong>, authorize access, copy the <strong>Web app URL</strong>, and paste it below:</li>
-                    </ol>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-dark">Google Apps Script Web App URL <span class="text-danger">*</span></label>
-                    <input type="url" id="gdriveWebhookInput" class="form-control" placeholder="https://script.google.com/macros/s/AKfycbx.../exec" required>
-                    <div id="urlWarning" class="d-none text-danger small mt-1 fw-bold"><i class="fa-solid fa-triangle-exclamation me-1"></i>Your URL ends with <code>/dev</code> (Test deployment). Please use the Web App URL that ends with <code>/exec</code> instead!</div>
-                    <div class="form-text small">Must start with <code>https://script.google.com/macros/s/</code> and end with <code>/exec</code></div>
-                </div>
-
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" id="gdriveAutoBackup">
-                    <label class="form-check-label small fw-bold text-dark" for="gdriveAutoBackup">
-                        Automatically upload a copy to Google Drive whenever a backup is created
-                    </label>
-                </div>
-
-                <div id="testConnResult" class="d-none alert py-2 small mb-0"></div>
             </div>
             <div class="modal-footer py-2 px-4 bg-light border-top d-flex justify-content-between">
                 <button type="button" class="btn btn-outline-info btn-sm fw-bold" id="btnTestGdrive">

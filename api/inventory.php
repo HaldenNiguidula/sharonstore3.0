@@ -61,7 +61,13 @@ if ($action === 'list') {
     $sortBy   = strtolower(trim($_GET['sort'] ?? $_POST['sort'] ?? 'item_name'));
     $sortDir  = strtolower(trim($_GET['order'] ?? $_POST['order'] ?? 'asc')) === 'desc' ? 'DESC' : 'ASC';
     $page     = max(1, (int)($_GET['page'] ?? $_POST['page'] ?? 1));
-    $perPage  = 20;
+    $limitParam = $_GET['limit'] ?? $_POST['limit'] ?? $_GET['per_page'] ?? $_POST['per_page'] ?? null;
+    if ($limitParam !== null) {
+        $limitVal = (int)$limitParam;
+        $perPage = ($limitVal <= 0) ? 5000 : min(5000, $limitVal);
+    } else {
+        $perPage = 20;
+    }
     $offset   = ($page - 1) * $perPage;
 
     $where  = ['i.is_active = 1'];
@@ -79,13 +85,15 @@ if ($action === 'list') {
 
     if ($status !== '') {
         if ($status === 'expired') {
-            $where[] = '(i.expiry_date IS NOT NULL AND i.expiry_date <= CURDATE())';
+            $where[] = '(i.expiry_date IS NOT NULL AND i.expiry_date != \'0000-00-00\' AND i.expiry_date != \'\' AND i.expiry_date <= CURDATE())';
+        } elseif ($status === 'expiring') {
+            $where[] = '(i.expiry_date IS NOT NULL AND i.expiry_date != \'0000-00-00\' AND i.expiry_date != \'\' AND i.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY))';
         } elseif ($status === 'out') {
-            $where[] = '(i.stock_qty <= 0 AND (i.expiry_date IS NULL OR i.expiry_date > CURDATE()))';
+            $where[] = '(i.stock_qty <= 0 AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > CURDATE()))';
         } elseif ($status === 'low') {
-            $where[] = '(i.stock_qty > 0 AND i.stock_qty <= i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date > CURDATE()))';
+            $where[] = '(i.stock_qty > 0 AND i.stock_qty <= i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > CURDATE()))';
         } elseif ($status === 'ok') {
-            $where[] = '(i.stock_qty > i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date > CURDATE()))';
+            $where[] = '(i.stock_qty > i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > CURDATE()))';
         }
     }
 

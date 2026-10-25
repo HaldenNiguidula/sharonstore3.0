@@ -81,14 +81,14 @@ $pageTitle = 'Business Intelligence Dashboard';
         <!-- -- ROW 2: Alert Cards -- -->
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-3">
-                <div class="stat-card" style="cursor:pointer;" onclick="window.location='/sharonstore3.0/inventory.php'">
+                <div class="stat-card" style="cursor:pointer;" onclick="window.location='/sharonstore3.0/inventory.php?status=low&sort=stock_qty&order=asc'">
                     <div class="stat-icon amber"><i class="fa-solid fa-triangle-exclamation"></i></div>
                     <div class="stat-value text-warning" id="statLowStock"></div>
                     <div class="stat-label">Low Stock Items</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="stat-card" style="cursor:pointer;" onclick="window.location='/sharonstore3.0/inventory.php'">
+                <div class="stat-card" style="cursor:pointer;" onclick="window.location='/sharonstore3.0/inventory.php?status=expiring&sort=expiry_date&order=asc'">
                     <div class="stat-icon red"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div class="stat-value text-danger" id="statExpiring"></div>
                     <div class="stat-label">Expiring in 30 Days</div>
@@ -154,7 +154,7 @@ $pageTitle = 'Business Intelligence Dashboard';
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5><i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>Low Stock Alerts</h5>
-                        <a href="/sharonstore3.0/inventory.php" class="btn btn-sm btn-outline-primary">View All</a>
+                        <a href="/sharonstore3.0/inventory.php?status=low&sort=stock_qty&order=asc" class="btn btn-sm btn-outline-primary">View All</a>
                     </div>
                     <div class="card-body p-0" id="lowStockTable">
                         <div class="chart-loading p-4"><div class="loading-spinner"></div></div>
@@ -169,7 +169,7 @@ $pageTitle = 'Business Intelligence Dashboard';
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5><i class="fa-solid fa-calendar-xmark me-2 text-danger"></i>Expiring Soon (Within 30 Days)</h5>
-                        <a href="/sharonstore3.0/inventory.php" class="btn btn-sm btn-outline-primary">View All</a>
+                        <a href="/sharonstore3.0/inventory.php?status=expiring&sort=expiry_date&order=asc" class="btn btn-sm btn-outline-primary">View All</a>
                     </div>
                     <div class="card-body p-0" id="expiringTable">
                         <div class="chart-loading p-4"><div class="loading-spinner"></div></div>

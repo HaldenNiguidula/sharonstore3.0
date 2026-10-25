@@ -415,12 +415,16 @@ if ($currentRole === 'cashier') {
         <!-- Full Inventory Table -->
         <div class="card" id="stockCard">
             <div class="card-header d-flex justify-content-between align-items-center no-print">
-                <h5><i class="fa-solid fa-table me-2 text-emerald"></i>Full Stock List</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="mb-0"><i class="fa-solid fa-table me-2 text-emerald"></i>Full Stock List</h5>
+                    <span class="badge badge-emerald" id="stockListCount">0 items</span>
+                </div>
                 <div class="d-flex gap-2 flex-nowrap">
                     <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search..." style="width:180px;">
                     <select id="catFilter" class="form-select form-select-sm" style="width:140px;"></select>
                     <select id="statusFilterStock" class="form-select form-select-sm" style="max-width:160px;">
                         <option value="">All Status</option>
+                        <option value="ok">In Stock</option>
                         <option value="low">Low Stock</option>
                         <option value="out">Out of Stock</option>
                         <option value="expired">Expired</option>
@@ -602,7 +606,7 @@ async function loadExpiring() {
 let allItems = [];
 async function loadFullList() {
     try {
-        const r = await fetch('/sharonstore3.0/api/inventory.php?action=list&limit=500');
+        const r = await fetch('/sharonstore3.0/api/inventory.php?action=list&limit=5000');
         const j = await r.json();
         if (!j.success) return;
 
@@ -611,7 +615,7 @@ async function loadFullList() {
         const catSel = document.getElementById('catFilter');
         catSel.innerHTML = '<option value="">All Categories</option>' + cats.map(c=>`<option value="${c}">${esc(c)}</option>`).join('');
 
-        allItems = j.data.items;
+        allItems = j.data.items || [];
         renderList(allItems);
     } catch (err) {
         console.error('loadFullList error:', err);
@@ -621,14 +625,19 @@ async function loadFullList() {
 }
 
 function renderList(items) {
-    const q      = document.getElementById('searchInput').value.toLowerCase();
+    const q      = document.getElementById('searchInput').value.toLowerCase().trim();
     const cat    = document.getElementById('catFilter').value;
     const status = document.getElementById('statusFilterStock').value;
     const filtered = items.filter(i =>
-        (!q || i.item_name.toLowerCase().includes(q) || (i.barcode||'').includes(q)) &&
+        (!q || (i.item_name && i.item_name.toLowerCase().includes(q)) || (i.barcode && i.barcode.toLowerCase().includes(q))) &&
         (!cat || i.category_name === cat) &&
         (!status || i.stock_status === status)
     );
+
+    const countBadge = document.getElementById('stockListCount');
+    if (countBadge) {
+        countBadge.textContent = filtered.length + (filtered.length === 1 ? ' item' : ' items');
+    }
 
     let html = '';
     filtered.forEach((item, index) => {

@@ -88,6 +88,7 @@ $currentRole = currentRole();
     #forecastControlCard,
     #methodCards,
     #chartCard,
+    #forecastResults,
     .no-print,
     .toast-container {
         display: none !important;
@@ -383,8 +384,8 @@ $currentRole = currentRole();
             </div>
         </div>
 
-        <!-- Results (hidden until forecast generated) -->
-        <div id="forecastResults" style="display:none;">
+        <!-- Results (hidden until forecast generated, singular product forecast excluded from print report) -->
+        <div id="forecastResults" class="no-print" style="display:none;">
 
             <!-- Method Cards (Screen Only) -->
             <div class="row g-3 mb-4 no-print" id="methodCards">

@@ -153,6 +153,13 @@ $dailyPin = getDailyManagerPIN($db);
     display: none !important;
 }
 
+tr.shift-row.filter-hidden {
+    display: none !important;
+}
+tr.shift-row.page-hidden {
+    display: none !important;
+}
+
 /* ============================================================
    OFFICIAL PRINT TABLE REPORT STYLING
    ============================================================ */
@@ -183,8 +190,16 @@ $dailyPin = getDailyManagerPIN($db);
     .modal,
     .toast-container,
     .no-print,
+    #shiftsPaginationContainer,
     #shiftsTable th:last-child,
     #shiftsTable td:last-child {
+        display: none !important;
+    }
+
+    tr.shift-row.page-hidden {
+        display: table-row !important;
+    }
+    tr.shift-row.filter-hidden {
         display: none !important;
     }
 
@@ -473,34 +488,66 @@ $dailyPin = getDailyManagerPIN($db);
         </div>
 
         <!-- Filter Card -->
-        <div class="card mb-4" id="filterCard">
+        <div class="card mb-4 no-print" id="filterCard">
             <div class="card-body py-3">
-                <div class="row g-3 align-items-center mb-0">
+                <!-- Top Row: Search, Status, Cash Variance, Per Page, Reset -->
+                <div class="row g-2 align-items-center mb-2">
                     <div class="col-12 col-md-4">
                         <div class="input-group">
                             <span class="input-group-text bg-white"><i class="fa-solid fa-search text-muted"></i></span>
                             <input type="text" id="shiftSearch" class="form-control" placeholder="Search cashier name or shift #...">
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <select id="statusFilter" class="form-select">
                             <option value="">All Statuses</option>
                             <option value="open">Active / Open</option>
                             <option value="closed">Closed</option>
                         </select>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <select id="varianceFilter" class="form-select">
-                            <option value="">All Cash Variances</option>
+                            <option value="">All Discrepancies</option>
                             <option value="exact">Balanced (₱0.00)</option>
                             <option value="over">Cash Over (+)</option>
                             <option value="short">Cash Short (-)</option>
                         </select>
                     </div>
-                    <div class="col-12 col-md-2">
+                    <div class="col-6 col-md-2">
+                        <select id="shiftPerPage" class="form-select" title="Items to show per page">
+                            <option value="10">10 per page</option>
+                            <option value="25" selected>25 per page</option>
+                            <option value="50">50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="all">All shifts</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-2">
                         <button class="btn btn-secondary w-100" id="btnResetFilter">
                             <i class="fa-solid fa-rotate-left me-1"></i>Reset
                         </button>
+                    </div>
+                </div>
+                <!-- Bottom Row: Date Range Filter & Quick Presets -->
+                <div class="row g-2 align-items-center pt-2 border-top">
+                    <div class="col-12 col-md-auto d-flex align-items-center">
+                        <span class="small fw-bold text-muted me-2"><i class="fa-regular fa-calendar-days text-emerald me-1"></i>Date Range:</span>
+                    </div>
+                    <div class="col-6 col-md-auto d-flex align-items-center gap-1">
+                        <span class="small text-muted">From</span>
+                        <input type="date" id="shiftDateFrom" class="form-control form-control-sm" style="width:140px;" title="Filter start date">
+                    </div>
+                    <div class="col-6 col-md-auto d-flex align-items-center gap-1">
+                        <span class="small text-muted">To</span>
+                        <input type="date" id="shiftDateTo" class="form-control form-control-sm" style="width:140px;" title="Filter end date">
+                    </div>
+                    <div class="col-12 col-md d-flex align-items-center gap-1 flex-wrap justify-content-md-end mt-1 mt-md-0">
+                        <span class="small text-muted me-1">Presets:</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="setShiftDateRange('today')">Today</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="setShiftDateRange('yesterday')">Yesterday</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="setShiftDateRange('7days')">Last 7d</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="setShiftDateRange('month')">This Month</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="setShiftDateRange('all')">All Time</button>
                     </div>
                 </div>
             </div>
@@ -624,7 +671,8 @@ $dailyPin = getDailyManagerPIN($db);
                                     data-id="<?= $s['shift_id'] ?>"
                                     data-cashier="<?= strtolower(htmlspecialchars($s['cashier_name'] . ' ' . ($s['cashier_username'] ?? ''))) ?>"
                                     data-status="<?= $s['status'] ?>"
-                                    data-variance="<?= $vType ?>">
+                                    data-variance="<?= $vType ?>"
+                                    data-date="<?= date('Y-m-d', strtotime($s['start_time'])) ?>">
                                     <td data-sort-value="<?= $s['shift_id'] ?>">
                                         <span class="shift-id-tag">#<?= str_pad((string)$s['shift_id'], 4, '0', STR_PAD_LEFT) ?></span>
                                     </td>
@@ -701,6 +749,16 @@ $dailyPin = getDailyManagerPIN($db);
                     </table>
                 </div>
             </div>
+            <!-- Shifts Table Pagination Footer -->
+            <div class="card-footer bg-white border-top d-flex justify-content-between align-items-center flex-wrap gap-2 py-3 no-print" id="shiftsPaginationContainer">
+                <div class="text-muted small" id="shiftPaginationInfo">
+                    Showing 0 to 0 of 0 shifts
+                </div>
+                <nav aria-label="Shift history pagination">
+                    <ul class="pagination pagination-sm mb-0" id="shiftPaginationUl">
+                    </ul>
+                </nav>
+            </div>
         </div>
 
         <!-- PRINT-ONLY OFFICIAL SIGNATURES & AUDIT FOOTER -->
@@ -767,19 +825,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Filter functionality
+    // Filter & Pagination functionality
     const searchInput = document.getElementById('shiftSearch');
     const statusFilter = document.getElementById('statusFilter');
     const varianceFilter = document.getElementById('varianceFilter');
+    const perPageSelect = document.getElementById('shiftPerPage');
+    const dateFromInput = document.getElementById('shiftDateFrom');
+    const dateToInput = document.getElementById('shiftDateTo');
     const btnReset = document.getElementById('btnResetFilter');
-    const rows = document.querySelectorAll('.shift-row');
+    const rows = Array.from(document.querySelectorAll('.shift-row'));
     const recordCountBadge = document.getElementById('recordCountBadge');
+    const paginationInfo = document.getElementById('shiftPaginationInfo');
+    const paginationUl = document.getElementById('shiftPaginationUl');
 
-    function applyFilters() {
-        const query = (searchInput.value || '').trim().toLowerCase();
-        const selectedStatus = statusFilter.value;
-        const selectedVariance = varianceFilter.value;
-        let visibleCount = 0;
+    let currentShiftPage = 1;
+
+    function applyFilters(resetPage = false) {
+        if (resetPage) currentShiftPage = 1;
+
+        const query = (searchInput?.value || '').trim().toLowerCase();
+        const selectedStatus = statusFilter?.value || '';
+        const selectedVariance = varianceFilter?.value || '';
+        const fromDate = dateFromInput?.value || '';
+        const toDate = dateToInput?.value || '';
+        const perPageVal = perPageSelect?.value || '25';
+
+        const matchedRows = [];
 
         rows.forEach(row => {
             const id = row.getAttribute('data-id') || '';
@@ -787,22 +858,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const cashier = row.getAttribute('data-cashier') || '';
             const status = row.getAttribute('data-status') || '';
             const variance = row.getAttribute('data-variance') || '';
+            const rowDate = row.getAttribute('data-date') || '';
 
             const matchQuery = !query || id.includes(query) || paddedId.toLowerCase().includes(query) || cashier.includes(query);
             const matchStatus = !selectedStatus || status === selectedStatus;
             const matchVariance = !selectedVariance || variance === selectedVariance;
+            const matchDateFrom = !fromDate || rowDate >= fromDate;
+            const matchDateTo = !toDate || rowDate <= toDate;
 
-            if (matchQuery && matchStatus && matchVariance) {
-                row.style.display = '';
-                visibleCount++;
+            if (matchQuery && matchStatus && matchVariance && matchDateFrom && matchDateTo) {
+                row.classList.remove('filter-hidden');
+                matchedRows.push(row);
             } else {
-                row.style.display = 'none';
+                row.classList.add('filter-hidden');
+                row.classList.remove('page-hidden');
             }
         });
 
         // Toggle no-results row
         let emptyRow = document.getElementById('filterEmptyRow');
-        if (visibleCount === 0 && rows.length > 0) {
+        if (matchedRows.length === 0 && rows.length > 0) {
             if (!emptyRow) {
                 emptyRow = document.createElement('tr');
                 emptyRow.id = 'filterEmptyRow';
@@ -814,21 +889,206 @@ document.addEventListener('DOMContentLoaded', () => {
             emptyRow.style.display = 'none';
         }
 
-        if (recordCountBadge) {
-            recordCountBadge.textContent = `${visibleCount} Recorded ${visibleCount === 1 ? 'Shift' : 'Shifts'}`;
+        // Calculate Pagination
+        const totalMatched = matchedRows.length;
+        let totalPages = 1;
+        let limit = totalMatched;
+
+        if (perPageVal !== 'all') {
+            limit = parseInt(perPageVal, 10) || 25;
+            totalPages = Math.max(1, Math.ceil(totalMatched / limit));
         }
+
+        if (currentShiftPage > totalPages) currentShiftPage = totalPages;
+        if (currentShiftPage < 1) currentShiftPage = 1;
+
+        // Apply page-hidden to matched rows
+        if (perPageVal === 'all') {
+            matchedRows.forEach(r => r.classList.remove('page-hidden'));
+        } else {
+            matchedRows.forEach((r, idx) => {
+                const pageNumber = Math.floor(idx / limit) + 1;
+                if (pageNumber === currentShiftPage) {
+                    r.classList.remove('page-hidden');
+                } else {
+                    r.classList.add('page-hidden');
+                }
+            });
+        }
+
+        // Badge update
+        if (recordCountBadge) {
+            recordCountBadge.textContent = `${totalMatched} Recorded ${totalMatched === 1 ? 'Shift' : 'Shifts'}`;
+        }
+
+        // Pagination Info
+        if (paginationInfo) {
+            if (totalMatched === 0) {
+                paginationInfo.textContent = 'Showing 0 of 0 shifts';
+            } else if (perPageVal === 'all') {
+                paginationInfo.textContent = `Showing all ${totalMatched} shifts` + (totalMatched !== rows.length ? ` (filtered from ${rows.length})` : '');
+            } else {
+                const start = (currentShiftPage - 1) * limit + 1;
+                const end = Math.min(totalMatched, currentShiftPage * limit);
+                paginationInfo.textContent = `Showing ${start} to ${end} of ${totalMatched} shifts` + (totalMatched !== rows.length ? ` (filtered from ${rows.length})` : '');
+            }
+        }
+
+        // Render Pagination UI
+        renderShiftPagination(totalPages);
     }
 
-    searchInput?.addEventListener('input', applyFilters);
-    statusFilter?.addEventListener('change', applyFilters);
-    varianceFilter?.addEventListener('change', applyFilters);
+    function renderShiftPagination(totalPages) {
+        if (!paginationUl) return;
+        paginationUl.innerHTML = '';
+
+        // If only 1 page or all shown, do not render page numbers (no unnecessary page numbers)
+        if (totalPages <= 1) {
+            return;
+        }
+
+        // Prev button
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${currentShiftPage === 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `<a class="page-link" href="javascript:void(0)" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></a>`;
+        if (currentShiftPage > 1) {
+            prevLi.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentShiftPage--;
+                applyFilters(false);
+            });
+        }
+        paginationUl.appendChild(prevLi);
+
+        // Page buttons (sliding window)
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentShiftPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        if (endPage - startPage + 1 < maxVisible) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        if (startPage > 1) {
+            const p1 = document.createElement('li');
+            p1.className = 'page-item';
+            p1.innerHTML = `<a class="page-link" href="javascript:void(0)">1</a>`;
+            p1.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentShiftPage = 1;
+                applyFilters(false);
+            });
+            paginationUl.appendChild(p1);
+
+            if (startPage > 2) {
+                const dots = document.createElement('li');
+                dots.className = 'page-item disabled';
+                dots.innerHTML = `<span class="page-link">&hellip;</span>`;
+                paginationUl.appendChild(dots);
+            }
+        }
+
+        for (let p = startPage; p <= endPage; p++) {
+            const li = document.createElement('li');
+            li.className = `page-item ${p === currentShiftPage ? 'active' : ''}`;
+            li.innerHTML = `<a class="page-link" href="javascript:void(0)">${p}</a>`;
+            const targetP = p;
+            li.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentShiftPage = targetP;
+                applyFilters(false);
+            });
+            paginationUl.appendChild(li);
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const dots = document.createElement('li');
+                dots.className = 'page-item disabled';
+                dots.innerHTML = `<span class="page-link">&hellip;</span>`;
+                paginationUl.appendChild(dots);
+            }
+            const pLast = document.createElement('li');
+            pLast.className = 'page-item';
+            pLast.innerHTML = `<a class="page-link" href="javascript:void(0)">${totalPages}</a>`;
+            pLast.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentShiftPage = totalPages;
+                applyFilters(false);
+            });
+            paginationUl.appendChild(pLast);
+        }
+
+        // Next button
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${currentShiftPage === totalPages ? 'disabled' : ''}`;
+        nextLi.innerHTML = `<a class="page-link" href="javascript:void(0)" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></a>`;
+        if (currentShiftPage < totalPages) {
+            nextLi.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentShiftPage++;
+                applyFilters(false);
+            });
+        }
+        paginationUl.appendChild(nextLi);
+    }
+
+    // Quick Date Range Preset Helper
+    window.setShiftDateRange = function(range) {
+        const today = new Date();
+        const fromInput = document.getElementById('shiftDateFrom');
+        const toInput = document.getElementById('shiftDateTo');
+        if (!fromInput || !toInput) return;
+
+        function fmt(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        if (range === 'today') {
+            fromInput.value = fmt(today);
+            toInput.value = fmt(today);
+        } else if (range === 'yesterday') {
+            const yest = new Date(today);
+            yest.setDate(yest.getDate() - 1);
+            fromInput.value = fmt(yest);
+            toInput.value = fmt(yest);
+        } else if (range === '7days') {
+            const d7 = new Date(today);
+            d7.setDate(d7.getDate() - 6);
+            fromInput.value = fmt(d7);
+            toInput.value = fmt(today);
+        } else if (range === 'month') {
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            fromInput.value = fmt(firstDay);
+            toInput.value = fmt(today);
+        } else if (range === 'all') {
+            fromInput.value = '';
+            toInput.value = '';
+        }
+        applyFilters(true);
+    };
+
+    searchInput?.addEventListener('input', () => applyFilters(true));
+    statusFilter?.addEventListener('change', () => applyFilters(true));
+    varianceFilter?.addEventListener('change', () => applyFilters(true));
+    perPageSelect?.addEventListener('change', () => applyFilters(true));
+    dateFromInput?.addEventListener('change', () => applyFilters(true));
+    dateToInput?.addEventListener('change', () => applyFilters(true));
 
     btnReset?.addEventListener('click', () => {
         if (searchInput) searchInput.value = '';
         if (statusFilter) statusFilter.value = '';
         if (varianceFilter) varianceFilter.value = '';
-        applyFilters();
+        if (dateFromInput) dateFromInput.value = '';
+        if (dateToInput) dateToInput.value = '';
+        if (perPageSelect) perPageSelect.value = '25';
+        applyFilters(true);
     });
+
+    // Run on initial page load
+    applyFilters(true);
 
     // View Shift Details Modal
     const detailModalEl = document.getElementById('shiftDetailModal');

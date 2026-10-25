@@ -295,6 +295,7 @@ $currentAdminRole = currentRole();
     }
 
     /* Print Breakdown Mode: hides main report, shows only modal breakdown report */
+    body.printing-breakdown .app-wrapper,
     body.printing-breakdown #printableArea {
         display: none !important;
     }
@@ -485,12 +486,17 @@ $currentAdminRole = currentRole();
         <div class="modal-content border-0 shadow-lg">
             
             <!-- Modal Header (Screen Only) -->
-            <div class="modal-header border-0 bg-light no-print">
+            <div class="modal-header border-0 bg-light no-print d-flex justify-content-between align-items-center">
                 <div>
                     <h5 class="modal-title fw-bold mb-0">Items Sold Breakdown</h5>
                     <small class="text-muted">Period: <span id="bdModalTitle" class="fw-bold text-emerald"></span></small>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-primary btn-sm px-3 fw-bold" onclick="printBreakdownReport()" title="Print this breakdown report">
+                        <i class="fa-solid fa-print me-1"></i>Print Report
+                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
             </div>
 
             <!-- Print Header for Breakdown (Shows only when printing breakdown) -->
