@@ -86,14 +86,12 @@ if ($action === 'list') {
     if ($status !== '') {
         if ($status === 'expired') {
             $where[] = '(i.expiry_date IS NOT NULL AND i.expiry_date != \'0000-00-00\' AND i.expiry_date != \'\' AND i.expiry_date <= CURDATE())';
-        } elseif ($status === 'expiring') {
-            $where[] = '(i.expiry_date IS NOT NULL AND i.expiry_date != \'0000-00-00\' AND i.expiry_date != \'\' AND i.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) AND i.expiry_date > CURDATE())';
         } elseif ($status === 'out') {
             $where[] = '(i.stock_qty <= 0 AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > CURDATE()))';
         } elseif ($status === 'low') {
-            $where[] = '(i.stock_qty > 0 AND i.stock_qty <= i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > DATE_ADD(CURDATE(), INTERVAL 30 DAY)))';
+            $where[] = '(i.stock_qty > 0 AND i.stock_qty <= i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > CURDATE()))';
         } elseif ($status === 'ok') {
-            $where[] = '(i.stock_qty > i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > DATE_ADD(CURDATE(), INTERVAL 30 DAY)))';
+            $where[] = '(i.stock_qty > i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > CURDATE()))';
         }
     }
 
@@ -132,15 +130,13 @@ if ($action === 'list') {
                 ? "(CASE 
                     WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE() THEN 1 
                     WHEN i.stock_qty <= 0 THEN 2 
-                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 3 
-                    WHEN i.stock_qty <= i.low_stock_threshold THEN 4 
-                    ELSE 5 END) ASC, i.item_name ASC"
+                    WHEN i.stock_qty <= i.low_stock_threshold THEN 3 
+                    ELSE 4 END) ASC, i.item_name ASC"
                 : "(CASE 
                     WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE() THEN 1 
                     WHEN i.stock_qty <= 0 THEN 2 
-                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 3 
-                    WHEN i.stock_qty <= i.low_stock_threshold THEN 4 
-                    ELSE 5 END) DESC, i.item_name ASC";
+                    WHEN i.stock_qty <= i.low_stock_threshold THEN 3 
+                    ELSE 4 END) DESC, i.item_name ASC";
         } elseif ($sortMap[$sortBy] === 'i.expiry_date') {
             $orderSql = ($sortDir === 'ASC')
                 ? "(i.expiry_date IS NULL OR i.expiry_date = '' OR i.expiry_date = '0000-00-00') ASC, i.expiry_date ASC, i.item_name ASC"
@@ -174,7 +170,6 @@ if ($action === 'list') {
                 CASE
                     WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE() THEN 'expired'
                     WHEN i.stock_qty <= 0                        THEN 'out'
-                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 'expiring'
                     WHEN i.stock_qty <= i.low_stock_threshold    THEN 'low'
                     ELSE                                              'ok'
                 END AS stock_status

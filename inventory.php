@@ -100,7 +100,6 @@ $pageTitle = 'Inventory Management';
                             <option value="">All Status</option>
                             <option value="ok">In Stock</option>
                             <option value="low">Low Stock</option>
-                            <option value="expiring">Expiring Soon (30d)</option>
                             <option value="out">Out of Stock</option>
                             <option value="expired">Expired</option>
                         </select>
@@ -523,8 +522,6 @@ async function loadItems(page = 1) {
                 ? '<span class="badge badge-danger">Expired</span>'
                 : item.stock_status === 'out'
                 ? '<span class="badge badge-danger">Out of Stock</span>'
-                : item.stock_status === 'expiring'
-                ? '<span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;font-weight:700;">Expiring Soon</span>'
                 : item.stock_status === 'low'
                 ? '<span class="badge badge-warning">Low Stock</span>'
                 : '<span class="badge badge-success">In Stock</span>';
@@ -857,12 +854,7 @@ document.getElementById('searchInput').addEventListener('input', () => {
     searchTimer = setTimeout(() => loadItems(1), 400);
 });
 document.getElementById('categoryFilter').addEventListener('change', () => loadItems(1));
-document.getElementById('statusFilter').addEventListener('change',   (e) => {
-    if (e.target.value === 'expiring' && document.getElementById('categoryFilter').value !== '') {
-        document.getElementById('categoryFilter').value = '';
-    }
-    loadItems(1);
-});
+document.getElementById('statusFilter').addEventListener('change',   () => loadItems(1));
 document.getElementById('btnReset').addEventListener('click', () => {
     document.getElementById('searchInput').value   = '';
     document.getElementById('categoryFilter').value = '';
