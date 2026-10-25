@@ -480,7 +480,7 @@ if ($currentRole === 'cashier') {
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=36"></script>
 <?php require_once __DIR__ . '/includes/shift_modals.php'; ?>
 <script>
 const isCashierRole = <?= json_encode($currentRole === 'cashier') ?>;
@@ -650,6 +650,9 @@ function renderList(items) {
             return `<span class="${days<=0?'text-danger fw-700':days<=30?'text-warning':'text-muted'}">${item.expiry_date}${days<=30?' ('+days+'d)':''}</span>`;
         })() : '<span class="text-muted">—</span>';
         
+        // Status sort rank: OK = 1, Low = 2, Out = 3, Expired = 4
+        const statusRank = item.stock_status === 'ok' ? 1 : item.stock_status === 'low' ? 2 : item.stock_status === 'out' ? 3 : 4;
+
         html += `<tr class="${rowCls}">
             <td class="text-center text-muted fw-bold" data-sort-value="${index + 1}">${index + 1}</td>
             <td class="fw-600" data-sort-value="${esc(item.item_name)}">${esc(item.item_name)}</td>
@@ -658,10 +661,22 @@ function renderList(items) {
             <td class="text-center fw-700" data-sort-value="${parseFloat(item.stock_qty)}">${parseFloat(item.stock_qty)}</td>
             <td class="text-center text-muted" data-sort-value="${parseFloat(item.low_stock_threshold)}">${item.low_stock_threshold}</td>
             <td data-sort-value="${item.expiry_date || ''}">${expHtml}</td>
-            <td class="text-center" data-sort-value="${item.stock_status}">${sBadge}</td>
+            <td class="text-center" data-sort-value="${statusRank}">${sBadge}</td>
         </tr>`;
     });
     document.getElementById('stockBody').innerHTML = html || `<tr><td colspan="8" class="text-center py-4 text-muted">No items match.</td></tr>`;
+
+    // Re-apply sort if active header exists
+    const activeSortedTh = document.querySelector('#stockCard thead th.sorted-asc, #stockCard thead th.sorted-desc');
+    if (activeSortedTh && typeof sortTableByColumn === 'function') {
+        const table = activeSortedTh.closest('table');
+        const ths = Array.from(activeSortedTh.parentNode.children);
+        const colIdx = ths.indexOf(activeSortedTh);
+        const dir = activeSortedTh.classList.contains('sorted-asc') ? 'asc' : 'desc';
+        if (colIdx >= 0 && table) {
+            sortTableByColumn(table, activeSortedTh, colIdx, dir);
+        }
+    }
 }
 
 let searchTimer;

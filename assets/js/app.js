@@ -202,7 +202,7 @@ function makeTableSortable(table) {
     table.dataset.sortEngineAttached = 'true';
 }
 
-function sortTableByColumn(table, th, colIdx) {
+function sortTableByColumn(table, th, colIdx, forceDirection = null) {
     const tbody = table.querySelector('tbody') || table.tBodies[0];
     if (!tbody) return;
 
@@ -219,7 +219,7 @@ function sortTableByColumn(table, th, colIdx) {
     if (rows.length < 2) return;
 
     const isAsc = th.classList.contains('sorted-asc');
-    const newDirection = isAsc ? 'desc' : 'asc';
+    const newDirection = forceDirection || (isAsc ? 'desc' : 'asc');
 
     // Reset all headers in this table's thead
     const thead = table.querySelector('thead');
@@ -256,6 +256,21 @@ function sortTableByColumn(table, th, colIdx) {
         const clean = String(raw).trim();
         if (!clean || clean === '—' || clean === '-' || clean === 'n/a' || clean === 'none') {
             return { type: 'empty', val: '' };
+        }
+
+        // Status keywords mapping: OK (1), Low (2), Out (3), Expired (4)
+        const lowerClean = clean.toLowerCase();
+        const statusOrder = {
+            'ok': 1,
+            'in stock': 1,
+            'low': 2,
+            'low stock': 2,
+            'out': 3,
+            'out of stock': 3,
+            'expired': 4
+        };
+        if (statusOrder[lowerClean] !== undefined) {
+            return { type: 'number', val: statusOrder[lowerClean] };
         }
 
         // 1. Numeric check: IDs (#0012, #1), Currency (₱1,250.00, +₱50, -₱20.50), Quantities (15 pcs, 2.5 kg), Percentages
@@ -310,6 +325,19 @@ function sortTableByColumn(table, th, colIdx) {
             cmp = valA.val - valB.val;
         } else {
             cmp = String(valA.val).localeCompare(String(valB.val), undefined, { numeric: true, sensitivity: 'base' });
+        }
+
+        if (cmp === 0) {
+            const thText = (th.textContent || '').trim().toLowerCase();
+            if (thText.includes('status')) {
+                const tdA = a.children[1];
+                const tdB = b.children[1];
+                if (tdA && tdB) {
+                    const nameA = (tdA.dataset.sortValue !== undefined ? tdA.dataset.sortValue : tdA.textContent).trim().toLowerCase();
+                    const nameB = (tdB.dataset.sortValue !== undefined ? tdB.dataset.sortValue : tdB.textContent).trim().toLowerCase();
+                    return nameA.localeCompare(nameB);
+                }
+            }
         }
 
         return newDirection === 'asc' ? cmp : -cmp;
