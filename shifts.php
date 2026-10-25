@@ -538,8 +538,8 @@ tr.shift-row.page-hidden {
                     </div>
                     <div class="col-6 col-md-2">
                         <select id="shiftPerPage" class="form-select" title="Items to show per page">
-                            <option value="10">10 per page</option>
-                            <option value="25" selected>25 per page</option>
+                            <option value="10" selected>10 per page</option>
+                            <option value="25">25 per page</option>
                             <option value="50">50 per page</option>
                             <option value="100">100 per page</option>
                             <option value="all">All shifts</option>
@@ -884,7 +884,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedVariance = varianceFilter?.value || '';
         const fromDate = dateFromInput?.value || '';
         const toDate = dateToInput?.value || '';
-        const perPageVal = perPageSelect?.value || '25';
+        const perPageVal = perPageSelect?.value || '10';
 
         const matchedRows = [];
 
@@ -931,7 +931,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let limit = totalMatched;
 
         if (perPageVal !== 'all') {
-            limit = parseInt(perPageVal, 10) || 25;
+            limit = parseInt(perPageVal, 10) || 10;
             totalPages = Math.max(1, Math.ceil(totalMatched / limit));
         }
 
@@ -1129,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (varianceFilter) varianceFilter.value = '';
         if (dateFromInput) dateFromInput.value = '';
         if (dateToInput) dateToInput.value = '';
-        if (perPageSelect) perPageSelect.value = '25';
+        if (perPageSelect) perPageSelect.value = '10';
         applyFilters(true);
     });
 
