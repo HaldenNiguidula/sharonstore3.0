@@ -119,15 +119,15 @@ $pageTitle = 'Inventory Management';
                     <table class="table table-custom mb-0" id="inventoryTable" style="min-width:900px;">
                         <thead>
                             <tr>
-                                <th class="sortable-th"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">Barcode <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">Item Name <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">Unit <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">Sell Price <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">Expiry <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="item_id"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="barcode">Barcode <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="item_name">Item Name <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="category_name">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="unit">Unit <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="price">Sell Price <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="stock_qty">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="expiry_date">Expiry <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="stock_status">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
                                 <th class="no-sort">Actions</th>
                             </tr>
                         </thead>
@@ -477,6 +477,9 @@ async function loadStats() {
     document.getElementById('sOut').textContent    = parseInt(d.out_of_stock).toLocaleString();
 }
 
+let currentSortColumn = 'item_name';
+let currentSortOrder  = 'asc';
+
 // -- Load Items ------------------------------------------------
 async function loadItems(page = 1) {
     currentPage = page;
@@ -484,8 +487,10 @@ async function loadItems(page = 1) {
     const cat  = document.getElementById('categoryFilter').value;
     const stat = document.getElementById('statusFilter').value;
     let url    = `/sharonstore3.0/api/inventory.php?action=list&page=${page}`;
-    if (q)    url += `&q=${encodeURIComponent(q)}`;
-    if (cat)  url += `&category_id=${cat}`;
+    if (q)                 url += `&q=${encodeURIComponent(q)}`;
+    if (cat)               url += `&category_id=${encodeURIComponent(cat)}`;
+    if (stat)              url += `&status=${encodeURIComponent(stat)}`;
+    if (currentSortColumn) url += `&sort=${encodeURIComponent(currentSortColumn)}&order=${encodeURIComponent(currentSortOrder)}`;
 
     document.getElementById('inventoryBody').innerHTML = `<tr><td colspan="10" class="text-center py-5"><div class="loading-spinner mx-auto mb-2"></div>Loading</td></tr>`;
 
@@ -493,11 +498,12 @@ async function loadItems(page = 1) {
     const j = await r.json();
     if (!j.success) { showToast('Failed to load inventory.', 'error'); return; }
 
-    let items = j.data.items;
-    if (stat) items = items.filter(i => i.stock_status === stat);
+    const items = j.data.items || [];
+    const total = parseInt(j.data.total) || 0;
+    const totalPages = parseInt(j.data.total_pages) || 1;
 
-    document.getElementById('itemCount').textContent = `${j.data.total} items`;
-    document.getElementById('pageInfo').textContent  = `Page ${j.data.page} of ${j.data.total_pages}`;
+    document.getElementById('itemCount').textContent = `${total} items`;
+    document.getElementById('pageInfo').textContent  = `Page ${j.data.page} of ${totalPages}`;
 
     if (!items.length) {
         document.getElementById('inventoryBody').innerHTML = `<tr><td colspan="10" class="text-center py-5"><i class="fa-solid fa-box-open fa-2x text-muted mb-2"></i><br>No items found.</td></tr>`;
@@ -548,14 +554,68 @@ async function loadItems(page = 1) {
 
     // Pagination
     let pg = '';
-    if (j.data.total_pages > 1) {
+    if (totalPages > 1) {
         if (page > 1) pg += `<button class="btn btn-sm btn-secondary" onclick="loadItems(${page-1})"><i class="fa-solid fa-chevron-left"></i></button>`;
-        for (let p = Math.max(1,page-2); p <= Math.min(j.data.total_pages, page+2); p++) {
+        for (let p = Math.max(1,page-2); p <= Math.min(totalPages, page+2); p++) {
             pg += `<button class="btn btn-sm ${p===page?'btn-primary':'btn-secondary'}" onclick="loadItems(${p})">${p}</button>`;
         }
-        if (page < j.data.total_pages) pg += `<button class="btn btn-sm btn-secondary" onclick="loadItems(${page+1})"><i class="fa-solid fa-chevron-right"></i></button>`;
+        if (page < totalPages) pg += `<button class="btn btn-sm btn-secondary" onclick="loadItems(${page+1})"><i class="fa-solid fa-chevron-right"></i></button>`;
     }
     document.getElementById('pagination').innerHTML = pg;
+}
+
+function initInventorySorting() {
+    const table = document.getElementById('inventoryTable');
+    if (!table) return;
+
+    const ths = table.querySelectorAll('thead th.sortable-th');
+    ths.forEach((th) => {
+        // Prevent generic client-side table sorter from binding
+        th.dataset.sortClickBound = 'server';
+        th.style.cursor = 'pointer';
+
+        th.addEventListener('click', (e) => {
+            if (e.target.closest('button, input, select, a, textarea')) return;
+            const col = th.dataset.col || 'item_name';
+            if (currentSortColumn === col) {
+                currentSortOrder = (currentSortOrder === 'asc') ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = col;
+                currentSortOrder = 'asc';
+            }
+            updateSortHeaderUI();
+            loadItems(1);
+        });
+    });
+
+    updateSortHeaderUI();
+}
+
+function updateSortHeaderUI() {
+    const table = document.getElementById('inventoryTable');
+    if (!table) return;
+
+    const ths = table.querySelectorAll('thead th.sortable-th');
+    ths.forEach((th) => {
+        const col = th.dataset.col;
+        const icon = th.querySelector('.sort-icon');
+        th.classList.remove('sorted-asc', 'sorted-desc');
+
+        if (col === currentSortColumn) {
+            th.classList.add(currentSortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc');
+            if (icon) {
+                icon.className = `fa-solid ${currentSortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'} sort-icon no-print`;
+                icon.style.color = 'var(--accent)';
+                icon.style.opacity = '1';
+            }
+        } else {
+            if (icon) {
+                icon.className = 'fa-solid fa-sort sort-icon no-print';
+                icon.style.color = '';
+                icon.style.opacity = '';
+            }
+        }
+    });
 }
 
 
@@ -779,12 +839,45 @@ document.getElementById('btnReset').addEventListener('click', () => {
     document.getElementById('searchInput').value   = '';
     document.getElementById('categoryFilter').value = '';
     document.getElementById('statusFilter').value   = '';
+    currentSortColumn = 'item_name';
+    currentSortOrder  = 'asc';
+    updateSortHeaderUI();
     loadItems(1);
 });
+
+// Quick filter by clicking stat cards
+const cardLow = document.getElementById('sLow')?.closest('.stat-card');
+if (cardLow) {
+    cardLow.style.cursor = 'pointer';
+    cardLow.setAttribute('title', 'Click to filter Low Stock products');
+    cardLow.addEventListener('click', () => {
+        document.getElementById('statusFilter').value = 'low';
+        loadItems(1);
+    });
+}
+const cardOut = document.getElementById('sOut')?.closest('.stat-card');
+if (cardOut) {
+    cardOut.style.cursor = 'pointer';
+    cardOut.setAttribute('title', 'Click to filter Out of Stock products');
+    cardOut.addEventListener('click', () => {
+        document.getElementById('statusFilter').value = 'out';
+        loadItems(1);
+    });
+}
+const cardTotal = document.getElementById('sTotal')?.closest('.stat-card');
+if (cardTotal) {
+    cardTotal.style.cursor = 'pointer';
+    cardTotal.setAttribute('title', 'Click to view All products');
+    cardTotal.addEventListener('click', () => {
+        document.getElementById('statusFilter').value = '';
+        loadItems(1);
+    });
+}
 
 // -- Init ------------------------------------------------------
 loadCategories();
 loadStats();
+initInventorySorting();
 loadItems(1);
 bindNewCategory();
 

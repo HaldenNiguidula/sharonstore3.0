@@ -57,6 +57,9 @@ if (currentRole() === 'cashier' && in_array($action, ['list', 'stats', 'low_stoc
 if ($action === 'list') {
     $search   = trim($_GET['q'] ?? $_POST['q'] ?? '');
     $catId    = intval_or_null($_GET['category_id'] ?? $_POST['category_id'] ?? '');
+    $status   = trim($_GET['status'] ?? $_POST['status'] ?? '');
+    $sortBy   = strtolower(trim($_GET['sort'] ?? $_POST['sort'] ?? 'item_name'));
+    $sortDir  = strtolower(trim($_GET['order'] ?? $_POST['order'] ?? 'asc')) === 'desc' ? 'DESC' : 'ASC';
     $page     = max(1, (int)($_GET['page'] ?? $_POST['page'] ?? 1));
     $perPage  = 20;
     $offset   = ($page - 1) * $perPage;
@@ -74,6 +77,18 @@ if ($action === 'list') {
         $params[':cat']    = $catId;
     }
 
+    if ($status !== '') {
+        if ($status === 'expired') {
+            $where[] = '(i.expiry_date IS NOT NULL AND i.expiry_date <= CURDATE())';
+        } elseif ($status === 'out') {
+            $where[] = '(i.stock_qty <= 0 AND (i.expiry_date IS NULL OR i.expiry_date > CURDATE()))';
+        } elseif ($status === 'low') {
+            $where[] = '(i.stock_qty > 0 AND i.stock_qty <= i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date > CURDATE()))';
+        } elseif ($status === 'ok') {
+            $where[] = '(i.stock_qty > i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date > CURDATE()))';
+        }
+    }
+
     $whereClause = 'WHERE ' . implode(' AND ', $where);
 
     // Total count
@@ -81,6 +96,50 @@ if ($action === 'list') {
     $countStmt = $db->prepare($countSql);
     $countStmt->execute($params);
     $totalRows = (int)$countStmt->fetchColumn();
+
+    // Map allowed sort columns safely to prevent SQL injection
+    $sortMap = [
+        'item_id'       => 'i.item_id',
+        'id'            => 'i.item_id',
+        'barcode'       => 'i.barcode',
+        'item_name'     => 'i.item_name',
+        'name'          => 'i.item_name',
+        'category_name' => 'c.category_name',
+        'category'      => 'c.category_name',
+        'unit'          => 'i.unit',
+        'price'         => 'i.price',
+        'cost_price'    => 'i.cost_price',
+        'stock_qty'     => 'i.stock_qty',
+        'stock'         => 'i.stock_qty',
+        'expiry_date'   => 'i.expiry_date',
+        'expiry'        => 'i.expiry_date',
+        'stock_status'  => 'stock_status_order',
+        'status'        => 'stock_status_order',
+    ];
+
+    $orderSql = 'i.item_name ASC';
+    if (isset($sortMap[$sortBy])) {
+        if ($sortMap[$sortBy] === 'stock_status_order') {
+            $orderSql = ($sortDir === 'ASC')
+                ? "(CASE 
+                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date <= CURDATE() THEN 1 
+                    WHEN i.stock_qty <= 0 THEN 2 
+                    WHEN i.stock_qty <= i.low_stock_threshold THEN 3 
+                    ELSE 4 END) ASC, i.item_name ASC"
+                : "(CASE 
+                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date <= CURDATE() THEN 1 
+                    WHEN i.stock_qty <= 0 THEN 2 
+                    WHEN i.stock_qty <= i.low_stock_threshold THEN 3 
+                    ELSE 4 END) DESC, i.item_name ASC";
+        } elseif ($sortMap[$sortBy] === 'i.expiry_date') {
+            $orderSql = ($sortDir === 'ASC')
+                ? "(i.expiry_date IS NULL) ASC, i.expiry_date ASC, i.item_name ASC"
+                : "(i.expiry_date IS NULL) ASC, i.expiry_date DESC, i.item_name ASC";
+        } else {
+            $colName = $sortMap[$sortBy];
+            $orderSql = "{$colName} {$sortDir}, i.item_name ASC";
+        }
+    }
 
     // Main query
     $sql = "SELECT
@@ -107,7 +166,7 @@ if ($action === 'list') {
             FROM tbl_inventory i
             JOIN tbl_categories c ON c.category_id = i.category_id
             {$whereClause}
-            ORDER BY i.item_name ASC
+            ORDER BY {$orderSql}
             LIMIT :limit OFFSET :offset";
 
     $stmt = $db->prepare($sql);
