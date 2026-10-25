@@ -512,7 +512,7 @@ $currentRole = currentRole();
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=36"></script>
 <script>
 let forecastChart;
 
@@ -993,7 +993,7 @@ async function loadOverview() {
             </div>
             <div class="table-responsive"><table class="table table-custom table-report mb-0">
             <thead><tr>
-                <th style="width:50px;" class="text-center sortable-th"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                <th style="width:50px;" class="text-center no-sort">#</th>
                 <th class="sortable-th">Product <i class="fa-solid fa-sort sort-icon no-print"></i></th>
                 <th class="sortable-th">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
                 <th class="text-center sortable-th">Current Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th>

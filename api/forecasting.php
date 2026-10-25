@@ -77,7 +77,6 @@ if ($action === 'forecast_report') {
             ) f_wma ON f_wma.item_id = i.item_id
             WHERE i.is_active = 1
             ORDER BY i.item_name ASC
-            LIMIT 100
         ";
         $stmt = $db->query($sql);
         $rows = $stmt->fetchAll();
