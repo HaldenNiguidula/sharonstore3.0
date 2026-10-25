@@ -564,11 +564,8 @@ $currentAdminRole = currentRole();
                 </div>
             </div>
 
-            <!-- Modal Footer with Print and Close -->
+            <!-- Modal Footer with Close -->
             <div class="modal-footer border-0 no-print">
-                <button type="button" class="btn btn-outline-primary" onclick="printBreakdownReport()">
-                    <i class="fa-solid fa-print me-2"></i>Print Breakdown Report
-                </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>

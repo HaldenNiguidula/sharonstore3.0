@@ -161,6 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
 /* ── Universal Table Header Sorting ────────────────────────── */
 function makeTableSortable(table) {
     if (!table) return;
+    if (table.dataset.serverSort === 'true' || table.id === 'inventoryTable') return;
     const thead = table.querySelector('thead');
     if (!thead) return;
 

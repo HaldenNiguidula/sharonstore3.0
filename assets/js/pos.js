@@ -481,12 +481,15 @@ function showReceipt(data) {
 }
 
 function loadDailySummary() {
+    var countEl = document.getElementById('todayTxCount');
+    var totalEl = document.getElementById('todayTxTotal');
+    if (!countEl && !totalEl) return;
     fetch('/sharonstore3.0/api/transactions.php?action=daily_summary', { headers: {'Accept':'application/json'} })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (j) {
         if (j && j.success) {
-            document.getElementById('todayTxCount').textContent = j.transaction_count;
-            document.getElementById('todayTxTotal').innerHTML = j.total_sales_fmt;
+            if (countEl) countEl.textContent = j.transaction_count;
+            if (totalEl) totalEl.innerHTML = j.total_sales_fmt;
         }
     })
     .catch(function () {});

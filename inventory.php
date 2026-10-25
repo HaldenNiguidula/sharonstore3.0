@@ -14,6 +14,13 @@ $pageTitle = 'Inventory Management';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/sharonstore3.0/assets/css/style.css?v=40">
 <style>
+#inventoryTable th[data-col="expiry_date"],
+#inventoryTable td:nth-child(8) {
+  width: 180px !important;
+  min-width: 180px !important;
+  max-width: 180px !important;
+  white-space: nowrap !important;
+}
 @media(max-width:767px){
   .page-header{flex-direction:column!important;align-items:flex-start!important;}
   .page-header .btn{width:100%;}
@@ -117,19 +124,19 @@ $pageTitle = 'Inventory Management';
             </div>
             <div class="card-body p-0">
                 <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-                    <table class="table table-custom mb-0" id="inventoryTable" style="min-width:900px;">
+                    <table class="table table-custom mb-0" id="inventoryTable" data-server-sort="true" style="min-width:1050px;width:100%;">
                         <thead>
                             <tr>
-                                <th class="sortable-th" data-col="item_id"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th" data-col="barcode">Barcode <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th" data-col="item_name">Item Name <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th" data-col="category_name">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th" data-col="unit">Unit <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th" data-col="price">Sell Price <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th" data-col="stock_qty">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th" data-col="expiry_date">Expiry <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th" data-col="stock_status">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="no-sort">Actions</th>
+                                <th class="sortable-th" data-col="item_id" style="width:50px;min-width:50px;"># <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="barcode" style="width:130px;min-width:130px;">Barcode <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="item_name" style="min-width:200px;">Item Name <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="category_name" style="width:135px;min-width:135px;">Category <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="unit" style="width:75px;min-width:75px;">Unit <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="price" style="width:100px;min-width:100px;">Sell Price <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="stock_qty" style="width:100px;min-width:100px;">Stock <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th" data-col="expiry_date" style="width:180px;min-width:180px;max-width:180px;white-space:nowrap;">Expiry <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="sortable-th text-center" data-col="stock_status" style="width:125px;min-width:125px;">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th class="no-sort text-center" style="width:115px;min-width:115px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="inventoryBody">
@@ -516,6 +523,8 @@ async function loadItems(page = 1) {
                 ? '<span class="badge badge-danger">Expired</span>'
                 : item.stock_status === 'out'
                 ? '<span class="badge badge-danger">Out of Stock</span>'
+                : item.stock_status === 'expiring'
+                ? '<span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;font-weight:700;">Expiring Soon</span>'
                 : item.stock_status === 'low'
                 ? '<span class="badge badge-warning">Low Stock</span>'
                 : '<span class="badge badge-success">In Stock</span>';
@@ -552,8 +561,8 @@ async function loadItems(page = 1) {
                 <td style="color:#4a4b4b;" data-sort-value="${esc(item.unit)}">${item.unit}</td>
                 <td style="color:#0abf8a;font-weight:700;" data-sort-value="${parseFloat(item.price)}">&#8369;${parseFloat(item.price).toFixed(2)}</td>
                 <td style="font-weight:700;color:#2C2D2D;" data-sort-value="${parseFloat(item.stock_qty)}">${parseFloat(item.stock_qty)} ${item.unit}</td>
-                <td data-sort-value="${item.expiry_date || ''}">${expHtml}</td>
-                <td data-sort-value="${item.stock_status}">${sBadge}</td>
+                <td data-sort-value="${item.expiry_date || ''}" style="white-space:nowrap;width:180px;min-width:180px;max-width:180px;">${expHtml}</td>
+                <td data-sort-value="${item.stock_status}" class="text-center" style="width:125px;min-width:125px;">${sBadge}</td>
                 <td>
                     <div class="d-flex gap-1">
                         <button class="btn btn-sm btn-secondary" title="Adjust Stock" onclick="openAdjust(${item.item_id},'${esc(item.item_name)}')"><i class="fa-solid fa-sliders"></i></button>
@@ -848,7 +857,12 @@ document.getElementById('searchInput').addEventListener('input', () => {
     searchTimer = setTimeout(() => loadItems(1), 400);
 });
 document.getElementById('categoryFilter').addEventListener('change', () => loadItems(1));
-document.getElementById('statusFilter').addEventListener('change',   () => loadItems(1));
+document.getElementById('statusFilter').addEventListener('change',   (e) => {
+    if (e.target.value === 'expiring' && document.getElementById('categoryFilter').value !== '') {
+        document.getElementById('categoryFilter').value = '';
+    }
+    loadItems(1);
+});
 document.getElementById('btnReset').addEventListener('click', () => {
     document.getElementById('searchInput').value   = '';
     document.getElementById('categoryFilter').value = '';

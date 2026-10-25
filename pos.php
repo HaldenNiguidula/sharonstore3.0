@@ -9,6 +9,7 @@ requireLogin();
 $pageTitle      = 'Point of Sale';
 $userFullName   = currentUserName();
 $userRole       = currentRole();
+$isAdmin        = isAdmin();
 // $hideHamburger removed to allow mobile sidebar toggle
 ?>
 <!DOCTYPE html>
@@ -916,7 +917,8 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                     </button>
                 </div>
 
-                <!-- Daily Summary -->
+                <!-- Daily Summary: Admin Only -->
+                <?php if ($isAdmin): ?>
                 <div class="pos-right-section">
                     <span class="pos-label"><i class="fa-solid fa-calendar-day me-1"></i>Today's Summary</span>
                     <div class="pos-summary-nums">
@@ -934,13 +936,16 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                         <button class="btn btn-outline-secondary w-100 fw-bold" style="font-size: 0.85rem;" onclick="viewShiftSummary()">
                             <i class="fa-solid fa-list-check me-2"></i>Live Summary
                         </button>
-                        <?php if ($userRole === 'cashier'): ?>
-                        <button class="btn btn-danger w-100 fw-bold" id="posEndShiftBtn" style="font-size: 0.85rem;" onclick="openEndShiftModal()">
-                            <i class="fa-solid fa-lock me-2"></i>End Shift
-                        </button>
-                        <?php endif; ?>
                     </div>
                 </div>
+                <?php elseif ($userRole === 'cashier'): ?>
+                <!-- Cashier Action Section -->
+                <div class="pos-right-section">
+                    <button class="btn btn-danger w-100 fw-bold" id="posEndShiftBtn" style="font-size: 0.9rem; padding: 0.6rem 1rem;" onclick="openEndShiftModal()">
+                        <i class="fa-solid fa-lock me-2"></i>End Shift
+                    </button>
+                </div>
+                <?php endif; ?>
 
                 <!-- Keyboard shortcuts -->
                 <div class="pos-right-section" style="border-bottom:none;">

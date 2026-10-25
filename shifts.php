@@ -160,6 +160,15 @@ tr.shift-row.page-hidden {
     display: none !important;
 }
 
+#shiftsTable {
+    table-layout: fixed;
+    width: 100%;
+}
+#shiftsTable th,
+#shiftsTable td {
+    white-space: nowrap;
+}
+
 /* ============================================================
    OFFICIAL PRINT TABLE REPORT STYLING
    ============================================================ */
@@ -607,20 +616,20 @@ tr.shift-row.page-hidden {
                 </span>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-custom table-report align-middle mb-0" id="shiftsTable">
+                <div class="table-responsive" style="min-height: 480px;">
+                    <table class="table table-custom table-report align-middle mb-0" id="shiftsTable" style="table-layout: fixed; width: 100%; min-width: 1100px;">
                         <thead>
                             <tr>
-                                <th style="width: 80px;" class="sortable-th">Shift ID <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">Cashier <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">Start Time <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="sortable-th">End Time <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="text-end sortable-th">Starting Cash <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="text-end sortable-th">Expected Cash <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="text-end sortable-th">Actual Cash <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="text-end sortable-th">Short / Over <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="text-center sortable-th" style="width: 100px;">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
-                                <th class="text-center no-sort" style="width: 80px;">Action</th>
+                                <th style="width: 85px; min-width: 85px;" class="sortable-th">Shift ID <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 170px; min-width: 170px;" class="sortable-th">Cashier <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 155px; min-width: 155px;" class="sortable-th">Start Time <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 155px; min-width: 155px;" class="sortable-th">End Time <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 125px; min-width: 125px;" class="text-end sortable-th">Starting Cash <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 125px; min-width: 125px;" class="text-end sortable-th">Expected Cash <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 125px; min-width: 125px;" class="text-end sortable-th">Actual Cash <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 125px; min-width: 125px;" class="text-end sortable-th">Short / Over <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 105px; min-width: 105px;" class="text-center sortable-th">Status <i class="fa-solid fa-sort sort-icon no-print"></i></th>
+                                <th style="width: 80px; min-width: 80px;" class="text-center no-sort">Action</th>
                             </tr>
                         </thead>
                         <tbody id="shiftsTbody">
@@ -938,6 +947,18 @@ document.addEventListener('DOMContentLoaded', () => {
         renderShiftPagination(totalPages);
     }
 
+    function goToShiftPage(targetPage) {
+        currentShiftPage = targetPage;
+        applyFilters(false);
+        const cardEl = document.getElementById('shiftsTable')?.closest('.card');
+        if (cardEl) {
+            const rect = cardEl.getBoundingClientRect();
+            if (rect.top < 60) {
+                window.scrollTo({ top: window.scrollY + rect.top - 70, behavior: 'smooth' });
+            }
+        }
+    }
+
     function renderShiftPagination(totalPages) {
         if (!paginationUl) return;
         paginationUl.innerHTML = '';
@@ -954,8 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentShiftPage > 1) {
             prevLi.addEventListener('click', (e) => {
                 e.preventDefault();
-                currentShiftPage--;
-                applyFilters(false);
+                goToShiftPage(currentShiftPage - 1);
             });
         }
         paginationUl.appendChild(prevLi);
@@ -974,8 +994,7 @@ document.addEventListener('DOMContentLoaded', () => {
             p1.innerHTML = `<a class="page-link" href="javascript:void(0)">1</a>`;
             p1.addEventListener('click', (e) => {
                 e.preventDefault();
-                currentShiftPage = 1;
-                applyFilters(false);
+                goToShiftPage(1);
             });
             paginationUl.appendChild(p1);
 
@@ -994,8 +1013,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetP = p;
             li.addEventListener('click', (e) => {
                 e.preventDefault();
-                currentShiftPage = targetP;
-                applyFilters(false);
+                goToShiftPage(targetP);
             });
             paginationUl.appendChild(li);
         }
@@ -1012,8 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pLast.innerHTML = `<a class="page-link" href="javascript:void(0)">${totalPages}</a>`;
             pLast.addEventListener('click', (e) => {
                 e.preventDefault();
-                currentShiftPage = totalPages;
-                applyFilters(false);
+                goToShiftPage(totalPages);
             });
             paginationUl.appendChild(pLast);
         }
@@ -1025,8 +1042,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentShiftPage < totalPages) {
             nextLi.addEventListener('click', (e) => {
                 e.preventDefault();
-                currentShiftPage++;
-                applyFilters(false);
+                goToShiftPage(currentShiftPage + 1);
             });
         }
         paginationUl.appendChild(nextLi);
