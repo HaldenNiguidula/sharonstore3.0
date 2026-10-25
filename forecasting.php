@@ -344,7 +344,7 @@ $currentRole = currentRole();
             <div class="card-header"><h5><i class="fa-solid fa-sliders me-2 text-emerald"></i>Generate Forecast</h5></div>
             <div class="card-body">
                 <div class="row g-3 align-items-end">
-                    <div class="col-12 col-md-5">
+                    <div class="col-12 col-md-7">
                         <label class="form-label d-flex justify-content-between align-items-center mb-1">
                             <span class="fw-semibold">Select Product</span>
                             <span class="text-muted small" id="productSearchBadge"></span>
@@ -373,11 +373,6 @@ $currentRole = currentRole();
                     <div class="col-6 col-md-2">
                         <button class="btn btn-primary w-100" id="btnForecast">
                             <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Forecast
-                        </button>
-                    </div>
-                    <div class="col-12 col-md-2">
-                        <button class="btn btn-secondary w-100" onclick="window.print()">
-                            <i class="fa-solid fa-print me-1"></i>Print
                         </button>
                     </div>
                 </div>
