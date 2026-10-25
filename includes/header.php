@@ -56,13 +56,13 @@ if ($__role === 'cashier') {
         <div class="ss-vr d-none d-md-block"></div>
 
         <?php if (isset($pageTitle) && in_array($pageTitle, ['Point of Sale', 'Stock Monitoring'])): ?>
-        <!-- Quick Live Summary Shortcut (Mobile & Desktop) -->
+        <!-- Quick Live summary Shortcut (Active Shift) -->
         <button type="button" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 py-1 px-2"
-                id="topbarLiveSummaryBtn" onclick="if(typeof viewShiftSummary === 'function') viewShiftSummary();" title="View Live Shift Summary"
+                id="topbarLiveSummaryBtn" onclick="if(typeof viewShiftSummary === 'function') viewShiftSummary();" title="View Live summary (Active Shift)"
                 style="border-radius:8px;font-size:0.8rem;font-weight:700;">
             <i class="fa-solid fa-list-check"></i>
-            <span class="d-none d-sm-inline">Live Summary</span>
-            <span class="d-inline d-sm-none">Summary</span>
+            <span class="d-none d-sm-inline">Live summary</span>
+            <span class="d-inline d-sm-none">Live summary</span>
         </button>
         <?php endif; ?>
 
@@ -125,7 +125,7 @@ if ($__role === 'cashier') {
                 <?php if (isset($pageTitle) && in_array($pageTitle, ['Point of Sale', 'Stock Monitoring'])): ?>
                 <li id="headerLiveSummaryItem">
                     <a href="#" class="dropdown-item ss-dropdown-item py-2" onclick="if(typeof viewShiftSummary === 'function') viewShiftSummary(); return false;">
-                        <i class="fa-solid fa-list-check me-2" style="color:#0abf8a;width:16px;"></i>Live Shift Summary
+                        <i class="fa-solid fa-list-check me-2" style="color:#0abf8a;width:16px;"></i>Live summary
                     </a>
                 </li>
                 <?php if ($__role === 'cashier'): ?>

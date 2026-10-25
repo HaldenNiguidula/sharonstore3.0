@@ -393,13 +393,15 @@ function handleCompleteSale(array $body): never {
 
 // ============================================================
 // ACTION: daily_summary
-// Returns today's transaction count and total sales
+// Returns today's transaction count, total sales, and whole day overview
 // ============================================================
 function handleDailySummary(): never {
     $db   = getDB();
     $stmt = $db->prepare(
-        "SELECT COUNT(*)         AS transaction_count,
-                COALESCE(SUM(total_amount), 0) AS total_sales
+        "SELECT COUNT(*)                       AS transaction_count,
+                COALESCE(SUM(total_amount), 0)    AS total_sales,
+                COALESCE(SUM(amount_tendered), 0) AS total_tendered,
+                COALESCE(SUM(change_amount), 0)   AS total_change
          FROM   tbl_transactions
          WHERE  DATE(transaction_date) = CURDATE()
            AND  (status IS NULL OR status != 'voided')"
@@ -407,12 +409,25 @@ function handleDailySummary(): never {
     $stmt->execute();
     $row = $stmt->fetch();
 
+    $txnCount   = (int)$row['transaction_count'];
+    $totalSales = (float)$row['total_sales'];
+    $tendered   = (float)$row['total_tendered'];
+    $change     = (float)$row['total_change'];
+    $avgSale    = $txnCount > 0 ? ($totalSales / $txnCount) : 0.0;
+
     jsonOut([
-        'success'           => true,
-        'transaction_count' => (int)$row['transaction_count'],
-        'total_sales'       => (float)$row['total_sales'],
-        'total_sales_fmt'   => peso((float)$row['total_sales']),
-        'date'              => date('Y-m-d'),
+        'success'            => true,
+        'transaction_count'  => $txnCount,
+        'total_sales'        => $totalSales,
+        'total_sales_fmt'    => peso($totalSales),
+        'total_tendered'     => $tendered,
+        'total_tendered_fmt' => peso($tendered),
+        'total_change'       => $change,
+        'total_change_fmt'   => peso($change),
+        'avg_sale'           => $avgSale,
+        'avg_sale_fmt'       => peso($avgSale),
+        'date'               => date('Y-m-d'),
+        'date_fmt'           => date('F j, Y'),
     ]);
 }
 

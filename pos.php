@@ -933,8 +933,8 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                         </div>
                     </div>
                     <div class="d-flex gap-2 mt-3">
-                        <button class="btn btn-outline-secondary w-100 fw-bold" style="font-size: 0.85rem;" onclick="viewShiftSummary()">
-                            <i class="fa-solid fa-list-check me-2"></i>Live Summary
+                        <button class="btn btn-outline-secondary w-100 fw-bold" style="font-size: 0.85rem;" onclick="viewTodaySummary()">
+                            <i class="fa-solid fa-calendar-day me-2"></i>Today's Summary
                         </button>
                     </div>
                 </div>

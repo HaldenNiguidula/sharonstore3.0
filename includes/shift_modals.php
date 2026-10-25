@@ -90,35 +90,99 @@
     </div>
 </div>
 
-<!-- ══ LIVE SHIFT VIEW MODAL ═══════════════════════════════════ -->
+<!-- ══ LIVE SHIFT VIEW MODAL (Active Shift) ═════════════════════ -->
 <div class="modal fade" id="liveShiftModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
         <div class="modal-content border-0 shadow-lg text-start" style="border-radius: 16px; overflow: hidden; background: #ffffff;">
-            <div class="modal-header bg-light border-0 py-3 px-4">
-                <h5 class="modal-title fw-bold" style="color: #1e293b;"><i class="fa-solid fa-list-check text-primary me-2"></i>Live Shift Summary</h5>
+            <div class="modal-header bg-light border-0 py-3 px-4 justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="modal-title fw-bold mb-0" style="color: #1e293b;"><i class="fa-solid fa-list-check text-primary me-2"></i>Live summary</h5>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold" style="font-size:0.72rem;">Active Shift</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="liveShiftActiveContent">
+                    <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                        <span class="text-muted fw-bold">Cashier on Shift:</span>
+                        <span class="fw-bold text-dark" id="liveCashierName">--</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted fw-bold">Shift Started:</span>
+                        <span class="fw-bold" id="liveShiftStarted">--</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted fw-bold">Starting Cash:</span>
+                        <span class="fw-bold" id="liveStartingCash">₱0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted fw-bold">Shift Transactions:</span>
+                        <span class="fw-bold text-primary" id="liveTxnCount">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted fw-bold">Shift Total Sales:</span>
+                        <span class="fw-bold text-success" id="liveTotalSales">₱0.00</span>
+                    </div>
+                    <div class="alert alert-primary text-center mb-0 py-2" style="border-radius: 10px;">
+                        <span class="d-block text-muted fw-bold" style="font-size:0.8rem;">EXPECTED DRAWER CASH</span>
+                        <span class="fw-bold fs-3" id="liveExpectedCash">₱0.00</span>
+                    </div>
+                </div>
+                <div id="liveShiftEmptyContent" style="display:none;" class="text-center py-4">
+                    <i class="fa-solid fa-clock-rotate-left fa-3x text-muted opacity-50 mb-3 d-block"></i>
+                    <h6 class="fw-bold text-dark mb-1">No Active Shift</h6>
+                    <p class="text-muted small mb-0">There is currently no cashier shift open.<br>Shift transactions and drawer cash will be tracked once a shift begins.</p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light py-2 px-4 justify-content-end">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ TODAY'S SUMMARY MODAL (Whole Day Storewide) ════════════ -->
+<div class="modal fade" id="todaySummaryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content border-0 shadow-lg text-start" style="border-radius: 16px; overflow: hidden; background: #ffffff;">
+            <div class="modal-header bg-light border-0 py-3 px-4 justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="modal-title fw-bold mb-0" style="color: #1e293b;"><i class="fa-solid fa-calendar-day text-success me-2"></i>Today's Summary</h5>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold" style="font-size:0.72rem;">Whole Day</span>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-                    <span class="text-muted fw-bold">Shift Started:</span>
-                    <span class="fw-bold" id="liveShiftStarted">--</span>
+                    <span class="text-muted fw-bold">Date:</span>
+                    <span class="fw-bold text-dark" id="todaySummaryDate">--</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted fw-bold">Starting Cash:</span>
-                    <span class="fw-bold" id="liveStartingCash">₱0.00</span>
+                    <span class="text-muted fw-bold">Store Scope:</span>
+                    <span class="text-dark fw-bold">All Cashiers / Storewide</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted fw-bold">Total Transactions:</span>
-                    <span class="fw-bold text-primary" id="liveTxnCount">0</span>
+                    <span class="fw-bold text-primary" id="todaySummaryTxnCount">0</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted fw-bold">Average Sale:</span>
+                    <span class="fw-bold" id="todaySummaryAvgSale">₱0.00</span>
                 </div>
                 <div class="d-flex justify-content-between mb-3">
-                    <span class="text-muted fw-bold">Total Sales:</span>
-                    <span class="fw-bold text-success" id="liveTotalSales">₱0.00</span>
+                    <span class="text-muted fw-bold">Total Cash Received:</span>
+                    <span class="fw-bold text-dark" id="todaySummaryTendered">₱0.00</span>
                 </div>
-                <div class="alert alert-primary text-center mb-0 py-2" style="border-radius: 10px;">
-                    <span class="d-block text-muted fw-bold" style="font-size:0.8rem;">EXPECTED DRAWER CASH</span>
-                    <span class="fw-bold fs-3" id="liveExpectedCash">₱0.00</span>
+                <div class="alert text-center mb-0 py-3" style="border-radius: 12px; background:#e6faf4; border:1.5px solid #b2edd8;">
+                    <span class="d-block text-muted fw-bold mb-1" style="font-size:0.75rem; letter-spacing:0.5px;">TOTAL SALES TODAY</span>
+                    <span class="fw-bold fs-2 text-success" id="todaySummaryTotalSales">₱0.00</span>
                 </div>
+            </div>
+            <div class="modal-footer border-0 bg-light py-2 px-4 justify-content-between">
+                <a href="/sharonstore3.0/reports.php" class="btn btn-sm btn-outline-primary fw-bold">
+                    <i class="fa-solid fa-chart-line me-1"></i>View Full Reports
+                </a>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -160,7 +224,8 @@
         get start() { return window.getModal('startShiftModal'); },
         get end() { return window.getModal('endShiftModal'); },
         get summary() { return window.getModal('shiftSummaryModal'); },
-        get live() { return window.getModal('liveShiftModal'); }
+        get live() { return window.getModal('liveShiftModal'); },
+        get today() { return window.getModal('todaySummaryModal'); }
     };
 
     window.openStartShiftModal = function() {
@@ -387,36 +452,34 @@
         window.checkShiftStatus();
     });
 
+    // Live summary: Active Shift
     window.viewShiftSummary = async function() {
         try {
             const res = await fetch('/sharonstore3.0/api/shifts.php?action=summary');
             const json = await res.json();
 
-            if (json.success && json.data) {
-                const isStoreOverview = json.data.is_admin && !json.data.cashier_id;
-                const startedEl   = document.getElementById('liveShiftStarted');
-                const startCashEl = document.getElementById('liveStartingCash');
-                const txnCountEl  = document.getElementById('liveTxnCount');
-                const salesEl     = document.getElementById('liveTotalSales');
-                const expectedEl  = document.getElementById('liveExpectedCash');
+            const activeCont  = document.getElementById('liveShiftActiveContent');
+            const emptyCont   = document.getElementById('liveShiftEmptyContent');
+            const cashierEl   = document.getElementById('liveCashierName');
+            const startedEl   = document.getElementById('liveShiftStarted');
+            const startCashEl = document.getElementById('liveStartingCash');
+            const txnCountEl  = document.getElementById('liveTxnCount');
+            const salesEl     = document.getElementById('liveTotalSales');
+            const expectedEl  = document.getElementById('liveExpectedCash');
 
+            if (json.success && json.data && json.data.has_active_shift) {
+                if (activeCont) activeCont.style.display = '';
+                if (emptyCont)  emptyCont.style.display  = 'none';
+
+                if (cashierEl) cashierEl.textContent = json.data.cashier_name || 'Active Cashier';
                 if (startedEl) {
-                    if (isStoreOverview) {
-                        startedEl.textContent = "Today's Store Overview";
-                    } else if (json.data.cashier_name && json.data.is_admin) {
-                        const timeStr = json.data.start_time 
-                            ? new Date(json.data.start_time.replace(/-/g, '/')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                            : '--';
-                        startedEl.textContent = `${json.data.cashier_name} (since ${timeStr})`;
-                    } else {
-                        startedEl.textContent = json.data.start_time 
-                            ? new Date(json.data.start_time.replace(/-/g, '/')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                            : '--';
-                    }
+                    const timeStr = json.data.start_time 
+                        ? new Date(json.data.start_time.replace(/-/g, '/')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                        : '--';
+                    startedEl.textContent = timeStr;
                 }
-
                 if (startCashEl) {
-                    startCashEl.textContent = isStoreOverview ? 'N/A' : ('₱' + parseFloat(json.data.starting_cash || 0).toLocaleString('en-US', {minimumFractionDigits:2}));
+                    startCashEl.textContent = '₱' + parseFloat(json.data.starting_cash || 0).toLocaleString('en-US', {minimumFractionDigits:2});
                 }
                 if (txnCountEl) {
                     txnCountEl.textContent = json.data.txn_count || 0;
@@ -427,15 +490,56 @@
                 if (expectedEl) {
                     expectedEl.textContent = '₱' + parseFloat(json.data.expected_cash || 0).toLocaleString('en-US', {minimumFractionDigits:2});
                 }
-
-                const lm = window.shiftModals.live;
-                if (lm) lm.show();
             } else {
-                showToast(json.message || 'Unable to retrieve summary.', 'warning');
+                if (activeCont) activeCont.style.display = 'none';
+                if (emptyCont)  emptyCont.style.display  = '';
+            }
+
+            const lm = window.shiftModals ? window.shiftModals.live : null;
+            if (lm) {
+                lm.show();
+            } else {
+                const el = document.getElementById('liveShiftModal');
+                if (el && typeof bootstrap !== 'undefined') new bootstrap.Modal(el).show();
             }
         } catch (err) {
             console.error(err);
-            showToast('Error retrieving summary.', 'error');
+            showToast('Error retrieving live summary.', 'error');
+        }
+    };
+
+    // Today's summary: Whole Day Storewide
+    window.viewTodaySummary = async function() {
+        try {
+            const res = await fetch('/sharonstore3.0/api/transactions.php?action=daily_summary');
+            const json = await res.json();
+
+            if (json && json.success) {
+                const dateEl   = document.getElementById('todaySummaryDate');
+                const countEl  = document.getElementById('todaySummaryTxnCount');
+                const avgEl    = document.getElementById('todaySummaryAvgSale');
+                const tendEl   = document.getElementById('todaySummaryTendered');
+                const salesEl  = document.getElementById('todaySummaryTotalSales');
+
+                if (dateEl)  dateEl.textContent  = json.date_fmt || json.date || '--';
+                if (countEl) countEl.textContent = json.transaction_count || 0;
+                if (avgEl)   avgEl.textContent   = json.avg_sale_fmt || ('₱' + parseFloat(json.avg_sale || 0).toFixed(2));
+                if (tendEl)  tendEl.textContent  = json.total_tendered_fmt || ('₱' + parseFloat(json.total_tendered || 0).toFixed(2));
+                if (salesEl) salesEl.textContent = json.total_sales_fmt || ('₱' + parseFloat(json.total_sales || 0).toFixed(2));
+
+                const tm = window.shiftModals ? window.shiftModals.today : null;
+                if (tm) {
+                    tm.show();
+                } else {
+                    const el = document.getElementById('todaySummaryModal');
+                    if (el && typeof bootstrap !== 'undefined') new bootstrap.Modal(el).show();
+                }
+            } else {
+                showToast(json.message || 'Unable to retrieve today\'s summary.', 'warning');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error retrieving today\'s summary.', 'error');
         }
     };
 })();

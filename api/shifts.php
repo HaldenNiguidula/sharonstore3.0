@@ -108,83 +108,59 @@ if ($action === 'end') {
 }
 
 if ($action === 'summary') {
-    // Get current open shift
-    $stmt = $db->prepare("SELECT * FROM tbl_shifts WHERE cashier_id = ? AND status = 'open' ORDER BY shift_id DESC LIMIT 1");
-    $stmt->execute([$userId]);
-    $shift = $stmt->fetch();
+    // Live summary: active shift summary
+    $isAdminUser = (currentRole() === 'admin');
 
-    if (!$shift) {
-        if (currentRole() === 'admin') {
-            // Admin view: check if any shift is currently open, or summarize today's transactions
-            $stmt = $db->query("SELECT * FROM tbl_shifts WHERE status = 'open' ORDER BY shift_id DESC LIMIT 1");
-            $openShift = $stmt->fetch();
-            if ($openShift) {
-                $shiftId = $openShift['shift_id'];
-                $startingCash = (float)$openShift['starting_cash'];
-                $stmt = $db->prepare("SELECT COUNT(*) as txn_count, COALESCE(SUM(total_amount), 0) as total_sales FROM tbl_transactions WHERE shift_id = ? AND (status IS NULL OR status != 'voided')");
-                $stmt->execute([$shiftId]);
-                $totals = $stmt->fetch();
-                $totalSales = (float)$totals['total_sales'];
-                $txnCount = (int)$totals['txn_count'];
-                $expectedCash = $startingCash + $totalSales;
-
-                $cNameStmt = $db->prepare("SELECT full_name FROM tbl_users WHERE user_id = ?");
-                $cNameStmt->execute([$openShift['cashier_id']]);
-                $cashierName = $cNameStmt->fetchColumn() ?: 'Cashier';
-
-                respond(true, 'Live open shift summary retrieved.', [
-                    'start_time' => $openShift['start_time'],
-                    'starting_cash' => $startingCash,
-                    'txn_count' => $txnCount,
-                    'total_sales' => $totalSales,
-                    'expected_cash' => $expectedCash,
-                    'is_admin' => true,
-                    'cashier_id' => $openShift['cashier_id'],
-                    'cashier_name' => $cashierName
-                ]);
-            } else {
-                // No open shift, summarize today's transactions store-wide
-                $today = date('Y-m-d');
-                $stmt = $db->prepare("SELECT COUNT(*) as txn_count, COALESCE(SUM(total_amount), 0) as total_sales FROM tbl_transactions WHERE DATE(transaction_date) = ? AND (status IS NULL OR status != 'voided')");
-                $stmt->execute([$today]);
-                $totals = $stmt->fetch();
-                $totalSales = (float)$totals['total_sales'];
-                $txnCount = (int)$totals['txn_count'];
-
-                respond(true, "Today's storewide overview.", [
-                    'start_time' => date('Y-m-d 00:00:00'),
-                    'starting_cash' => 0.00,
-                    'txn_count' => $txnCount,
-                    'total_sales' => $totalSales,
-                    'expected_cash' => $totalSales,
-                    'is_admin' => true,
-                    'cashier_id' => null
-                ]);
-            }
-        }
-
-        respond(false, 'No open shift found.');
+    if ($isAdminUser) {
+        // Admin view: check if any cashier shift is currently open
+        $stmt = $db->query("SELECT s.*, u.full_name AS cashier_name 
+                            FROM tbl_shifts s 
+                            JOIN tbl_users u ON u.user_id = s.cashier_id 
+                            WHERE s.status = 'open' 
+                            ORDER BY s.shift_id DESC LIMIT 1");
+        $activeShift = $stmt->fetch();
+    } else {
+        // Cashier view: check cashier's own open shift
+        $stmt = $db->prepare("SELECT s.*, u.full_name AS cashier_name 
+                              FROM tbl_shifts s 
+                              JOIN tbl_users u ON u.user_id = s.cashier_id 
+                              WHERE s.cashier_id = ? AND s.status = 'open' 
+                              ORDER BY s.shift_id DESC LIMIT 1");
+        $stmt->execute([$userId]);
+        $activeShift = $stmt->fetch();
     }
 
-    $shiftId = $shift['shift_id'];
-    $startingCash = (float)$shift['starting_cash'];
+    if (!$activeShift) {
+        respond(true, 'No active shift is currently open.', [
+            'has_active_shift' => false,
+            'is_admin'         => $isAdminUser
+        ]);
+    }
 
-    $stmt = $db->prepare("SELECT COUNT(*) as txn_count, COALESCE(SUM(total_amount), 0) as total_sales FROM tbl_transactions WHERE shift_id = ? AND (status IS NULL OR status != 'voided')");
-    $stmt->execute([$shiftId]);
-    $totals = $stmt->fetch();
+    $shiftId = (int)$activeShift['shift_id'];
+    $startingCash = (float)$activeShift['starting_cash'];
+
+    $stmtTxn = $db->prepare("SELECT COUNT(*) as txn_count, COALESCE(SUM(total_amount), 0) as total_sales 
+                             FROM tbl_transactions 
+                             WHERE shift_id = ? AND (status IS NULL OR status != 'voided')");
+    $stmtTxn->execute([$shiftId]);
+    $totals = $stmtTxn->fetch();
 
     $totalSales = (float)$totals['total_sales'];
     $txnCount = (int)$totals['txn_count'];
     $expectedCash = $startingCash + $totalSales;
 
-    respond(true, 'Shift summary retrieved.', [
-        'start_time' => $shift['start_time'],
-        'starting_cash' => $startingCash,
-        'txn_count' => $txnCount,
-        'total_sales' => $totalSales,
-        'expected_cash' => $expectedCash,
-        'is_admin' => false,
-        'cashier_id' => $shift['cashier_id']
+    respond(true, 'Active shift summary retrieved.', [
+        'has_active_shift' => true,
+        'shift_id'         => $shiftId,
+        'start_time'       => $activeShift['start_time'],
+        'starting_cash'    => $startingCash,
+        'txn_count'        => $txnCount,
+        'total_sales'      => $totalSales,
+        'expected_cash'    => $expectedCash,
+        'is_admin'         => $isAdminUser,
+        'cashier_id'       => $activeShift['cashier_id'],
+        'cashier_name'     => $activeShift['cashier_name'] ?: 'Cashier'
     ]);
 }
 
