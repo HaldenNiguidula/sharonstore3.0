@@ -187,7 +187,7 @@ async function loadUsers() {
                     <button class="btn btn-sm btn-outline-primary" onclick="openEdit(${u.user_id})"><i class="fa-solid fa-pen"></i></button>
                     ${!isMe ? `<button class="btn btn-sm ${u.is_active ? 'btn-secondary' : 'btn-success text-white'}" onclick="toggleActive(${u.user_id})" title="${u.is_active?'Deactivate':'Approve & Activate'}">
                         <i class="fa-solid ${u.is_active?'fa-user-slash':'fa-user-check'}"></i>${u.is_active ? '' : ' <span class="d-none d-md-inline small fw-bold">Approve</span>'}</button>
-                    <button class="btn btn-sm btn-danger" onclick="openDelete(${u.user_id},'${esc(u.full_name)}')"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    <button class="btn btn-sm btn-danger" onclick="openDelete(${u.user_id},${jsArg(u.full_name)})"><i class="fa-solid fa-trash"></i></button>` : ''}
                 </div>
             </td>
         </tr>`;
@@ -198,6 +198,8 @@ async function loadUsers() {
 document.getElementById('btnAddUser').addEventListener('click', () => {
     document.getElementById('userModalTitle').innerHTML = '<i class="fa-solid fa-user-plus me-2 text-emerald"></i>Add Account';
     document.getElementById('userForm').reset();
+    document.getElementById('fRole').disabled = false;
+    document.getElementById('fIsActive').disabled = false;
     document.getElementById('fUserId').value = '';
     document.getElementById('pwdLabel').innerHTML = 'Password <span class="text-danger">*</span>';
     document.getElementById('activeToggleRow').style.display = 'none';
@@ -215,9 +217,11 @@ async function openEdit(id) {
     document.getElementById('fFullName').value   = u.full_name;
     document.getElementById('fUsername').value   = u.username;
     document.getElementById('fRole').value       = u.role;
+    document.getElementById('fRole').disabled = Number(u.user_id) === CURRENT_USER_ID;
     document.getElementById('fPassword').value   = '';
     document.getElementById('fConfirm').value    = '';
     document.getElementById('fIsActive').checked = !!parseInt(u.is_active);
+    document.getElementById('fIsActive').disabled = Number(u.user_id) === CURRENT_USER_ID;
     document.getElementById('pwdLabel').innerHTML = 'New Password <small class="text-muted">(leave blank to keep)</small>';
     document.getElementById('activeToggleRow').style.display = '';
     document.getElementById('userFormError').classList.add('d-none');

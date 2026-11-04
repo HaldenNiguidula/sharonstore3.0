@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/audit.php';
+require_once __DIR__ . '/../includes/supplier_categories.php';
 
 requireAdmin();
 header('Content-Type: application/json');
@@ -17,9 +18,22 @@ $action = trim($_POST['action'] ?? $_GET['action'] ?? '');
 $db = getDB();
 $userId = currentUserId();
 
+function postedSupplierCategories(PDO $db): ?string {
+    try {
+        $known = $db->query('SELECT category_name FROM tbl_categories')->fetchAll(PDO::FETCH_COLUMN);
+        return supplierCategoriesForSave($_POST, $known);
+    } catch (InvalidArgumentException $e) {
+        respond(false, $e->getMessage());
+    }
+}
+
 if ($action === 'list') {
     $stmt = $db->query("SELECT * FROM tbl_suppliers WHERE is_active = 1 ORDER BY company_name ASC");
-    respond(true, 'OK', $stmt->fetchAll());
+    $suppliers = $stmt->fetchAll();
+    $known = $db->query('SELECT category_name FROM tbl_categories')->fetchAll(PDO::FETCH_COLUMN);
+    foreach ($suppliers as &$supplier) $supplier['categories'] = supplierCategories($supplier['category'] ?? '', $known);
+    unset($supplier);
+    respond(true, 'OK', $suppliers);
 }
 
 if ($action === 'add') {
@@ -28,14 +42,7 @@ if ($action === 'add') {
     $phone    = trim($_POST['phone'] ?? '');
     $address  = trim($_POST['address'] ?? '');
 
-    $category = trim($_POST['category'] ?? '');
-    if (isset($_POST['categories'])) {
-        $catsRaw = is_array($_POST['categories']) ? $_POST['categories'] : [$_POST['categories']];
-        $clean = array_filter(array_map('trim', $catsRaw), fn($c) => $c !== '');
-        if (!empty($clean)) {
-            $category = implode(', ', array_unique($clean));
-        }
-    }
+    $category = postedSupplierCategories($db);
 
     if ($company === '') respond(false, 'Company name is required.');
 
@@ -56,14 +63,7 @@ if ($action === 'update') {
     $phone    = trim($_POST['phone'] ?? '');
     $address  = trim($_POST['address'] ?? '');
 
-    $category = trim($_POST['category'] ?? '');
-    if (isset($_POST['categories'])) {
-        $catsRaw = is_array($_POST['categories']) ? $_POST['categories'] : [$_POST['categories']];
-        $clean = array_filter(array_map('trim', $catsRaw), fn($c) => $c !== '');
-        if (!empty($clean)) {
-            $category = implode(', ', array_unique($clean));
-        }
-    }
+    $category = postedSupplierCategories($db);
 
     if ($id <= 0) respond(false, 'Invalid supplier ID.');
     if ($company === '') respond(false, 'Company name is required.');

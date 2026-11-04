@@ -98,6 +98,14 @@ try {
     $after = glob(sys_get_temp_dir() . '/sharonstore_backups/sharonstore_auto_vercel_*') ?: [];
     expectBackup($before === $after && !$db->inTransaction(), 'Failed export left a partial file, published an incomplete backup or leaked a transaction');
     echo "PASS mid-export table failure rolls back and removes partial file\n";
+
+    $beforeManual = glob($folder . '/*');
+    try { generateBackupFile($folder . '/', $failing); throw new LogicException('Manual backup hid a table read failure'); }
+    catch (RuntimeException $e) { expectBackup($e->getMessage() === 'simulated table read failure', 'Wrong manual backup failure'); }
+    expectBackup($beforeManual === glob($folder . '/*') && !$db->inTransaction(), 'Failed manual backup left a file, pruned an existing backup, or leaked a transaction');
+    $manual = generateBackupFile($folder . '/', $db, 'sharonstore_safety_pre_restore_');
+    expectBackup(str_contains(file_get_contents($manual), 'INSERT INTO `sample_rows`') && is_file($folder . '/manual.sql'), 'Safety snapshot lost data or pruned the restore target');
+    echo "PASS manual export rejects incomplete backups; complete safety snapshot preserves restore files\n";
 } finally {
     foreach (glob($folder . '/*') ?: [] as $file) unlink($file);
     rmdir($folder);

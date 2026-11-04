@@ -88,87 +88,65 @@ function pruneServerBackups(string $backupDir, int $max = 5): void {
  * Works seamlessly across both local MySQL and remote Cloud MySQL (TiDB Cloud, etc.)
  * without requiring any external mysqldump binary.
  */
-function generateBackupFile(string $backupDir, PDO $db, string $prefix = 'sharonstore_backup_'): string {
-    $filename = $prefix . date('Y-m-d_H-i-s') . '.sql';
-    $filepath = $backupDir . $filename;
-
-    $fp = @fopen($filepath, 'w');
-    if (!$fp) {
-        throw new \RuntimeException("Unable to open backup file for writing: " . $filepath);
-    }
-
-    fwrite($fp, "-- Sharon Store Database Backup\n");
-    fwrite($fp, "-- Generated: " . date('Y-m-d H:i:s') . "\n");
-    fwrite($fp, "-- Database: " . DB_NAME . "\n");
-    fwrite($fp, "-- Host: " . DB_HOST . "\n");
-    fwrite($fp, "-- =============================================\n\n");
-    fwrite($fp, "SET FOREIGN_KEY_CHECKS = 0;\n");
-    fwrite($fp, "SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n\n");
-
+/** Export a consistent SQL snapshot; publish only after every table and disk write succeeds. */
+function writeDatabaseBackup(PDO $db, string $directory, string $filename): string {
+    if ($db->inTransaction()) throw new LogicException('Cannot export inside an existing transaction.');
+    $dir = rtrim($directory, '/\\');
+    if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) throw new RuntimeException('Cannot create backup directory.');
+    $stamp = (new DateTimeImmutable('now', new DateTimeZone('Asia/Singapore')))->format('Y-m-d_H-i-s');
+    $target = $dir . '/' . basename($filename);
+    $partial = $target . '.partial';
+    $file = fopen($partial, 'xb');
+    if (!$file) throw new RuntimeException('Cannot create backup file.');
+    $write = static function (string $text) use ($file): void {
+        $remaining = strlen($text); $offset = 0;
+        while ($remaining > 0) {
+            $written = fwrite($file, substr($text, $offset));
+            if ($written === false || $written === 0) throw new RuntimeException('Backup disk write failed.');
+            $offset += $written; $remaining -= $written;
+        }
+    };
     try {
+        $db->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        $db->beginTransaction();
         $tables = $db->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")->fetchAll(PDO::FETCH_NUM);
-    } catch (\Throwable $e) {
-        $tables = [];
-    }
-    if (empty($tables)) {
-        $tables = $db->query("SHOW TABLES")->fetchAll(PDO::FETCH_NUM);
-    }
-
-    foreach ($tables as $tRow) {
-        $table = $tRow[0];
-
-        // Fetch CREATE TABLE DDL
-        try {
-            $createRow = $db->query("SHOW CREATE TABLE `{$table}`")->fetch(PDO::FETCH_NUM);
-        } catch (\Throwable $e) {
-            continue;
-        }
-
-        if ($createRow && isset($createRow[1])) {
-            fwrite($fp, "DROP TABLE IF EXISTS `{$table}`;\n");
-            fwrite($fp, $createRow[1] . ";\n\n");
-        }
-
-        // Do not dump ephemeral sessions data to keep dumps clean and safe
-        if ($table === 'tbl_sessions') {
-            continue;
-        }
-
-        // Stream table rows in batches
-        try {
-            $stmt = $db->query("SELECT * FROM `{$table}`");
-            $chunk = [];
-            $cols = null;
-
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                if ($cols === null) {
-                    $cols = '`' . implode('`,`', array_keys($row)) . '`';
-                }
-                $escaped = array_map(function($v) use ($db) {
-                    if ($v === null) return 'NULL';
-                    return $db->quote((string)$v);
-                }, $row);
-                $chunk[] = '(' . implode(',', $escaped) . ')';
-
-                if (count($chunk) >= 100) {
-                    fwrite($fp, "INSERT INTO `{$table}` ({$cols}) VALUES\n" . implode(",\n", $chunk) . ";\n\n");
-                    $chunk = [];
-                }
+        if (!$tables) throw new RuntimeException('No database tables found to back up.');
+        $write("-- Sharon Store automatic backup\n-- Generated: {$stamp} Asia/Singapore\nSET FOREIGN_KEY_CHECKS = 0;\nSET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n\n");
+        foreach ($tables as $row) {
+            $table = (string)$row[0];
+            if ($table === 'tbl_sessions') continue;
+            $quoted = '`' . str_replace('`', '``', $table) . '`';
+            $ddl = $db->query('SHOW CREATE TABLE ' . $quoted)->fetch(PDO::FETCH_NUM);
+            if (!$ddl || empty($ddl[1])) throw new RuntimeException('Missing table definition: ' . $table);
+            $write("DROP TABLE IF EXISTS {$quoted};\n{$ddl[1]};\n");
+            $stmt = $db->query('SELECT * FROM ' . $quoted);
+            while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $columns = implode(',', array_map(static fn($name) => '`' . str_replace('`', '``', $name) . '`', array_keys($data)));
+                $values = implode(',', array_map(static fn($v) => $v === null ? 'NULL' : $db->quote((string)$v), $data));
+                $write("INSERT INTO {$quoted} ({$columns}) VALUES ({$values});\n");
             }
-            if (!empty($chunk)) {
-                fwrite($fp, "INSERT INTO `{$table}` ({$cols}) VALUES\n" . implode(",\n", $chunk) . ";\n\n");
-            }
-        } catch (\Throwable $e) {
-            // Continue with other tables if one fails
+            $write("\n");
         }
+        $write("SET FOREIGN_KEY_CHECKS = 1;\n");
+        $db->commit();
+        if (!fflush($file)) throw new RuntimeException('Could not flush backup to disk.');
+        fclose($file); $file = null;
+        if (!rename($partial, $target)) throw new RuntimeException('Could not publish backup file.');
+        return $target;
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) $db->rollBack();
+        if (is_resource($file)) fclose($file);
+        if (is_file($partial)) unlink($partial);
+        throw $e;
     }
+}
 
-    fwrite($fp, "SET FOREIGN_KEY_CHECKS = 1;\n");
-    fclose($fp);
-
-    pruneServerBackups($backupDir, 5);
-
-    return $filepath;
+function generateBackupFile(string $backupDir, PDO $db, string $prefix = 'sharonstore_backup_'): string {
+    $filename = $prefix . date('Y-m-d_H-i-s') . '_' . bin2hex(random_bytes(4)) . '.sql';
+    $path = writeDatabaseBackup($db, $backupDir, $filename);
+    // A safety snapshot must not prune the file selected for restoration.
+    if (!str_starts_with($prefix, 'sharonstore_safety_')) pruneServerBackups($backupDir, 5);
+    return $path;
 }
 
 // ── Restore Helper ────────────────────────────────────────────

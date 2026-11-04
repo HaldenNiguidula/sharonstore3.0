@@ -31,10 +31,13 @@ function showToast(message, type = 'info', duration = 4000) {
 function escHtml(s) {
     const d = document.createElement('div');
     d.textContent = String(s ?? '');
-    return d.innerHTML;
+    return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 // Alias used across pages
 function esc(s) { return escHtml(s); }
+
+// A JSON value escaped for use inside an HTML event-handler attribute.
+function jsArg(value) { return escHtml(JSON.stringify(value ?? null)); }
 
 /* ── Number Formatting ──────────────────────────────────────── */
 function formatPeso(v) {

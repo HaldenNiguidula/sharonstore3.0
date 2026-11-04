@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/audit.php';
+require_once __DIR__ . '/../includes/inventory_stock.php';
 
 header('Content-Type: application/json');
 
@@ -385,29 +386,21 @@ if ($action === 'adjust_stock') {
     $errors = [];
     if (!$itemId)  $errors[] = 'item_id is required.';
     if (!in_array($adjType, ['add','subtract','set'], true)) $errors[] = 'adjust_type must be add, subtract, or set.';
-    if ($adjQty === null || $adjQty < 0) $errors[] = 'Valid adjustment quantity is required.';
+    if ($adjQty === null || !is_finite($adjQty) || $adjQty < 0) $errors[] = 'Valid adjustment quantity is required.';
     if ($errors) respond(false, implode(' ', $errors), null, 422);
 
-    $chk = $db->prepare("SELECT item_name, stock_qty FROM tbl_inventory WHERE item_id = :id AND is_active = 1");
-    $chk->execute([':id' => $itemId]);
-    $item = $chk->fetch();
-    if (!$item) respond(false, 'Item not found.', null, 404);
-
-    if ($adjType === 'add') {
-        $newQty = (float)$item['stock_qty'] + $adjQty;
-    } elseif ($adjType === 'subtract') {
-        $newQty = max(0, (float)$item['stock_qty'] - $adjQty);
-    } else {
-        $newQty = $adjQty;
+    try {
+        $item = adjustInventoryStock($db, $itemId, $adjType, $adjQty);
+        $newQty = $item['new_qty'];
+    } catch (Throwable $e) {
+        error_log('Stock adjustment failed: ' . $e->getMessage());
+        respond(false, $e->getCode() === 404 ? 'Item not found.' : 'Could not adjust stock. Please refresh and try again.', null, $e->getCode() === 404 ? 404 : 500);
     }
-
-    $db->prepare("UPDATE tbl_inventory SET stock_qty = :qty WHERE item_id = :id")
-       ->execute([':qty' => $newQty, ':id' => $itemId]);
 
     $reasonText = $reason !== '' ? " | Reason: {$reason}" : '';
     logAudit(
         $userId, 'ADJUST_STOCK', 'Inventory',
-        "Stock adjusted for #{$itemId} {$item['item_name']}: {$item['stock_qty']} → {$newQty} ({$adjType} {$adjQty}){$reasonText}"
+        "Stock adjusted for #{$itemId} {$item['item_name']}: {$item['previous_qty']} → {$newQty} ({$adjType} {$adjQty}){$reasonText}"
     );
     respond(true, 'Stock adjusted successfully.', ['new_qty' => $newQty]);
 }

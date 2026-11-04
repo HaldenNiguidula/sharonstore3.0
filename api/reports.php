@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/sales_reports.php';
 
 requireAdmin();
 header('Content-Type: application/json');
@@ -18,55 +19,9 @@ $db = getDB();
 if ($action === 'sales_report') {
     $type = $_GET['type'] ?? 'daily';
     
-    $query = "";
-    if ($type === 'daily') {
-        // Safe with ONLY_FULL_GROUP_BY: all selected expressions are in GROUP BY
-        $query = "
-            SELECT DATE(transaction_date) AS raw_date,
-                   DATE_FORMAT(transaction_date, '%b %d, %Y') AS label,
-                   COALESCE(SUM(total_amount), 0) AS total,
-                   COUNT(*) AS tx_count
-            FROM tbl_transactions
-            WHERE (status IS NULL OR status != 'voided')
-            GROUP BY DATE(transaction_date), DATE_FORMAT(transaction_date, '%b %d, %Y')
-            ORDER BY DATE(transaction_date) DESC
-            LIMIT 30
-        ";
-    } elseif ($type === 'weekly') {
-        $query = "
-            SELECT 
-                YEAR(transaction_date) AS yr,
-                WEEK(transaction_date, 1) AS wk,
-                CONCAT(YEAR(transaction_date), '-', LPAD(WEEK(transaction_date, 1), 2, '0')) AS raw_date, 
-                CONCAT('Week ', WEEK(transaction_date, 1), ', ', YEAR(transaction_date)) AS label, 
-                COALESCE(SUM(total_amount), 0) AS total, 
-                COUNT(*) AS tx_count
-            FROM tbl_transactions
-            WHERE (status IS NULL OR status != 'voided')
-            GROUP BY YEAR(transaction_date), WEEK(transaction_date, 1), raw_date, label
-            ORDER BY yr DESC, wk DESC
-            LIMIT 12
-        ";
-    } elseif ($type === 'monthly') {
-        $query = "
-            SELECT 
-                DATE_FORMAT(transaction_date, '%Y-%m') AS raw_date,
-                DATE_FORMAT(transaction_date, '%M %Y') AS label,
-                COALESCE(SUM(total_amount), 0) AS total,
-                COUNT(*) AS tx_count
-            FROM tbl_transactions
-            WHERE (status IS NULL OR status != 'voided')
-            GROUP BY raw_date, label, YEAR(transaction_date), MONTH(transaction_date)
-            ORDER BY raw_date DESC
-            LIMIT 12
-        ";
-    } else {
-        respond(false, 'Invalid report type.');
-    }
-
+    if (!in_array($type, ['daily', 'weekly', 'monthly'], true)) respond(false, 'Invalid report type.');
     try {
-        $stmt = $db->query($query);
-        $rawRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rawRows = salesReportRows($db, $type);
 
         // Reverse so chart displays chronologically (oldest to newest)
         $chronological = array_reverse($rawRows);
@@ -129,9 +84,8 @@ if ($action === 'item_breakdown') {
         // raw_date format: YYYY-WW
         $parts = explode('-', $raw_date);
         if (count($parts) !== 2) respond(false, 'Invalid date format.');
-        $where .= " AND YEAR(t.transaction_date) = ? AND WEEK(t.transaction_date, 1) = ?";
-        $params[] = (int)$parts[0];
-        $params[] = (int)$parts[1];
+        $where .= " AND DATE_FORMAT(t.transaction_date, '%x-%v') = ?";
+        $params[] = sprintf('%04d-%02d', (int)$parts[0], (int)$parts[1]);
     } elseif ($type === 'monthly') {
         // raw_date format: YYYY-MM
         $parts = explode('-', $raw_date);

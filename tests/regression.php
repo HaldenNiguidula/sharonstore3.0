@@ -36,14 +36,16 @@ if (($argv[1] ?? '') === '--worker') {
     $fixture = new PDO(getenv('TEST_DB_DSN') ?: 'mysql:host=127.0.0.1;dbname=sharonstore_db;charset=utf8mb4', 'root', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, PDO::ATTR_EMULATE_PREPARES => false]);
     foreach ([
         'tbl_users (user_id INT PRIMARY KEY, username VARCHAR(80), full_name VARCHAR(80), role VARCHAR(20), is_active INT)',
-        'tbl_inventory (item_id INT PRIMARY KEY, item_name VARCHAR(80), stock_qty DECIMAL(12,2), price DECIMAL(12,2), unit VARCHAR(20), is_active INT)',
+        'tbl_inventory (item_id INT PRIMARY KEY, item_name VARCHAR(80), stock_qty DECIMAL(12,2), price DECIMAL(12,2), unit VARCHAR(20), is_active INT, expiry_date DATE NULL)',
         'tbl_shifts (shift_id INT PRIMARY KEY, cashier_id INT, status VARCHAR(20))',
         'tbl_transactions (transaction_id INT AUTO_INCREMENT PRIMARY KEY, transaction_code VARCHAR(80) UNIQUE, user_id INT, shift_id INT NULL, total_amount DECIMAL(12,2), amount_tendered DECIMAL(12,2), change_amount DECIMAL(12,2), transaction_date DATETIME, status VARCHAR(20) DEFAULT \'completed\')',
         'tbl_transaction_details (detail_id INT AUTO_INCREMENT PRIMARY KEY, transaction_id INT, item_id INT, quantity DECIMAL(12,2), unit_price DECIMAL(12,2), subtotal DECIMAL(12,2))',
         'tbl_sessions (id VARCHAR(128) PRIMARY KEY, data MEDIUMTEXT, last_activity INT)',
     ] as $table) $fixture->exec('CREATE TEMPORARY TABLE ' . $table . ' ENGINE=InnoDB');
     $fixture->exec("INSERT INTO tbl_users VALUES (1,'cashier','Test Cashier','cashier',1)");
-    $fixture->exec("INSERT INTO tbl_inventory VALUES (1,'Test Item',5,10,'pieces',1)");
+    $fixture->exec("INSERT INTO tbl_inventory VALUES (1,'Test Item',5,10,'pieces',1,NULL)");
+    if ($scenario === 'expired') $fixture->exec("UPDATE tbl_inventory SET expiry_date = DATE_SUB(CURDATE(), INTERVAL 1 DAY)");
+    if ($scenario === 'expires_today') $fixture->exec("UPDATE tbl_inventory SET expiry_date = CURDATE()");
     if ($scenario !== 'no_shift') $fixture->exec("INSERT INTO tbl_shifts VALUES (1,1,'open')");
     if (str_starts_with($scenario, 'auth_')) {
         $_SESSION = ['user_id' => 1, 'username' => 'cashier', 'role' => 'admin'];
@@ -102,7 +104,7 @@ check(array_column($history, 'qty_sold') === [30.0,0.0,30.0], 'Forecast must inc
 check(array_sum(array_column($history, 'qty_sold')) / 3 === 20.0, 'Wrong SMA');
 check(array_column(forecastHistory([], 3, new DateTimeImmutable('2026-01-31')), 'month_key') === ['2025-11','2025-12','2026-01'], 'Year boundary failed');
 echo "PASS forecast gaps, empty history, month/year boundaries\n";
-foreach (['price','duplicate','insufficient','no_shift','void','auth_disabled','auth_demoted','auth_missing','restore'] as $scenario) {
+foreach (['price','duplicate','insufficient','expired','expires_today','no_shift','void','auth_disabled','auth_demoted','auth_missing','restore'] as $scenario) {
     $process = proc_open([PHP_BINARY, __FILE__, '--worker', $scenario], [1=>['pipe','w'], 2=>['pipe','w']], $pipes);
     $output = stream_get_contents($pipes[1]); $errors = stream_get_contents($pipes[2]);
     fclose($pipes[1]); fclose($pipes[2]);
@@ -110,7 +112,7 @@ foreach (['price','duplicate','insufficient','no_shift','void','auth_disabled','
     if ($scenario === 'price') {
         $data = json_decode($output, true, 512, JSON_THROW_ON_ERROR);
         check($data['success'] && (float)$data['grand_total'] === 10.0 && (float)$data['items'][0]['unit_price'] === 10.0, 'Browser price was accepted');
-    } elseif (in_array($scenario, ['duplicate','insufficient','no_shift','void'], true)) {
+    } elseif (in_array($scenario, ['duplicate','insufficient','expired','expires_today','no_shift','void'], true)) {
         check(json_decode($output, true, 512, JSON_THROW_ON_ERROR)['success'] === false, "$scenario should be rejected");
     } else check($output === 'PASS', "$scenario failed: $output");
     echo "PASS $scenario\n";

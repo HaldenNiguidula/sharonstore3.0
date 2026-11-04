@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/auth_check.php';
 requireAdmin(); // RESTRICTED TO ADMIN/OWNER
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/supplier_categories.php';
 
 $pageTitle = 'Suppliers';
 $db = getDB();
@@ -11,12 +12,16 @@ $suppliers = $stmt->fetchAll();
 // Fetch product categories from tbl_categories
 $catStmt = $db->query("SELECT category_name FROM tbl_categories ORDER BY category_name ASC");
 $storeCategories = $catStmt->fetchAll(PDO::FETCH_COLUMN);
+foreach ($suppliers as &$supplier) {
+    $supplier['categories'] = supplierCategories($supplier['category'] ?? '', $storeCategories);
+}
+unset($supplier);
 
 // Extract all categories used across active suppliers (supporting multiple per supplier)
 $allSupplierCategories = [];
 foreach ($suppliers as $sup) {
     if (!empty($sup['category'])) {
-        $parts = array_map('trim', explode(',', $sup['category']));
+        $parts = $sup['categories'];
         foreach ($parts as $p) {
             if ($p !== '') $allSupplierCategories[] = $p;
         }
@@ -198,7 +203,7 @@ sort($allCategories, SORT_NATURAL | SORT_FLAG_CASE);
                             <?php foreach ($allCategories as $cat): 
                                 $catCount = 0;
                                 foreach ($suppliers as $sup) {
-                                    $cList = array_map('trim', explode(',', $sup['category'] ?? ''));
+                                    $cList = $sup['categories'];
                                     if (in_array(strtolower($cat), array_map('strtolower', $cList))) {
                                         $catCount++;
                                     }
@@ -236,7 +241,7 @@ sort($allCategories, SORT_NATURAL | SORT_FLAG_CASE);
                 <?php foreach ($suppliers as $s): 
                     $cleanPhone = preg_replace('/[^0-9]/', '', $s['phone'] ?? '');
                     $jData = htmlspecialchars(json_encode($s), ENT_QUOTES, 'UTF-8');
-                    $catList = array_values(array_filter(array_map('trim', explode(',', $s['category'] ?? ''))));
+                    $catList = $s['categories'];
                 ?>
                 <div class="col-12 col-md-6 col-xl-4 supplier-card-col"
                      data-company="<?= htmlspecialchars(strtolower($s['company_name'] ?? '')) ?>"
@@ -512,7 +517,7 @@ function openEditModal(data) {
     // Handle multiple categories population
     const container = document.getElementById('categoryRowsContainer');
     container.innerHTML = '';
-    const cats = (data.category || '').split(',').map(s => s.trim()).filter(Boolean);
+    const cats = data.categories || [];
     if (cats.length > 0) {
         cats.forEach(c => addCategoryRow(c));
     } else {
@@ -547,7 +552,8 @@ document.getElementById('supplierForm').addEventListener('submit', async (e) => 
         }
     });
 
-    formData.set('category', selectedCategories.join(', '));
+    formData.delete('category');
+    selectedCategories.forEach(category => formData.append('categories[]', category));
 
     try {
         const res = await fetch('/sharonstore3.0/api/suppliers.php', {

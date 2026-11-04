@@ -17,6 +17,8 @@ function _toast(msg, type) {
 
 var cart      = [];
 var allItems  = [];
+var visibleItems = [];
+var searchRequest = 0;
 var receiptM  = null;
 var srchTimer = null;
 var VAT_RATE  = 12 / 112;
@@ -75,7 +77,13 @@ function loadAllItems() {
     }
     fetch('/sharonstore3.0/api/transactions.php?action=search_items&limit=200', { headers: {'Accept':'application/json'} })
     .then(function (r) { if (r.status === 401) throw new Error('session'); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function (j) { if (!j.success) throw new Error(j.message || 'API error'); allItems = j.items || []; renderGrid(allItems); })
+    .then(function (j) {
+        if (!j.success) throw new Error(j.message || 'API error');
+        allItems = j.items || [];
+        var query = document.getElementById('itemSearchInput').value.trim();
+        if (query) searchItems(query.toLowerCase(), ++searchRequest);
+        else renderGrid(allItems);
+    })
     .catch(function (err) {
         var msg = err.message === 'session'
             ? 'Session expired. <a href="/sharonstore3.0/index.php" style="color:#0abf8a;font-weight:700;">Log in again</a>.'
@@ -85,6 +93,7 @@ function loadAllItems() {
 }
 
 function renderGrid(items) {
+    visibleItems = items || [];
     var g = document.getElementById('itemGrid');
     if (!g) return;
     activePosRowIdx = -1;
@@ -96,9 +105,12 @@ function renderGrid(items) {
     var html = '';
     for (var i = 0; i < items.length; i++) {
         var item  = items[i];
-        var oos   = parseFloat(item.stock_qty) <= 0;
+        var expired = Boolean(item.is_expired);
+        var oos   = parseFloat(item.stock_qty) <= 0 || expired;
         var price = parseFloat(item.price).toFixed(2);
-        var stock = oos
+        var stock = expired
+            ? '<span class="badge bg-danger-subtle text-danger">Expired</span>'
+            : oos
             ? '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.7rem;">Out of stock</span>'
             : '<span class="badge bg-light text-dark border" style="font-size:0.75rem;">' + parseFloat(item.stock_qty) + ' ' + esc(item.unit) + '</span>';
         var click = oos ? '' : ' onclick="addById(' + item.item_id + ')"';
@@ -116,19 +128,37 @@ function renderGrid(items) {
 
 function addById(itemId) {
     var id = Number(itemId), item = null;
-    for (var i = 0; i < allItems.length; i++) { if (Number(allItems[i].item_id) === id) { item = allItems[i]; break; } }
+    for (var i = 0; i < visibleItems.length; i++) { if (Number(visibleItems[i].item_id) === id) { item = visibleItems[i]; break; } }
     if (!item)                           { _toast('Item not found.', 'error'); return; }
+    if (item.is_expired) { _toast(item.item_name + ' is expired and cannot be sold.', 'warning'); return; }
     if (parseFloat(item.stock_qty) <= 0) { _toast(item.item_name + ' is out of stock.', 'warning'); return; }
     addToCart(item);
 }
 window.addById = addById;
 
 function clearSearch() {
+    clearTimeout(srchTimer);
+    searchRequest++;
     var si = document.getElementById('itemSearchInput');
     if (si) { si.value = ''; si.focus(); }
     renderGrid(allItems);
 }
 window.clearSearch = clearSearch;
+
+function searchItems(q, request) {
+    if (request !== searchRequest) return;
+    if (!q) { renderGrid(allItems); return; }
+    var local = allItems.filter(function (item) {
+        return item.item_name.toLowerCase().indexOf(q) >= 0
+            || (item.barcode || '').toLowerCase().indexOf(q) >= 0
+            || (item.category_name || '').toLowerCase().indexOf(q) >= 0;
+    });
+    renderGrid(local);
+    fetch('/sharonstore3.0/api/transactions.php?action=search_items&q=' + encodeURIComponent(q), { headers: {'Accept':'application/json'} })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) { if (j && j.success && request === searchRequest) renderGrid(j.items); })
+    .catch(function () {});
+}
 
 function bindEvents() {
     var scanEl = document.getElementById('scannerInput');
@@ -167,20 +197,11 @@ function bindEvents() {
     if (searchInp) {
         searchInp.addEventListener('input', function () {
             clearTimeout(srchTimer);
+            var request = ++searchRequest;
             activePosRowIdx = -1;
             var q = this.value.trim().toLowerCase();
             srchTimer = setTimeout(function () {
-                if (!q) { renderGrid(allItems); return; }
-                var local = allItems.filter(function (i) {
-                    return i.item_name.toLowerCase().indexOf(q) >= 0
-                        || (i.barcode || '').toLowerCase().indexOf(q) >= 0
-                        || i.category_name.toLowerCase().indexOf(q) >= 0;
-                });
-                renderGrid(local);
-                fetch('/sharonstore3.0/api/transactions.php?action=search_items&q=' + encodeURIComponent(q), { headers: {'Accept':'application/json'} })
-                .then(function (r) { return r.ok ? r.json() : null; })
-                .then(function (j) { if (j && j.success) renderGrid(j.items); })
-                .catch(function () {});
+                searchItems(q, request);
             }, 180);
         });
 

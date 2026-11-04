@@ -57,53 +57,8 @@ function runScheduledBackup(PDO $db, string $source, ?callable $exporter = null,
 /** Publish only complete, consistent exports; never prune existing manual/safety backups. */
 function generateScheduledBackupFile(PDO $db, string $source): string {
     $dir = $source === 'vercel' ? sys_get_temp_dir() . '/sharonstore_backups' : rtrim(getBackupDir(), '/\\');
-    if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) throw new RuntimeException('Cannot create backup directory.');
     $stamp = (new DateTimeImmutable('now', new DateTimeZone('Asia/Singapore')))->format('Y-m-d_H-i-s');
-    $target = $dir . '/sharonstore_auto_' . $source . '_' . $stamp . '_' . bin2hex(random_bytes(4)) . '.sql';
-    $partial = $target . '.partial';
-    $file = fopen($partial, 'xb');
-    if (!$file) throw new RuntimeException('Cannot create daily backup file.');
-    $write = static function (string $text) use ($file): void {
-        $remaining = strlen($text); $offset = 0;
-        while ($remaining > 0) {
-            $written = fwrite($file, substr($text, $offset));
-            if ($written === false || $written === 0) throw new RuntimeException('Daily backup disk write failed.');
-            $offset += $written; $remaining -= $written;
-        }
-    };
-    try {
-        $db->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
-        $db->beginTransaction();
-        $tables = $db->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")->fetchAll(PDO::FETCH_NUM);
-        if (!$tables) throw new RuntimeException('No database tables found to back up.');
-        $write("-- Sharon Store automatic daily backup\n-- Generated: {$stamp} Asia/Singapore\nSET FOREIGN_KEY_CHECKS = 0;\nSET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n\n");
-        foreach ($tables as $row) {
-            $table = (string)$row[0];
-            if ($table === 'tbl_sessions') continue;
-            $quoted = '`' . str_replace('`', '``', $table) . '`';
-            $ddl = $db->query('SHOW CREATE TABLE ' . $quoted)->fetch(PDO::FETCH_NUM);
-            if (!$ddl || empty($ddl[1])) throw new RuntimeException('Missing table definition: ' . $table);
-            $write("DROP TABLE IF EXISTS {$quoted};\n{$ddl[1]};\n");
-            $stmt = $db->query('SELECT * FROM ' . $quoted);
-            while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $columns = implode(',', array_map(static fn($name) => '`' . str_replace('`', '``', $name) . '`', array_keys($data)));
-                $values = implode(',', array_map(static fn($v) => $v === null ? 'NULL' : $db->quote((string)$v), $data));
-                $write("INSERT INTO {$quoted} ({$columns}) VALUES ({$values});\n");
-            }
-            $write("\n");
-        }
-        $write("SET FOREIGN_KEY_CHECKS = 1;\n");
-        $db->commit();
-        if (!fflush($file)) throw new RuntimeException('Could not flush daily backup to disk.');
-        fclose($file); $file = null;
-        if (!rename($partial, $target)) throw new RuntimeException('Could not publish daily backup file.');
-        return $target;
-    } catch (Throwable $e) {
-        if ($db->inTransaction()) $db->rollBack();
-        if (is_resource($file)) fclose($file);
-        if (is_file($partial)) unlink($partial);
-        throw $e;
-    }
+    return writeDatabaseBackup($db, $dir, 'sharonstore_auto_' . $source . '_' . $stamp . '_' . bin2hex(random_bytes(4)) . '.sql');
 }
 
 function pruneScheduledBackups(string $directory): void {

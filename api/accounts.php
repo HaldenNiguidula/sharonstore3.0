@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/audit.php';
+require_once __DIR__ . '/../includes/account_access.php';
 
 requireAdmin();
 header('Content-Type: application/json');
@@ -93,13 +94,24 @@ if ($action === 'update') {
     }
     if ($errors) respond(false, implode(' ', $errors), null);
 
-    if ($newPwd !== '') {
-        $hash = password_hash($newPwd, PASSWORD_BCRYPT, ['cost' => 12]);
-        $db->prepare("UPDATE tbl_users SET username=:u, full_name=:n, role=:r, is_active=:a, password=:p WHERE user_id=:id")
-           ->execute([':u'=>$username,':n'=>$fullName,':r'=>$role,':a'=>$isActive,':p'=>$hash,':id'=>$targetId]);
-    } else {
-        $db->prepare("UPDATE tbl_users SET username=:u, full_name=:n, role=:r, is_active=:a WHERE user_id=:id")
-           ->execute([':u'=>$username,':n'=>$fullName,':r'=>$role,':a'=>$isActive,':id'=>$targetId]);
+    try {
+        $hash = $newPwd !== '' ? password_hash($newPwd, PASSWORD_BCRYPT, ['cost' => 12]) : null;
+        $db->beginTransaction();
+        $locked = lockAccountForChange($db, $userId, $targetId);
+        guardAccountAccess($locked, $userId, $role, $isActive);
+        if ($hash !== null) {
+            $db->prepare("UPDATE tbl_users SET username=:u, full_name=:n, role=:r, is_active=:a, password=:p WHERE user_id=:id")
+               ->execute([':u'=>$username,':n'=>$fullName,':r'=>$role,':a'=>$isActive,':p'=>$hash,':id'=>$targetId]);
+        } else {
+            $db->prepare("UPDATE tbl_users SET username=:u, full_name=:n, role=:r, is_active=:a WHERE user_id=:id")
+               ->execute([':u'=>$username,':n'=>$fullName,':r'=>$role,':a'=>$isActive,':id'=>$targetId]);
+        }
+        $db->commit();
+        if ($targetId === $userId) $_SESSION['username'] = $username;
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) $db->rollBack();
+        error_log('Account update failed: ' . $e->getMessage());
+        respond(false, $e instanceof PDOException ? 'Could not update this account. Please refresh and try again.' : $e->getMessage());
     }
 
     logAudit($userId, 'UPDATE_USER', 'Accounts', "Updated user #{$targetId}: {$username}");
@@ -112,13 +124,19 @@ if ($action === 'toggle_active') {
     if (!$targetId) respond(false, 'user_id required.');
     if ($targetId === $userId) respond(false, 'Cannot deactivate your own account.');
 
-    $chk = $db->prepare("SELECT is_active, username FROM tbl_users WHERE user_id = :id");
-    $chk->execute([':id'=>$targetId]);
-    $u = $chk->fetch();
-    if (!$u) respond(false, 'User not found.');
-
-    $newStatus = $u['is_active'] ? 0 : 1;
-    $db->prepare("UPDATE tbl_users SET is_active=:a WHERE user_id=:id")->execute([':a'=>$newStatus, ':id'=>$targetId]);
+    try {
+        $db->beginTransaction();
+        $locked = lockAccountForChange($db, $userId, $targetId);
+        $u = $locked['user'];
+        $newStatus = (int)$u['is_active'] === 1 ? 0 : 1;
+        guardAccountAccess($locked, $userId, $u['role'], $newStatus);
+        $db->prepare("UPDATE tbl_users SET is_active=:a WHERE user_id=:id")->execute([':a'=>$newStatus, ':id'=>$targetId]);
+        $db->commit();
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) $db->rollBack();
+        error_log('Account status change failed: ' . $e->getMessage());
+        respond(false, $e instanceof PDOException ? 'Could not change account status. Please refresh and try again.' : $e->getMessage());
+    }
 
     $action_str = $newStatus ? 'ACTIVATE_USER' : 'DEACTIVATE_USER';
     logAudit($userId, $action_str, 'Accounts', "Set user #{$targetId} ({$u['username']}) active={$newStatus}");
@@ -138,6 +156,8 @@ if ($action === 'delete') {
 
     try {
         $db->beginTransaction();
+        $locked = lockAccountForChange($db, $userId, $targetId);
+        guardAccountAccess($locked, $userId, $locked['user']['role'], (int)$locked['user']['is_active'], true);
 
         // Find a valid administrator ID from tbl_users to reassign records to (if any exist)
         $realAdminId = null;

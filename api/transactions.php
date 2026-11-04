@@ -67,7 +67,8 @@ function handleBarcodeLookup(): never {
     $db   = getDB();
     $stmt = $db->prepare(
         "SELECT i.item_id, i.barcode, i.item_name, i.unit, i.price, i.stock_qty,
-                i.low_stock_threshold, c.category_name
+                i.low_stock_threshold, c.category_name,
+                (i.expiry_date IS NOT NULL AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE()) AS is_expired
          FROM   tbl_inventory i
          JOIN   tbl_categories c ON c.category_id = i.category_id
          WHERE  i.barcode = :barcode AND i.is_active = 1
@@ -81,6 +82,9 @@ function handleBarcodeLookup(): never {
     }
 
     $stock = (float)$item['stock_qty'];
+    if (!empty($item['is_expired'])) {
+        jsonOut(['success' => false, 'message' => 'Expired item cannot be sold: ' . $item['item_name']], 409);
+    }
     if ($stock <= 0) {
         jsonOut([
             'success' => false,
@@ -120,7 +124,8 @@ function handleSearchItems(): never {
         // Return all in-stock items (first $limit)
         $stmt = $db->prepare(
             "SELECT i.item_id, i.barcode, i.item_name, i.unit, i.price,
-                    i.stock_qty, i.low_stock_threshold, c.category_name
+                    i.stock_qty, i.low_stock_threshold, c.category_name,
+                    (i.expiry_date IS NOT NULL AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE()) AS is_expired
              FROM   tbl_inventory i
              JOIN   tbl_categories c ON c.category_id = i.category_id
              WHERE  i.is_active = 1 AND i.stock_qty > 0
@@ -133,7 +138,8 @@ function handleSearchItems(): never {
         $like = '%' . $q . '%';
         $stmt = $db->prepare(
             "SELECT i.item_id, i.barcode, i.item_name, i.unit, i.price,
-                    i.stock_qty, i.low_stock_threshold, c.category_name
+                    i.stock_qty, i.low_stock_threshold, c.category_name,
+                    (i.expiry_date IS NOT NULL AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE()) AS is_expired
              FROM   tbl_inventory i
              JOIN   tbl_categories c ON c.category_id = i.category_id
              WHERE  i.is_active = 1
@@ -154,6 +160,7 @@ function handleSearchItems(): never {
         $i['price']     = (float)$i['price'];
         $i['stock_qty'] = (float)$i['stock_qty'];
         $i['in_stock']  = $i['stock_qty'] > 0;
+        $i['is_expired'] = !empty($i['is_expired']);
     }
     unset($i);
 
@@ -198,7 +205,8 @@ function handleCompleteSale(array $body): never {
 
             // Fresh stock check
             $chk = $db->prepare(
-                "SELECT item_id, item_name, stock_qty, price, unit
+                "SELECT item_id, item_name, stock_qty, price, unit,
+                        (expiry_date IS NOT NULL AND expiry_date != '0000-00-00' AND expiry_date <= CURDATE()) AS is_expired
                  FROM   tbl_inventory
                  WHERE  item_id = :id AND is_active = 1
                  LIMIT  1 FOR UPDATE"
@@ -208,6 +216,9 @@ function handleCompleteSale(array $body): never {
 
             if (!$row) {
                 throw new RuntimeException("Item ID {$itemId} not found or inactive.", 404);
+            }
+            if (!empty($row['is_expired'])) {
+                throw new RuntimeException("Expired item cannot be sold: '{$row['item_name']}'.", 409);
             }
             if ((float)$row['stock_qty'] < $qty) {
                 throw new RuntimeException("Insufficient stock for '{$row['item_name']}'.", 409);

@@ -55,7 +55,15 @@ if ($action === 'download') {
         }
         $filename = $requestedFile;
     } else {
-        $filepath = generateBackupFile($backupDir, $db);
+        try {
+            $filepath = generateBackupFile($backupDir, $db);
+        } catch (Throwable $e) {
+            error_log('Manual backup failed: ' . $e->getMessage());
+            http_response_code(500);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Backup failed. No incomplete backup was saved. Please try again.']);
+            exit;
+        }
         $filename = basename($filepath);
 
         logAudit($userId, 'DATABASE_BACKUP', 'Backup', "Database backup created: {$filename}");
@@ -212,6 +220,9 @@ if ($action === 'restore') {
         $safetyFilename = basename($safetyPath);
     } catch (\Throwable $e) {
         error_log("Safety snapshot error: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Restore cancelled because a complete safety backup could not be created. Please try again.']);
+        exit;
     }
 
     // 2. Perform restoration
@@ -293,7 +304,14 @@ if ($action === 'upload_gdrive') {
         $filename = $fn;
     } else {
         // Generating a fresh backup and uploading
-        $filepath = generateBackupFile($backupDir, $db);
+        try {
+            $filepath = generateBackupFile($backupDir, $db);
+        } catch (Throwable $e) {
+            error_log('Cloud backup export failed: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Backup failed. No incomplete backup was uploaded. Please try again.']);
+            exit;
+        }
         $filename = basename($filepath);
         logAudit($userId, 'DATABASE_BACKUP', 'Backup', "Database backup created: {$filename}");
     }

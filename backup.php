@@ -751,17 +751,34 @@ async function uploadSpecificToGdrive(filename) {
 }
 
 // ── Local Download Backup ─────────────────────────────────────
-document.getElementById('btnBackup').addEventListener('click', function () {
+document.getElementById('btnBackup').addEventListener('click', async function () {
     this.disabled = true;
     this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting SQL...';
     showToast('Generating database backup...', 'info');
-    window.location.href = '/sharonstore3.0/api/backup.php?action=download';
-    setTimeout(() => {
+    try {
+        const response = await fetch('/sharonstore3.0/api/backup.php?action=download');
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || 'Backup failed. Please try again.');
+        }
+        const blob = await response.blob();
+        const filename = /filename="([^"]+)"/.exec(response.headers.get('Content-Disposition') || '')?.[1] || 'sharonstore_backup.sql';
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast('Backup created. Download started.', 'success');
+        loadBackups();
+    } catch (error) {
+        showToast(error.message || 'Could not download the backup. Please try again.', 'error');
+    } finally {
         this.disabled = false;
         this.innerHTML = '<i class="fa-solid fa-download me-2"></i>Download Backup to PC';
-        showToast('Backup downloaded successfully!', 'success');
-        loadBackups();
-    }, 2500);
+    }
 });
 
 // ── Delete Backup via Modal ───────────────────────────────────

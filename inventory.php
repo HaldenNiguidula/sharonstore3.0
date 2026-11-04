@@ -562,9 +562,9 @@ async function loadItems(page = 1) {
                 <td data-sort-value="${item.stock_status}" class="text-center" style="width:125px;min-width:125px;">${sBadge}</td>
                 <td>
                     <div class="d-flex gap-1">
-                        <button class="btn btn-sm btn-secondary" title="Adjust Stock" onclick="openAdjust(${item.item_id},'${esc(item.item_name)}')"><i class="fa-solid fa-sliders"></i></button>
+                        <button class="btn btn-sm btn-secondary" title="Adjust Stock" onclick="openAdjust(${item.item_id},${jsArg(item.item_name)})"><i class="fa-solid fa-sliders"></i></button>
                         <button class="btn btn-sm btn-outline-primary" title="Edit" onclick="openEdit(${item.item_id})"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-danger" title="Delete" onclick="openDelete(${item.item_id},'${esc(item.item_name)}')"><i class="fa-solid fa-trash"></i></button>
+                        <button class="btn btn-sm btn-danger" title="Delete" onclick="openDelete(${item.item_id},${jsArg(item.item_name)})"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </td>
             </tr>`;
@@ -814,13 +814,6 @@ async function lookupBarcode() {
     }
 }
 
-// Escape HTML for safe display
-function escHtml(str) {
-    const d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
-}
-
 // Trigger lookup on Enter key (USB barcode scanners send Enter after barcode)
 document.getElementById('fBarcode').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
@@ -958,7 +951,7 @@ async function loadCatTable() {
         const isUncategorized = c.category_name === 'Uncategorized';
         const delBtn = isUncategorized
             ? `<button class="btn btn-sm" style="opacity:.35;" disabled title="Cannot delete Uncategorized"><i class="fa-solid fa-trash"></i></button>`
-            : `<button class="btn btn-sm btn-outline-danger" onclick="promptDeleteCat(${c.category_id},'${esc(c.category_name)}',${total},${stocked})" title="Delete"><i class="fa-solid fa-trash"></i></button>`;
+            : `<button class="btn btn-sm btn-outline-danger" onclick="promptDeleteCat(${c.category_id},${jsArg(c.category_name)},${total},${stocked})" title="Delete"><i class="fa-solid fa-trash"></i></button>`;
 
         return `<tr ${rowClass}>
             <td><strong>${esc(c.category_name)}</strong></td>
