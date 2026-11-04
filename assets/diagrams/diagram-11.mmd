@@ -1,0 +1,36 @@
+sequenceDiagram
+    autonumber
+    actor Cashier
+    participant UI as POS Interface
+    participant API as transactions.php
+    participant DB as MySQL-compatible Database
+    Cashier->>UI: Scan barcode OR search for item
+    UI->>API: GET barcode_lookup OR search_items
+    API->>DB: Read active product
+    DB-->>API: Name, stored price and available quantity
+    API-->>UI: Product data or lookup error
+    Cashier->>UI: Enter cash and confirm checkout
+    UI->>API: POST complete_sale with cart and payment
+    Note over API: Require current active account, refresh role
+    API->>DB: BEGIN, lock inventory rows FOR UPDATE
+    DB-->>API: Authoritative prices and current stock
+    API->>API: Validate quantities, calculate total from stored prices
+    API->>DB: Lock and read active shift
+    Note over API: Cashier requires own open shift, admin may sell without one
+    alt Invalid item, stock, payment or cashier shift
+        API->>DB: ROLLBACK
+        API-->>UI: Validation error, no sale saved
+    else Valid checkout
+        API->>DB: Insert transaction and line items
+        API->>DB: Conditional stock deductions
+        alt Database failure or stock deduction rejected
+            API->>DB: ROLLBACK
+            API-->>UI: Failure, no partial sale
+        else All writes succeed
+            API->>DB: COMMIT
+            API->>DB: Write audit log after commit
+            API-->>UI: Receipt, transaction code and change
+            UI->>Cashier: Show receipt, open browser print dialog
+        end
+    end
+

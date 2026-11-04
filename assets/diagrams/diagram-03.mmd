@@ -1,0 +1,21 @@
+flowchart LR
+    C["Cashier"]
+    A["Admin / Owner"]
+    G["Google Drive via Apps Script<br/>Optional external backup service"]
+    S(("0.0 Sharon Store<br/>POS, Inventory and Forecasting"))
+    C -->|Credentials and account registration| S
+    C -->|Manager PIN, starting float and counted cash| S
+    C -->|Barcode or search, cart and cash tendered| S
+    S -->|Access or errors, account activation pending| C
+    S -->|Item details, stock alerts, receipt and change| C
+    S -->|Live shift totals and closing reconciliation| C
+    A -->|Credentials and account administration| S
+    A -->|Products, categories, stock adjustments and suppliers| S
+    A -->|Report filters and forecast lookback| S
+    A -->|Backup, restore and cloud settings| S
+    A -->|Admin checkout cart and cash tendered| S
+    S -->|Access, receipts, analytics and forecasts| A
+    S -->|Manager PIN, shifts, audit and backup files| A
+    S -->|SQL backup upload| G
+    G -->|Upload status| S
+

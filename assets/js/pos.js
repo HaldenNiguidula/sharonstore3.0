@@ -470,7 +470,7 @@ function showReceipt(data) {
         + '<div style="text-align:center;' + SM + 'margin-top:5px;line-height:1.3;">'
         +   '<div>Thank you for your purchase!</div>'
         +   '<div style="margin-top:2px;">Please come again.</div>'
-        +   '<div style="margin-top:3px;font-size:8pt;font-weight:900;">** OFFICIAL RECEIPT **</div>'
+        +   '<div style="margin-top:3px;font-size:8pt;font-weight:900;white-space:normal;">This is not a official receipt</div>'
         + '</div>'
         + '<div style="height:8mm;"></div>';
 

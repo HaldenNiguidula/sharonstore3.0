@@ -609,6 +609,23 @@ body {
   overflow-x: auto;
 }
 
+/* Keep the tab strip above the diagram rather than beside its wide SVG. */
+#diagram-7 .diagram-canvas-container {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+#diagram-7 .flowchart-tabs {
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.flowchart-view.active,
+.mermaid-wrapper {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .flowchart-tab-btn {
   background: var(--bg-surface);
   border: 1.5px solid var(--border-color);

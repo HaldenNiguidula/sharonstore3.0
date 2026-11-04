@@ -56,7 +56,7 @@
             <a href="#summary" class="nav-item-link active" onclick="setActiveNav(this)">
                 <i class="fa-solid fa-compass"></i>
                 <span>Executive Summary</span>
-                <span class="nav-badge nav-badge-app">11 Diag</span>
+                <span class="nav-badge nav-badge-app">11 Sections</span>
             </a>
 
             <div class="nav-section-title">Capstone Research Artifacts</div>
@@ -114,8 +114,8 @@
             </a>
             <a href="#diagram-11" class="nav-item-link" onclick="setActiveNav(this)">
                 <i class="fa-solid fa-sitemap"></i>
-                <span>11. Component Hierarchy</span>
-                <span class="nav-badge nav-badge-sys">MVC</span>
+                <span>11. Component Dependencies</span>
+                <span class="nav-badge nav-badge-sys">Modules</span>
             </a>
         </nav>
     </aside>
@@ -160,10 +160,10 @@
                 <div class="hero-stats-grid">
                     <div class="stat-item">
                         <span class="stat-number">11</span>
-                        <span class="stat-label">Complete System Diagrams</span>
+                        <span class="stat-label">Sections with 13 Diagrams</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number">10</span>
+                        <span class="stat-number">11</span>
                         <span class="stat-label">Relational Database Tables</span>
                     </div>
                     <div class="stat-item">
@@ -211,62 +211,22 @@
                 
                 <div class="diagram-source-drawer" id="src-diag-1">
                     <pre><code>flowchart LR
-    subgraph INPUT ["1. INPUT PHASE"]
-        direction TB
-        I1["<b>Problem Statement of Locale:</b><br/>• Inefficiencies of manual logbook tracking<br/>• Financial losses from overstocking & spoilage<br/>• Frequent stockouts of daily staple FMCG<br/>• Absence of predictive forecasting & BI"]
-        I2["<b>Knowledge Requirements:</b><br/>• Interviews with 2 Managing Owners & 8 Staff<br/>• Physical logbook documentary audit<br/>• Related Literature & Studies (2021-2026)"]
-        I3["<b>Software Requirements:</b><br/>• OS: Windows 10/11 Local Server<br/>• Stack: XAMPP (Apache, PHP 8.2, MySQL)<br/>• UI: HTML5, CSS3, JS, Bootstrap 5.3, Font Awesome"]
-        I4["<b>Hardware Requirements:</b><br/>• Laptop/Desktop Terminal (Core i3/i5, 8GB+ RAM)<br/>• USB/Bluetooth Handheld Barcode Scanner<br/>• Document Printer for financial reports"]
-        I5["<b>Sustainable Development Goals:</b><br/>• SDG 8: Decent Work & Economic Growth<br/>• SDG 9: Industry, Innovation & Infrastructure<br/>• SDG 12: Responsible Consumption & Production"]
-    end
-
-    subgraph PROCESS ["2. PROCESS PHASE"]
-        direction TB
-        P1["<b>Agile Development Methodology:</b><br/>Iterative 2-4 week sprint cycles"]
-        P2["<b>Planning & Needs Analysis:</b><br/>Translate market bottlenecks to functional user stories"]
-        P3["<b>System Design:</b><br/>ERD, DFD Level 0/1, Use Case, UI/UX Mockups"]
-        P4["<b>System Construction (Implementation):</b><br/>• POS Module with barcode scanner integration<br/>• Real-time Inventory & Expiration Tracking<br/>• Sales Forecasting Engine (SMA & WMA formulas)<br/>• Business Intelligence Dashboard"]
-        P5["<b>Multi-Tier Testing & Evaluation:</b><br/>• Unit Testing & Database Integrity Checks<br/>• User Acceptance Testing (UAT) at Pampang Locale<br/>• ISO/IEC 25010 Quality Model (Alpha/Beta, N=138)"]
-    end
-
-    subgraph OUTPUT ["3. OUTPUT PHASE"]
-        direction TB
-        O1["<b>A Fully Functional Web-Based Inventory and<br/>Sales Forecasting System with Business<br/>Intelligence Dashboard for Sharon Store</b><br/><br/><i>Key Operational Impact:</i><br/>✓ Sub-second barcode checkout processing<br/>✓ Automated real-time stock deduction<br/>✓ Data-driven wholesale purchasing guidance<br/>✓ Prevention of retail spoilage & expired losses<br/>✓ Tamper-evident user audit trail & database backups"]
-    end
-
-    INPUT ==> PROCESS ==> OUTPUT</code></pre>
+    I[&quot;INPUT&lt;br/&gt;&lt;br/&gt;Retail workflow requirements&lt;br/&gt;Historical sales and stock records&lt;br/&gt;Store interviews and literature&lt;br/&gt;PHP, browser and MySQL-compatible DB&lt;br/&gt;Local or cloud deployment&lt;br/&gt;Barcode scanner and browser printing&quot;]
+    P[&quot;PROCESS&lt;br/&gt;&lt;br/&gt;Agile requirements and design&lt;br/&gt;POS, shifts and inventory development&lt;br/&gt;SMA / WMA and dashboard development&lt;br/&gt;Functional and integration testing&lt;br/&gt;Evaluation: 52 retail participants&lt;br/&gt;Technical review: 3 IT experts&quot;]
+    O[&quot;OUTPUT&lt;br/&gt;&lt;br/&gt;Integrated Business Intelligence for&lt;br/&gt;Sales Forecasting and Inventory Management&lt;br/&gt;&lt;br/&gt;Recorded sales and stock updates&lt;br/&gt;Forecasts and restocking recommendations&lt;br/&gt;Cash reconciliation, audit and SQL backups&quot;]
+    I --&gt; P --&gt; O</code></pre>
                 </div>
 
                 <div class="diagram-canvas-container">
                     <div class="mermaid-wrapper">
                         <div class="mermaid">
 flowchart LR
-    subgraph INPUT ["1. INPUT PHASE"]
-        direction TB
-        I1["<b>Problem Statement of Locale:</b><br/>• Manual logbook recording errors<br/>• Stockouts & product spoilage losses<br/>• Lack of predictive sales analytics"]
-        I2["<b>Knowledge & Requirements:</b><br/>• Interviews with 2 Owners & 8 Staff<br/>• Historical transaction data audit<br/>• Literature & Studies (2021-2026)"]
-        I3["<b>Technical Resources:</b><br/>• XAMPP Apache, PHP 8.2, MariaDB<br/>• Bootstrap 5.3, Vanilla JS ES6<br/>• USB/Bluetooth Barcode Scanner"]
-        I4["<b>United Nations SDGs:</b><br/>• SDG 8 (Economic Growth)<br/>• SDG 9 (Enterprise Innovation)<br/>• SDG 12 (Waste Reduction)"]
-    end
+    I["INPUT&lt;br/&gt;&lt;br/&gt;Retail workflow requirements&lt;br/&gt;Historical sales and stock records&lt;br/&gt;Store interviews and literature&lt;br/&gt;PHP, browser and MySQL-compatible DB&lt;br/&gt;Local or cloud deployment&lt;br/&gt;Barcode scanner and browser printing"]
+    P["PROCESS&lt;br/&gt;&lt;br/&gt;Agile requirements and design&lt;br/&gt;POS, shifts and inventory development&lt;br/&gt;SMA / WMA and dashboard development&lt;br/&gt;Functional and integration testing&lt;br/&gt;Evaluation: 52 retail participants&lt;br/&gt;Technical review: 3 IT experts"]
+    O["OUTPUT&lt;br/&gt;&lt;br/&gt;Integrated Business Intelligence for&lt;br/&gt;Sales Forecasting and Inventory Management&lt;br/&gt;&lt;br/&gt;Recorded sales and stock updates&lt;br/&gt;Forecasts and restocking recommendations&lt;br/&gt;Cash reconciliation, audit and SQL backups"]
+    I --&gt; P --&gt; O
 
-    subgraph PROCESS ["2. PROCESS PHASE"]
-        direction TB
-        P1["<b>Agile Development Methodology:</b><br/>Iterative sprints & continuous feedback"]
-        P2["<b>System Design & Architecture:</b><br/>DFD L0/L1, ERD, Flowcharts, Wireframes"]
-        P3["<b>System Construction:</b><br/>• POS & Barcode Deductions<br/>• SMA & WMA Forecasting Engine<br/>• Real-Time BI Visualizations"]
-        P4["<b>System Evaluation (ISO/IEC 25010):</b><br/>• Alpha Testing (3 IT Experts)<br/>• Beta Testing (10 Staff + 125 Customers)"]
-    end
-
-    subgraph OUTPUT ["3. OUTPUT PHASE"]
-        direction TB
-        O1["<b>Web-Based Inventory & Sales Forecasting<br/>System for Sharon Store</b><br/><br/>✓ Automated barcode POS checkout<br/>✓ Real-time active inventory sync<br/>✓ Predictive restocking recommendations<br/>✓ Executive Business Intelligence charts<br/>✓ Secure shift drawer control & audit trail"]
-    end
-
-    INPUT ==> PROCESS ==> OUTPUT
-    style INPUT fill:#f0fdf4,stroke:#10b981,stroke-width:2px,color:#064e3b
-    style PROCESS fill:#eff6ff,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a
-    style OUTPUT fill:#faf5ff,stroke:#8b5cf6,stroke-width:2px,color:#4c1d95
-                        </div>
+</div>
                     </div>
                 </div>
 
@@ -275,16 +235,16 @@ flowchart LR
                         <div class="spec-block">
                             <h4 class="spec-block-title"><i class="fa-solid fa-circle-check"></i> Inputs & Framework Foundations</h4>
                             <ul class="spec-list">
-                                <li><strong>Research Design:</strong> Descriptive Research Design with Purposive and Convenient sampling.</li>
-                                <li><strong>Population Sample:</strong> N = 180 weekly customers evaluated via Slovin's Formula ($e=0.05 \implies n=125$ customers), plus 2 Owners, 8 Staff, and 3 IT Experts (Total: 138 respondents).</li>
+                                <li><strong>Research Design:</strong> Descriptive research with convenience sampling for retail participants and purposive sampling for IT experts, as stated in the current paper.</li>
+                                <li><strong>Evaluation Sample:</strong> 52 retail participants and 3 IT experts; 55 respondents in total. The current paper does not use Slovin's formula.</li>
                                 <li><strong>SDG Alignment:</strong> Direct contribution to UN SDG 9 (Technology Upgrade for MSMEs) and SDG 12 (Reduction of retail spoilage and food waste).</li>
                             </ul>
                         </div>
                         <div class="spec-block">
                             <h4 class="spec-block-title"><i class="fa-solid fa-bullseye"></i> Operational Deliverables & Scope</h4>
                             <ul class="spec-list">
-                                <li><strong>Included:</strong> Barcode scanning, automated stock deductions, moving average sales demand forecasting, shift cash float tracking, audit trail, mysqldump backups.</li>
-                                <li><strong>Explicitly Excluded:</strong> BIR tax generation, employee payroll computation, online customer e-commerce/delivery, proprietary cash drawer solenoids or receipt printers.</li>
+                                <li><strong>Included:</strong> Barcode scanning or search, atomic stock deductions, moving-average forecasts, shift cash reconciliation, audit trail, PHP/PDO SQL backup and restore, and optional Google Drive upload.</li>
+                                <li><strong>Explicitly Excluded:</strong> BIR tax filing, payroll, online customer commerce/delivery and direct proprietary cash-drawer or printer control. Receipt printing uses the browser print dialog.</li>
                             </ul>
                         </div>
                     </div>
@@ -315,31 +275,38 @@ flowchart LR
                 </div>
                 
                 <div class="diagram-source-drawer" id="src-diag-2">
-                    <pre><code>flowchart TD
-    S1["<b>1. Requirements & Needs Analysis</b><br/>• Structured interviews with 2 owners & 8 cashiers<br/>• Logbook documentary analysis<br/>• Definition of FMCG stockout & spoilage pain points"]
-    S2["<b>2. System & Database Design</b><br/>• Normalization of MySQL tables (tbl_inventory, tbl_transactions)<br/>• DFD Level 0 Context & Level 1 Subsystems<br/>• Crow's Foot ERD & User Interface Wireframes"]
-    S3["<b>3. System Construction (Development)</b><br/>• Front-end: Bootstrap 5.3 + Vanilla JS<br/>• Back-end: PHP 8.2 PDO & Barcode HID reader<br/>• Forecasting Engine (SMA & WMA algorithms)<br/>• Business Intelligence Dashboard charts"]
-    S4["<b>4. Multi-Tier Testing</b><br/>• Isolated Unit testing of calculation logic<br/>• Integration testing across transactions & stock decrement<br/>• User Acceptance Testing (UAT) in market environment"]
-    S5["<b>5. Deployment & Optimization</b><br/>• Local XAMPP Apache configuration<br/>• Database indexing & automated daily backup verification<br/>• Barcode scanner plug-and-play testing"]
-    S6["<b>6. Formal Review & Retrospective</b><br/>• ISO/IEC 25010 Quality Model evaluation<br/>• Alpha testing with 3 IT Experts<br/>• Beta testing with 10 internal staff & 125 customers"]
+                    <pre><code>flowchart LR
+    P1[&quot;&lt;b&gt;1. Requirements&lt;/b&gt;&lt;br/&gt;• Retail workflow requirements&lt;br/&gt;• Logbook audit&lt;br/&gt;• Problem baseline&quot;]
+    P2[&quot;&lt;b&gt;2. Design&lt;/b&gt;&lt;br/&gt;• DFD L0 &amp; L1&lt;br/&gt;• ERD 11 tables&lt;br/&gt;• UI Wireframes&quot;]
+    P3[&quot;&lt;b&gt;3. Development&lt;/b&gt;&lt;br/&gt;• POS &amp; Barcode&lt;br/&gt;• SMA / WMA Math&lt;br/&gt;• BI Dashboard&quot;]
+    P4[&quot;&lt;b&gt;4. Testing&lt;/b&gt;&lt;br/&gt;• Unit tests&lt;br/&gt;• Stock sync check&lt;br/&gt;• Market UAT&quot;]
+    P5[&quot;&lt;b&gt;5. Deployment&lt;/b&gt;&lt;br/&gt;• Local Apache or Vercel&lt;br/&gt;• Database setup&lt;br/&gt;• Scanner hookup&quot;]
+    P6[&quot;&lt;b&gt;6. Review&lt;/b&gt;&lt;br/&gt;• ISO 25010 eval&lt;br/&gt;• Alpha (3 Experts)&lt;br/&gt;• Retail evaluation (52)&quot;]
 
-    S1 --> S2 --> S3 --> S4 --> S5 --> S6
-    S6 -.->|Iterative Sprint Feedback Loop| S1</code></pre>
+    P1 --&gt; P2 --&gt; P3 --&gt; P4 --&gt; P5 --&gt; P6
+    P6 -.-&gt;|Sprint Cycle Feedback| P1
+
+    style P1 fill:#fee2e2,stroke:#ef4444,stroke-width:2.5px
+    style P2 fill:#ffedd5,stroke:#f97316,stroke-width:2.5px
+    style P3 fill:#fef3c7,stroke:#f59e0b,stroke-width:2.5px
+    style P4 fill:#dbeafe,stroke:#3b82f6,stroke-width:2.5px
+    style P5 fill:#d1fae5,stroke:#10b981,stroke-width:2.5px
+    style P6 fill:#e0e7ff,stroke:#6366f1,stroke-width:2.5px</code></pre>
                 </div>
 
                 <div class="diagram-canvas-container">
                     <div class="mermaid-wrapper">
                         <div class="mermaid">
 flowchart LR
-    P1["<b>1. Requirements</b><br/>• Interviews (10 staff)<br/>• Logbook audit<br/>• Problem baseline"]
-    P2["<b>2. Design</b><br/>• DFD L0 & L1<br/>• ERD 10 tables<br/>• UI Wireframes"]
-    P3["<b>3. Development</b><br/>• POS & Barcode<br/>• SMA / WMA Math<br/>• BI Dashboard"]
-    P4["<b>4. Testing</b><br/>• Unit tests<br/>• Stock sync check<br/>• Market UAT"]
-    P5["<b>5. Deployment</b><br/>• Local Apache<br/>• Database setup<br/>• Scanner hookup"]
-    P6["<b>6. Review</b><br/>• ISO 25010 eval<br/>• Alpha (3 Experts)<br/>• Beta (135 users)"]
+    P1["&lt;b&gt;1. Requirements&lt;/b&gt;&lt;br/&gt;• Retail workflow requirements&lt;br/&gt;• Logbook audit&lt;br/&gt;• Problem baseline"]
+    P2["&lt;b&gt;2. Design&lt;/b&gt;&lt;br/&gt;• DFD L0 &amp; L1&lt;br/&gt;• ERD 11 tables&lt;br/&gt;• UI Wireframes"]
+    P3["&lt;b&gt;3. Development&lt;/b&gt;&lt;br/&gt;• POS &amp; Barcode&lt;br/&gt;• SMA / WMA Math&lt;br/&gt;• BI Dashboard"]
+    P4["&lt;b&gt;4. Testing&lt;/b&gt;&lt;br/&gt;• Unit tests&lt;br/&gt;• Stock sync check&lt;br/&gt;• Market UAT"]
+    P5["&lt;b&gt;5. Deployment&lt;/b&gt;&lt;br/&gt;• Local Apache or Vercel&lt;br/&gt;• Database setup&lt;br/&gt;• Scanner hookup"]
+    P6["&lt;b&gt;6. Review&lt;/b&gt;&lt;br/&gt;• ISO 25010 eval&lt;br/&gt;• Alpha (3 Experts)&lt;br/&gt;• Retail evaluation (52)"]
 
-    P1 --> P2 --> P3 --> P4 --> P5 --> P6
-    P6 -.->|Sprint Cycle Feedback| P1
+    P1 --&gt; P2 --&gt; P3 --&gt; P4 --&gt; P5 --&gt; P6
+    P6 -.-&gt;|Sprint Cycle Feedback| P1
 
     style P1 fill:#fee2e2,stroke:#ef4444,stroke-width:2.5px
     style P2 fill:#ffedd5,stroke:#f97316,stroke-width:2.5px
@@ -347,7 +314,7 @@ flowchart LR
     style P4 fill:#dbeafe,stroke:#3b82f6,stroke-width:2.5px
     style P5 fill:#d1fae5,stroke:#10b981,stroke-width:2.5px
     style P6 fill:#e0e7ff,stroke:#6366f1,stroke-width:2.5px
-                        </div>
+</div>
                     </div>
                 </div>
 
@@ -358,7 +325,7 @@ flowchart LR
                             <ul class="spec-list">
                                 <li><strong>Sprint Duration:</strong> Two-week iterative sprint increments.</li>
                                 <li><strong>Stakeholder Reviewers:</strong> Managing Owners (financial & purchasing parameters), Cashiers (checkout ergonomics & button touch-targets).</li>
-                                <li><strong>Environment:</strong> Local offline XAMPP stack eliminating dependency on volatile public market Wi-Fi connections.</li>
+                                <li><strong>Environment:</strong> Local XAMPP deployment or Vercel with a remote MySQL-compatible database; network requirements depend on the chosen deployment.</li>
                             </ul>
                         </div>
                         <div class="spec-block">
@@ -366,7 +333,7 @@ flowchart LR
                             <ul class="spec-list">
                                 <li><strong>ISO/IEC 25010 Evaluated Characteristics:</strong> Functional Suitability, Performance Efficiency, Compatibility, Usability, Reliability, Security, Maintainability, and Portability.</li>
                                 <li><strong>Alpha Testing:</strong> Purposive selection of 3 independent IT Specialists.</li>
-                                <li><strong>Beta Testing:</strong> 135 respondents (2 Owners, 8 Staff, 125 Conveniently Sampled Customers).</li>
+                                <li><strong>Retail Evaluation:</strong> 52 retail participants; technical evaluation by 3 IT experts, consistent with the current paper.</li>
                             </ul>
                         </div>
                     </div>
@@ -398,79 +365,52 @@ flowchart LR
                 
                 <div class="diagram-source-drawer" id="src-diag-3">
                     <pre><code>flowchart LR
-    CASHIER["<b>Staff (Cashier)</b><br/>Frontline operational employee"]
-    ADMIN["<b>System Admin (Owner)</b><br/>Managing store owners"]
-    SYSTEM(("<b>0.0<br/>Sharon Store<br/>Web-Based Inventory &<br/>Forecasting System</b>"))
-    SCANNER["<b>Hardware Input</b><br/>USB/Bluetooth Barcode Scanner"]
-
-    %% Cashier Data Flows
-    CASHIER -- "Login Credentials" --> SYSTEM
-    CASHIER -- "Starting Cash Float & Shift Close Count" --> SYSTEM
-    CASHIER -- "Checkout Cash Tendered & Item Qty" --> SYSTEM
-    SCANNER -- "Barcode String Emulation" --> SYSTEM
-    SYSTEM -- "Authentication Access & Session Token" --> CASHIER
-    SYSTEM -- "Item Name, Unit Price & Stock Subtotal" --> CASHIER
-    SYSTEM -- "Grand Total & Change Amount Calculation" --> CASHIER
-    SYSTEM -- "Real-Time Low-Stock Visual Badges" --> CASHIER
-    SYSTEM -- "On-Screen Digital Receipt Summary" --> CASHIER
-
-    %% Admin Data Flows
-    ADMIN -- "Admin Authentication Credentials" --> SYSTEM
-    ADMIN -- "Product Master Records (Name, Cost, Price, Expiry)" --> SYSTEM
-    ADMIN -- "Wholesale Stock Adjustments & Restock Batches" --> SYSTEM
-    ADMIN -- "Category Classifications & Low-Stock Limits" --> SYSTEM
-    ADMIN -- "Forecasting Horizon (3, 6, 12 Months Lookback)" --> SYSTEM
-    ADMIN -- "Cashier Account Profiles & Password Resets" --> SYSTEM
-    ADMIN -- "Database Backup Trigger Commands" --> SYSTEM
-
-    SYSTEM -- "Business Intelligence Charts & Analytics" --> ADMIN
-    SYSTEM -- "SMA & WMA Demand Restocking Recommendations" --> ADMIN
-    SYSTEM -- "Tamper-Evident System Audit Trail Logs" --> ADMIN
-    SYSTEM -- "Downloadable SQL Database Backup Archives" --> ADMIN
-    SYSTEM -- "Daily / Monthly Sales & Inventory Valuation Reports" --> ADMIN</code></pre>
+    C[&quot;Cashier&quot;]
+    A[&quot;Admin / Owner&quot;]
+    G[&quot;Google Drive via Apps Script&lt;br/&gt;Optional external backup service&quot;]
+    S((&quot;0.0 Sharon Store&lt;br/&gt;POS, Inventory and Forecasting&quot;))
+    C --&gt;|Credentials and account registration| S
+    C --&gt;|Manager PIN, starting float and counted cash| S
+    C --&gt;|Barcode or search, cart and cash tendered| S
+    S --&gt;|Access or errors, account activation pending| C
+    S --&gt;|Item details, stock alerts, receipt and change| C
+    S --&gt;|Live shift totals and closing reconciliation| C
+    A --&gt;|Credentials and account administration| S
+    A --&gt;|Products, categories, stock adjustments and suppliers| S
+    A --&gt;|Report filters and forecast lookback| S
+    A --&gt;|Backup, restore and cloud settings| S
+    A --&gt;|Admin checkout cart and cash tendered| S
+    S --&gt;|Access, receipts, analytics and forecasts| A
+    S --&gt;|Manager PIN, shifts, audit and backup files| A
+    S --&gt;|SQL backup upload| G
+    G --&gt;|Upload status| S</code></pre>
                 </div>
 
                 <div class="diagram-canvas-container">
                     <div class="mermaid-wrapper">
                         <div class="mermaid">
 flowchart LR
-    subgraph EXTERNAL_ENTITIES ["System Boundary & External Entities"]
-        CASHIER["<b>Staff (Cashier)</b><br/>Frontline Counter Staff"]
-        ADMIN["<b>System Admin (Owner)</b><br/>Managing Store Owners"]
-        SCANNER["<b>Barcode Scanner</b><br/>USB/BT HID Peripheral"]
-    end
+    C["Cashier"]
+    A["Admin / Owner"]
+    G["Google Drive via Apps Script&lt;br/&gt;Optional external backup service"]
+    S(("0.0 Sharon Store&lt;br/&gt;POS, Inventory and Forecasting"))
+    C --&gt;|Credentials and account registration| S
+    C --&gt;|Manager PIN, starting float and counted cash| S
+    C --&gt;|Barcode or search, cart and cash tendered| S
+    S --&gt;|Access or errors, account activation pending| C
+    S --&gt;|Item details, stock alerts, receipt and change| C
+    S --&gt;|Live shift totals and closing reconciliation| C
+    A --&gt;|Credentials and account administration| S
+    A --&gt;|Products, categories, stock adjustments and suppliers| S
+    A --&gt;|Report filters and forecast lookback| S
+    A --&gt;|Backup, restore and cloud settings| S
+    A --&gt;|Admin checkout cart and cash tendered| S
+    S --&gt;|Access, receipts, analytics and forecasts| A
+    S --&gt;|Manager PIN, shifts, audit and backup files| A
+    S --&gt;|SQL backup upload| G
+    G --&gt;|Upload status| S
 
-    SYSTEM(("<b>0.0<br/>Sharon Store 3.0<br/>Inventory, POS &<br/>Forecasting System</b>"))
-
-    %% Inbound Cashier
-    CASHIER --> |"1. Login Credentials"| SYSTEM
-    CASHIER --> |"2. Shift Starting Float & Daily PIN"| SYSTEM
-    CASHIER --> |"3. Cash Tendered & Sale Finalization"| SYSTEM
-    SCANNER --> |"4. Barcode String Input"| SYSTEM
-
-    %% Outbound Cashier
-    SYSTEM --> |"5. System Session Access"| CASHIER
-    SYSTEM --> |"6. Item Price & Subtotal Output"| CASHIER
-    SYSTEM --> |"7. Total & Change Calculation"| CASHIER
-    SYSTEM --> |"8. Real-time Low-Stock Badges"| CASHIER
-
-    %% Inbound Admin
-    ADMIN --> |"9. Master Item Catalog & Restock"| SYSTEM
-    ADMIN --> |"10. Lookback Period Selection (3/6/12 Mo)"| SYSTEM
-    ADMIN --> |"11. Cashier Account Management"| SYSTEM
-    ADMIN --> |"12. Backup Command Request"| SYSTEM
-
-    %% Outbound Admin
-    SYSTEM --> |"13. BI Dashboard Visuals & Revenue"| ADMIN
-    SYSTEM --> |"14. Restocking Quantity Forecasts"| ADMIN
-    SYSTEM --> |"15. Security Audit Trail Logs"| ADMIN
-    SYSTEM --> |"16. SQL Database Backup Files"| ADMIN
-
-    style SYSTEM fill:#0abf8a,stroke:#047857,stroke-width:3px,color:#ffffff
-    style CASHIER fill:#f0fdf4,stroke:#10b981,stroke-width:2px
-    style ADMIN fill:#eff6ff,stroke:#3b82f6,stroke-width:2px
-    style SCANNER fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
-                        </div>
+</div>
                     </div>
                 </div>
 
@@ -552,179 +492,157 @@ flowchart LR
                 </div>
                 
                 <div class="diagram-source-drawer" id="src-diag-4">
-                    <pre><code>flowchart TB
-    %% External Actors
-    ADMIN["System Admin (Owner)"]
-    CASHIER["Staff (Cashier)"]
-    SCANNER["Barcode Scanner (HID)"]
-
-    %% Processes
-    P1["1.0 Auth & Access Control"]
-    P2["2.0 Shift & Drawer Control"]
-    P3["3.0 Inventory & Expiration Management"]
-    P4["4.0 POS Checkout & Sales Processing"]
-    P5["5.0 Business Intelligence Dashboard"]
-    P6["6.0 Demand Forecasting (SMA/WMA)"]
-    P7["7.0 Wholesale Supplier Management"]
-    P8["8.0 Database Backup & Audit Trail"]
-
-    %% Data Stores
-    D1[("D1: tbl_users")]
-    D2[("D2: tbl_shifts")]
-    D3[("D3: tbl_inventory & tbl_categories")]
-    D4[("D4: tbl_transactions & details")]
-    D5[("D5: tbl_forecasts")]
-    D6[("D6: tbl_suppliers")]
-    D7[("D7: tbl_audit_logs")]
-    D8[("D8: tbl_settings")]
-
-    %% Inputs
-    ADMIN -->|Login Credentials| P1
-    ADMIN -->|Product Records & Restocks| P3
-    ADMIN -->|Lookback 3/6/12 Mo| P6
-    ADMIN -->|Supplier Details| P7
-    ADMIN -->|Trigger SQL Dump| P8
-
-    CASHIER -->|Login Credentials| P1
-    CASHIER -->|Daily PIN & Float| P2
-    CASHIER -->|Cash Tendered| P4
-    SCANNER -->|Scanned Barcode String| P4
-
-    %% Process & Store Flows
-    P1 -->|Verify Credentials| D1
-    D1 -->|Role & Permissions| P1
-    P1 -->|Log Auth Event| D7
-
-    P2 -->|Save Shift Record| D2
-    D2 -->|Shift Sales Totals| P2
-    D8 -->|Validate Daily PIN| P2
-
-    P3 -->|Save Product Details| D3
-    D3 -->|Stock Levels & Expiry| P3
-    P3 -->|Log Item Edits| D7
-
-    P4 -->|Barcode Lookup| D3
-    D3 -->|Item Price & Available Qty| P4
-    P4 -->|Atomic Stock Decrement| D3
-    P4 -->|Insert Transaction & Line Items| D4
-    P4 -->|Link Active Shift ID| D2
-    P4 -->|Log Completed Sale| D7
-
-    D4 -->|Query Transaction History| P5
-    D3 -->|Query Active Stock Status| P5
-    D4 -->|Query Monthly Sales History| P6
-    P6 -->|Store Demand Predictions| D5
-
-    P7 -->|Update Vendor Details| D6
-    D6 -->|Read Supplier Directory| P7
-
-    P8 -->|Execute mysqldump| D7
-    D7 -->|Read Audit Trails| P8
-
-    %% System Outputs
-    P1 -->|Grant Session Access| CASHIER
-    P1 -->|Grant Session Access| ADMIN
-    P4 -->|On-Screen Receipt & Change| CASHIER
-    P5 -->|BI Revenue & FMCG Visuals| ADMIN
-    P6 -->|Restock Recommendations| ADMIN
-    P8 -->|Download SQL Backup File| ADMIN</code></pre>
+                    <pre><code>flowchart LR
+    A[&quot;Admin / Owner&quot;]
+    C[&quot;Cashier&quot;]
+    G[&quot;Google Drive / Apps Script&quot;]
+    P1[&quot;1.0 Authentication and Accounts&quot;]
+    P2[&quot;2.0 Shift and PIN Control&quot;]
+    P3[&quot;3.0 Inventory and Categories&quot;]
+    P4[&quot;4.0 Checkout and Voids&quot;]
+    P5[&quot;5.0 Dashboard and Reports&quot;]
+    P6[&quot;6.0 SMA / WMA Forecasting&quot;]
+    P7[&quot;7.0 Supplier Directory&quot;]
+    P8[&quot;8.0 Audit, Backup and Restore&quot;]
+    D1[(&quot;D1 Users and Sessions&quot;)]
+    D2[(&quot;D2 Shifts&quot;)]
+    D3[(&quot;D3 Inventory and Categories&quot;)]
+    D4[(&quot;D4 Transactions and Details&quot;)]
+    D5[(&quot;D5 Forecasts&quot;)]
+    D6[(&quot;D6 Suppliers&quot;)]
+    D7[(&quot;D7 Audit Logs&quot;)]
+    D8[(&quot;D8 Settings&quot;)]
+    B[(&quot;SQL Backup Files&quot;)]
+    A --&gt;|Credentials and account changes| P1
+    C --&gt;|Credentials or registration| P1
+    P1 --&gt;|Access, errors or activation pending| C
+    P1 --&gt;|Access and account results| A
+    P1 &lt;--&gt;|Account and session data| D1
+    P1 --&gt;|Authentication and account events| D7
+    C --&gt;|PIN, starting cash or counted cash| P2
+    A --&gt;|PIN and shift queries| P2
+    P2 --&gt;|Live totals and reconciliation| C
+    P2 --&gt;|Manager PIN and shift history| A
+    P2 &lt;--&gt;|Open and close shift records| D2
+    P2 &lt;--&gt;|Daily PIN and date| D8
+    D4 --&gt;|Non-voided shift sales| P2
+    A --&gt;|Product, category and stock changes| P3
+    P3 &lt;--&gt;|Product and category records| D3
+    C --&gt;|Stock lookup| P3
+    D2 --&gt;|Cashier open shift| P3
+    P3 --&gt;|Stock and expiry alerts or access errors| C
+    P3 --&gt;|Catalog and update results| A
+    P3 --&gt;|Inventory events| D7
+    C --&gt;|Barcode or search, cart and tendered cash| P4
+    A --&gt;|Admin cart, payment or void request| P4
+    D2 --&gt;|Locked active shift lookup| P4
+    P4 &lt;--&gt;|Stored prices and atomic stock changes| D3
+    P4 &lt;--&gt;|Sales, line items and void status| D4
+    P4 --&gt;|Receipt, change or error| C
+    P4 --&gt;|Receipt or void result| A
+    P4 --&gt;|Sale and void events| D7
+    A --&gt;|Report filters| P5
+    D4 --&gt;|Sales history| P5
+    D3 --&gt;|Stock and cost data| P5
+    D2 --&gt;|Shift data| P5
+    P5 --&gt;|Charts and reports| A
+    A --&gt;|Lookback 3, 6 or 12 months| P6
+    D4 --&gt;|Non-voided monthly quantities| P6
+    D3 --&gt;|Current stock and units| P6
+    P6 &lt;--&gt;|Saved monthly predictions| D5
+    P6 --&gt;|SMA, WMA and restock recommendations| A
+    A --&gt;|Supplier details| P7
+    P7 &lt;--&gt;|Supplier records| D6
+    P7 --&gt;|Directory and update results| A
+    A --&gt;|Audit query, backup, restore or cloud settings| P8
+    D7 --&gt;|Audit records| P8
+    P8 &lt;--&gt;|Cloud settings| D8
+    P8 &lt;--&gt;|SQL export and import| B
+    P8 &lt;--&gt;|Database-wide table data except session export| D1
+    P8 &lt;--&gt;|Backup and restore table data| D2 &amp; D3 &amp; D4 &amp; D5 &amp; D6 &amp; D7
+    P8 --&gt;|Restore and backup events| D7
+    P8 --&gt;|SQL upload| G
+    G --&gt;|Upload result| P8
+    P8 --&gt;|Audit results, backup files and restore status| A</code></pre>
                 </div>
 
                 <div class="diagram-canvas-container">
                     <div class="mermaid-wrapper">
                         <div class="mermaid">
-flowchart TB
-    %% External Entities
-    subgraph ACTORS ["External Actors & Peripherals"]
-        ADMIN["System Admin (Owner)"]
-        CASHIER["Staff (Cashier)"]
-        SCANNER["Barcode Scanner (HID)"]
-    end
+flowchart LR
+    A["Admin / Owner"]
+    C["Cashier"]
+    G["Google Drive / Apps Script"]
+    P1["1.0 Authentication and Accounts"]
+    P2["2.0 Shift and PIN Control"]
+    P3["3.0 Inventory and Categories"]
+    P4["4.0 Checkout and Voids"]
+    P5["5.0 Dashboard and Reports"]
+    P6["6.0 SMA / WMA Forecasting"]
+    P7["7.0 Supplier Directory"]
+    P8["8.0 Audit, Backup and Restore"]
+    D1[("D1 Users and Sessions")]
+    D2[("D2 Shifts")]
+    D3[("D3 Inventory and Categories")]
+    D4[("D4 Transactions and Details")]
+    D5[("D5 Forecasts")]
+    D6[("D6 Suppliers")]
+    D7[("D7 Audit Logs")]
+    D8[("D8 Settings")]
+    B[("SQL Backup Files")]
+    A --&gt;|Credentials and account changes| P1
+    C --&gt;|Credentials or registration| P1
+    P1 --&gt;|Access, errors or activation pending| C
+    P1 --&gt;|Access and account results| A
+    P1 &lt;--&gt;|Account and session data| D1
+    P1 --&gt;|Authentication and account events| D7
+    C --&gt;|PIN, starting cash or counted cash| P2
+    A --&gt;|PIN and shift queries| P2
+    P2 --&gt;|Live totals and reconciliation| C
+    P2 --&gt;|Manager PIN and shift history| A
+    P2 &lt;--&gt;|Open and close shift records| D2
+    P2 &lt;--&gt;|Daily PIN and date| D8
+    D4 --&gt;|Non-voided shift sales| P2
+    A --&gt;|Product, category and stock changes| P3
+    P3 &lt;--&gt;|Product and category records| D3
+    C --&gt;|Stock lookup| P3
+    D2 --&gt;|Cashier open shift| P3
+    P3 --&gt;|Stock and expiry alerts or access errors| C
+    P3 --&gt;|Catalog and update results| A
+    P3 --&gt;|Inventory events| D7
+    C --&gt;|Barcode or search, cart and tendered cash| P4
+    A --&gt;|Admin cart, payment or void request| P4
+    D2 --&gt;|Locked active shift lookup| P4
+    P4 &lt;--&gt;|Stored prices and atomic stock changes| D3
+    P4 &lt;--&gt;|Sales, line items and void status| D4
+    P4 --&gt;|Receipt, change or error| C
+    P4 --&gt;|Receipt or void result| A
+    P4 --&gt;|Sale and void events| D7
+    A --&gt;|Report filters| P5
+    D4 --&gt;|Sales history| P5
+    D3 --&gt;|Stock and cost data| P5
+    D2 --&gt;|Shift data| P5
+    P5 --&gt;|Charts and reports| A
+    A --&gt;|Lookback 3, 6 or 12 months| P6
+    D4 --&gt;|Non-voided monthly quantities| P6
+    D3 --&gt;|Current stock and units| P6
+    P6 &lt;--&gt;|Saved monthly predictions| D5
+    P6 --&gt;|SMA, WMA and restock recommendations| A
+    A --&gt;|Supplier details| P7
+    P7 &lt;--&gt;|Supplier records| D6
+    P7 --&gt;|Directory and update results| A
+    A --&gt;|Audit query, backup, restore or cloud settings| P8
+    D7 --&gt;|Audit records| P8
+    P8 &lt;--&gt;|Cloud settings| D8
+    P8 &lt;--&gt;|SQL export and import| B
+    P8 &lt;--&gt;|Database-wide table data except session export| D1
+    P8 &lt;--&gt;|Backup and restore table data| D2 &amp; D3 &amp; D4 &amp; D5 &amp; D6 &amp; D7
+    P8 --&gt;|Restore and backup events| D7
+    P8 --&gt;|SQL upload| G
+    G --&gt;|Upload result| P8
+    P8 --&gt;|Audit results, backup files and restore status| A
 
-    %% Processes
-    subgraph PROCESSES ["Decomposed System Processes (Level 1)"]
-        P1["1.0 Auth & Access Control"]
-        P2["2.0 Shift & Drawer Control"]
-        P3["3.0 Inventory & Expiration"]
-        P4["4.0 POS Checkout Processing"]
-        P5["5.0 Business Intelligence Dashboard"]
-        P6["6.0 Demand Forecasting (SMA/WMA)"]
-        P7["7.0 Supplier Management"]
-        P8["8.0 Audit & Backup Service"]
-    end
-
-    %% Data Stores
-    subgraph STORES ["System Data Stores (MariaDB)"]
-        D1[("D1: tbl_users")]
-        D2[("D2: tbl_shifts")]
-        D3[("D3: tbl_inventory & tbl_categories")]
-        D4[("D4: tbl_transactions & details")]
-        D5[("D5: tbl_forecasts")]
-        D6[("D6: tbl_suppliers")]
-        D7[("D7: tbl_audit_logs")]
-        D8[("D8: tbl_settings")]
-    end
-
-    %% Actor Inflows
-    ADMIN -->|Login Credentials| P1
-    ADMIN -->|Product Records & Restocks| P3
-    ADMIN -->|Lookback 3/6/12 Mo| P6
-    ADMIN -->|Supplier Details| P7
-    ADMIN -->|Trigger SQL Dump| P8
-
-    CASHIER -->|Login Credentials| P1
-    CASHIER -->|Daily PIN & Float| P2
-    CASHIER -->|Cash Tendered| P4
-    SCANNER -->|Scanned Barcode String| P4
-
-    %% Process to Data Store Flows
-    P1 -->|Verify Credentials| D1
-    D1 -->|Role & Permissions| P1
-    P1 -->|Log Auth Event| D7
-
-    P2 -->|Save Shift Record| D2
-    D2 -->|Shift Sales Totals| P2
-    D8 -->|Validate Daily PIN| P2
-
-    P3 -->|Save Product Details| D3
-    D3 -->|Stock Levels & Expiry| P3
-    P3 -->|Log Item Edits| D7
-
-    P4 -->|Barcode Lookup| D3
-    D3 -->|Item Price & Available Qty| P4
-    P4 -->|Atomic Stock Decrement| D3
-    P4 -->|Insert Transaction & Line Items| D4
-    P4 -->|Link Active Shift ID| D2
-    P4 -->|Log Completed Sale| D7
-
-    D4 -->|Query Transaction History| P5
-    D3 -->|Query Active Stock Status| P5
-    D4 -->|Query Monthly Sales History| P6
-    P6 -->|Store Demand Predictions| D5
-
-    P7 -->|Update Vendor Details| D6
-    D6 -->|Read Supplier Directory| P7
-
-    P8 -->|Execute mysqldump| D7
-    D7 -->|Read Audit Trails| P8
-
-    %% Outflows to Actors
-    P1 -->|Grant Session Access| CASHIER
-    P1 -->|Grant Session Access| ADMIN
-    P4 -->|On-Screen Receipt & Change| CASHIER
-    P5 -->|BI Revenue & FMCG Visuals| ADMIN
-    P6 -->|Restock Recommendations| ADMIN
-    P8 -->|Download SQL Backup File| ADMIN
-
-    style P1 fill:#dbeafe,stroke:#2563eb,stroke-width:2.5px
-    style P2 fill:#fef3c7,stroke:#d97706,stroke-width:2.5px
-    style P3 fill:#d1fae5,stroke:#059669,stroke-width:2.5px
-    style P4 fill:#ccfbf1,stroke:#0d9488,stroke-width:2.5px
-    style P5 fill:#fae8ff,stroke:#a21caf,stroke-width:2.5px
-    style P6 fill:#ffe4e6,stroke:#e11d48,stroke-width:2.5px
-    style P7 fill:#f1f5f9,stroke:#475569,stroke-width:2.5px
-    style P8 fill:#ede9fe,stroke:#6d28d9,stroke-width:2.5px
-                        </div>
+</div>
                     </div>
                 </div>
 
@@ -759,7 +677,7 @@ flowchart TB
                             <span class="badge-tag badge-category">UML Behavioral</span>
                             <span class="badge-tag badge-system">Use Case Diagram</span>
                         </div>
-                        <h3 class="diagram-title"><i class="fa-solid fa-user-gear text-info"></i> Comprehensive Use Case Diagram</h3>
+                        <h3 class="diagram-title"><i class="fa-solid fa-user-gear text-info"></i> System Use Case Diagram</h3>
                         <p class="diagram-subtitle">Role-based functional interactions between System Administrator, Cashier, Barcode Scanner, and the POS system boundary.</p>
                     </div>
                     <div class="diagram-header-actions">
@@ -773,113 +691,64 @@ flowchart TB
                 
                 <div class="diagram-source-drawer" id="src-diag-5">
                     <pre><code>flowchart LR
-    ADMIN["System Administrator (Owner)"]
-    CASHIER["Staff (Cashier)"]
-    SCANNER["Barcode Scanner (Hardware Actor)"]
-
-    subgraph SYSTEM_BOUNDARY ["Sharon Store 3.0 System Boundary"]
-        UC_AUTH["Log into System"]
-        UC_LOGOUT["Sign Out"]
-        UC_SHIFT_START["Open Cashier Shift"]
-        UC_SHIFT_END["Close Shift & Reconcile Cash"]
-        UC_POS["Process Point of Sale (POS)"]
-        UC_BARCODE["Scan Product Barcode"]
-        UC_DEDUCT["Deduct Active Inventory"]
-        UC_STOCK_MON["View Stock Monitor (Read-Only)"]
-        UC_INV_CRUD["Manage Inventory (Add, Edit, Archive)"]
-        UC_DASHBOARD["View Business Intelligence Dashboard"]
-        UC_FORECAST["Generate Sales Demand Forecasting"]
-        UC_SUPPLIERS["Manage Wholesale Suppliers"]
-        UC_REPORTS["Generate Sales & Inventory Reports"]
-        UC_USERS["Manage User Accounts"]
-        UC_BACKUP["Perform Database Backup & Restore"]
-        UC_AUDIT["Inspect System Audit Trail"]
+    A[&quot;Admin / Owner&quot;]
+    C[&quot;Cashier&quot;]
+    subgraph SYSTEM[&quot;Sharon Store System&quot;]
+        L([&quot;Sign in / Sign out&quot;])
+        R([&quot;Register cashier account&quot;])
+        SH([&quot;Open / Close own shift with manager PIN&quot;])
+        MON([&quot;View stock and live shift totals&quot;])
+        POS([&quot;Process sale&quot;])
+        LOOK([&quot;Select items by scan OR search&quot;])
+        SAVE([&quot;Validate prices, payment and stock;&lt;br/&gt;save sale and deduct inventory&quot;])
+        VOID([&quot;Void sale within 24 hours&quot;])
+        INV([&quot;Manage products, stock and categories&quot;])
+        SUP([&quot;Manage supplier directory&quot;])
+        BI([&quot;View dashboard and reports&quot;])
+        FC([&quot;Generate SMA / WMA forecasts&quot;])
+        ACC([&quot;Manage accounts and activation&quot;])
+        AUD([&quot;View audit trail&quot;])
+        BAK([&quot;Create / Download / Restore SQL backup&quot;])
+        CLOUD([&quot;Configure / Upload Google Drive backup&quot;])
+        HIST([&quot;View manager PIN and shift history&quot;])
     end
-
-    %% Role associations
-    ADMIN --> UC_AUTH
-    ADMIN --> UC_LOGOUT
-    ADMIN --> UC_DASHBOARD
-    ADMIN --> UC_INV_CRUD
-    ADMIN --> UC_FORECAST
-    ADMIN --> UC_SUPPLIERS
-    ADMIN --> UC_REPORTS
-    ADMIN --> UC_USERS
-    ADMIN --> UC_BACKUP
-    ADMIN --> UC_AUDIT
-    ADMIN --> UC_POS
-
-    CASHIER --> UC_AUTH
-    CASHIER --> UC_LOGOUT
-    CASHIER --> UC_SHIFT_START
-    CASHIER --> UC_SHIFT_END
-    CASHIER --> UC_POS
-    CASHIER --> UC_STOCK_MON
-
-    SCANNER --> UC_BARCODE
-
-    %% Stereotypes
-    UC_POS -.->|include| UC_BARCODE
-    UC_POS -.->|include| UC_DEDUCT
-    UC_FORECAST -.->|extend| UC_DASHBOARD</code></pre>
+    C --- L &amp; R &amp; SH &amp; MON &amp; POS
+    A --- L &amp; SH &amp; MON &amp; POS &amp; VOID &amp; INV &amp; SUP &amp; BI &amp; FC &amp; ACC &amp; AUD &amp; BAK &amp; CLOUD &amp; HIST
+    POS -.-&gt;|include| LOOK
+    POS -.-&gt;|include| SAVE</code></pre>
                 </div>
 
                 <div class="diagram-canvas-container">
                     <div class="mermaid-wrapper">
                         <div class="mermaid">
 flowchart LR
-    ADMIN["Admin (Store Owner)"]
-    CASHIER["Staff (Store Cashier)"]
-    SCANNER["Barcode Scanner (Hardware)"]
-
-    subgraph SYSTEM_BOUNDARY ["Sharon Store 3.0 Platform"]
-        UC1(["Log into System"])
-        UC2(["Open / Close Shift with PIN"])
-        UC3(["Process POS Transaction"])
-        UC3a(["Scan Product Barcode"])
-        UC3b(["Deduct Active Inventory"])
-        UC4(["Stock Monitor (Read-Only)"])
-        UC5(["Manage Inventory Items"])
-        UC6(["Business Intelligence Dashboard"])
-        UC7(["Sales Demand Forecasting (SMA/WMA)"])
-        UC8(["Manage Wholesale Suppliers"])
-        UC9(["Sales & Valuation Reports"])
-        UC10(["Manage Cashier Accounts"])
-        UC11(["Database Backup (mysqldump)"])
-        UC12(["View Audit Security Trail"])
+    A["Admin / Owner"]
+    C["Cashier"]
+    subgraph SYSTEM["Sharon Store System"]
+        L(["Sign in / Sign out"])
+        R(["Register cashier account"])
+        SH(["Open / Close own shift with manager PIN"])
+        MON(["View stock and live shift totals"])
+        POS(["Process sale"])
+        LOOK(["Select items by scan OR search"])
+        SAVE(["Validate prices, payment and stock;&lt;br/&gt;save sale and deduct inventory"])
+        VOID(["Void sale within 24 hours"])
+        INV(["Manage products, stock and categories"])
+        SUP(["Manage supplier directory"])
+        BI(["View dashboard and reports"])
+        FC(["Generate SMA / WMA forecasts"])
+        ACC(["Manage accounts and activation"])
+        AUD(["View audit trail"])
+        BAK(["Create / Download / Restore SQL backup"])
+        CLOUD(["Configure / Upload Google Drive backup"])
+        HIST(["View manager PIN and shift history"])
     end
+    C --- L &amp; R &amp; SH &amp; MON &amp; POS
+    A --- L &amp; SH &amp; MON &amp; POS &amp; VOID &amp; INV &amp; SUP &amp; BI &amp; FC &amp; ACC &amp; AUD &amp; BAK &amp; CLOUD &amp; HIST
+    POS -.-&gt;|include| LOOK
+    POS -.-&gt;|include| SAVE
 
-    %% Cashier connections
-    CASHIER --> UC1
-    CASHIER --> UC2
-    CASHIER --> UC3
-    CASHIER --> UC4
-
-    %% Admin connections
-    ADMIN --> UC1
-    ADMIN --> UC3
-    ADMIN --> UC5
-    ADMIN --> UC6
-    ADMIN --> UC7
-    ADMIN --> UC8
-    ADMIN --> UC9
-    ADMIN --> UC10
-    ADMIN --> UC11
-    ADMIN --> UC12
-
-    %% Hardware
-    SCANNER --> UC3a
-
-    %% Includes & Extends
-    UC3 -.->|include| UC3a
-    UC3 -.->|include| UC3b
-    UC7 -.->|extend| UC6
-
-    style SYSTEM_BOUNDARY fill:#f8fafc,stroke:#64748b,stroke-width:2.5px
-    style ADMIN fill:#dbeafe,stroke:#2563eb,stroke-width:2.5px
-    style CASHIER fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px
-    style SCANNER fill:#fef9c3,stroke:#ca8a04,stroke-width:2.5px
-                        </div>
+</div>
                     </div>
                 </div>
 
@@ -934,7 +803,7 @@ flowchart LR
                         <div class="spec-block">
                             <h4 class="spec-block-title"><i class="fa-solid fa-link"></i> Use Case Relationships</h4>
                             <ul class="spec-list">
-                                <li><strong>&lt;&lt;include&gt;&gt; Scan Barcode:</strong> Triggered whenever an item is added to the active cart using standard USB/Bluetooth barcode scanner HID keystroke events.</li>
+                                <li><strong>Item Selection:</strong> Item selection supports barcode scanning or manual search. Scanning is not a mandatory step for every sale.</li>
                                 <li><strong>&lt;&lt;include&gt;&gt; Deduct Active Inventory:</strong> Executed immediately inside an ACID MySQL transaction upon payment receipt, decrementing <code>tbl_inventory.stock_qty</code>.</li>
                                 <li><strong>Shift Security Enclosure:</strong> Cashiers cannot access the POS interface unless an active shift has been opened with the store manager's daily four-digit PIN.</li>
                             </ul>
@@ -955,7 +824,7 @@ flowchart LR
                             <span class="badge-tag badge-system">Crow's Foot ERD</span>
                         </div>
                         <h3 class="diagram-title"><i class="fa-solid fa-database text-primary"></i> Complete Entity-Relationship Diagram (ERD)</h3>
-                        <p class="diagram-subtitle">Normalized relational blueprint covering all 10 MariaDB tables, primary/foreign keys, and exact column specifications.</p>
+                        <p class="diagram-subtitle">All 11 tables, including database sessions, with SQL-enforced foreign keys distinguished from logical application links.</p>
                     </div>
                     <div class="diagram-header-actions">
                         <button class="tool-btn" onclick="zoomDiagram('diagram-6', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
@@ -968,142 +837,36 @@ flowchart LR
                 
                 <div class="diagram-source-drawer" id="src-diag-6">
                     <pre><code>erDiagram
-    tbl_users ||--o{ tbl_transactions : "processes"
-    tbl_users ||--o{ tbl_shifts : "mans"
-    tbl_users ||--o{ tbl_audit_logs : "triggers"
-    tbl_categories ||--o{ tbl_inventory : "classifies"
-    tbl_inventory ||--o{ tbl_transaction_details : "sold_in"
-    tbl_inventory ||--o{ tbl_forecasts : "projected_for"
-    tbl_transactions ||--|{ tbl_transaction_details : "contains"
-    tbl_shifts ||--o{ tbl_transactions : "groups"
-
-    tbl_users {
-        int user_id PK "AUTO_INCREMENT"
-        varchar username UK "50 chars, Unique"
-        varchar password "255 chars BCRYPT hash"
-        varchar full_name "100 chars"
-        enum role "admin, cashier"
-        tinyint is_active "1=active, 0=inactive"
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    tbl_categories {
-        int category_id PK "AUTO_INCREMENT"
-        varchar category_name "100 chars"
-        text description
-        timestamp created_at
-    }
-
-    tbl_inventory {
-        int item_id PK "AUTO_INCREMENT"
-        varchar barcode UK "50 chars, Unique"
-        varchar item_name "150 chars"
-        int category_id FK "References tbl_categories"
-        enum unit "pieces, packs, kg"
-        decimal price "10,2"
-        decimal cost_price "10,2"
-        decimal stock_qty "10,2"
-        int low_stock_threshold "Default 10"
-        date expiry_date
-        tinyint is_active "1=active, 0=soft deleted"
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    tbl_transactions {
-        int transaction_id PK "AUTO_INCREMENT"
-        varchar transaction_code UK "30 chars Unique"
-        int user_id FK "References tbl_users"
-        decimal total_amount "10,2"
-        decimal amount_tendered "10,2"
-        decimal change_amount "10,2"
-        varchar status "completed"
-        timestamp transaction_date
-        int shift_id FK "References tbl_shifts"
-    }
-
-    tbl_transaction_details {
-        int detail_id PK "AUTO_INCREMENT"
-        int transaction_id FK "References tbl_transactions"
-        int item_id FK "References tbl_inventory"
-        decimal quantity "10,2"
-        decimal unit_price "10,2"
-        decimal subtotal "10,2"
-    }
-
-    tbl_shifts {
-        int shift_id PK "AUTO_INCREMENT"
-        int cashier_id FK "References tbl_users"
-        decimal starting_cash "10,2"
-        datetime start_time
-        datetime end_time
-        decimal expected_cash "10,2"
-        decimal actual_cash "10,2"
-        decimal short_over "10,2"
-        enum status "open, closed"
-    }
-
-    tbl_forecasts {
-        int forecast_id PK "AUTO_INCREMENT"
-        int item_id FK "References tbl_inventory"
-        date forecast_period
-        decimal predicted_qty "10,2"
-        varchar method "SMA, WMA"
-        timestamp generated_at
-    }
-
-    tbl_suppliers {
-        int supplier_id PK "AUTO_INCREMENT"
-        varchar company_name "100 chars"
-        varchar contact_person "100 chars"
-        varchar phone "50 chars"
-        text address
-        datetime created_at
-        tinyint is_active "1=active, 0=inactive"
-    }
-
+    tbl_users |o--o{ tbl_transactions : processes
+    tbl_users |o--o{ tbl_audit_logs : logs
+    tbl_users |o..o{ tbl_shifts : &quot;logical cashier link&quot;
+    tbl_categories ||--o{ tbl_inventory : categorizes
+    tbl_inventory ||--o{ tbl_transaction_details : sold_in
+    tbl_inventory ||--o{ tbl_forecasts : predicts
+    tbl_transactions ||--o{ tbl_transaction_details : contains
+    tbl_shifts |o..o{ tbl_transactions : &quot;logical optional shift link&quot;
     tbl_audit_logs {
-        int log_id PK "AUTO_INCREMENT"
-        int user_id FK "References tbl_users"
-        varchar action "100 chars"
-        varchar module "50 chars"
+        int log_id PK
+        int user_id FK
+        varchar action
+        varchar module
         text description
-        varchar ip_address "45 chars IPv4/IPv6"
+        varchar ip_address
         timestamp log_time
-    }
-
-    tbl_settings {
-        varchar setting_key PK "50 chars"
-        varchar setting_value "255 chars"
-    }</code></pre>
-                </div>
-
-                <div class="diagram-canvas-container">
-                    <div class="mermaid-wrapper">
-                        <div class="mermaid">
-erDiagram
-    tbl_users ||--o{ tbl_transactions : "processes"
-    tbl_users ||--o{ tbl_shifts : "operates"
-    tbl_users ||--o{ tbl_audit_logs : "logs"
-    tbl_categories ||--o{ tbl_inventory : "categorizes"
-    tbl_inventory ||--o{ tbl_transaction_details : "includes"
-    tbl_inventory ||--o{ tbl_forecasts : "forecasts"
-    tbl_transactions ||--|{ tbl_transaction_details : "contains"
-    tbl_shifts ||--o{ tbl_transactions : "batches"
-
-    tbl_users {
-        int user_id PK
-        varchar username UK
-        varchar password
-        varchar full_name
-        enum role
-        tinyint is_active
     }
     tbl_categories {
         int category_id PK
         varchar category_name
         text description
+        timestamp created_at
+    }
+    tbl_forecasts {
+        int forecast_id PK
+        int item_id FK
+        date forecast_period
+        decimal predicted_qty
+        varchar method
+        timestamp generated_at
     }
     tbl_inventory {
         int item_id PK
@@ -1116,16 +879,34 @@ erDiagram
         decimal stock_qty
         int low_stock_threshold
         date expiry_date
+        tinyint is_active
+        timestamp created_at
+        timestamp updated_at
     }
-    tbl_transactions {
-        int transaction_id PK
-        varchar transaction_code UK
-        int user_id FK
-        int shift_id FK
-        decimal total_amount
-        decimal amount_tendered
-        decimal change_amount
-        timestamp transaction_date
+    tbl_settings {
+        varchar setting_key PK
+        varchar setting_value
+    }
+    tbl_shifts {
+        int shift_id PK
+        int cashier_id
+        decimal starting_cash
+        datetime start_time
+        datetime end_time
+        decimal expected_cash
+        decimal actual_cash
+        decimal short_over
+        enum status
+    }
+    tbl_suppliers {
+        int supplier_id PK
+        varchar company_name
+        varchar contact_person
+        varchar category
+        varchar phone
+        text address
+        datetime created_at
+        tinyint is_active
     }
     tbl_transaction_details {
         int detail_id PK
@@ -1135,22 +916,46 @@ erDiagram
         decimal unit_price
         decimal subtotal
     }
-    tbl_shifts {
-        int shift_id PK
-        int cashier_id FK
-        decimal starting_cash
-        decimal expected_cash
-        decimal actual_cash
-        decimal short_over
-        enum status
+    tbl_transactions {
+        int transaction_id PK
+        varchar transaction_code UK
+        int user_id FK
+        decimal total_amount
+        decimal amount_tendered
+        decimal change_amount
+        varchar status
+        timestamp transaction_date
+        int shift_id
     }
-    tbl_forecasts {
-        int forecast_id PK
-        int item_id FK
-        date forecast_period
-        decimal predicted_qty
-        varchar method
+    tbl_users {
+        int user_id PK
+        varchar username UK
+        varchar password
+        varchar full_name
+        enum role
+        tinyint is_active
+        timestamp created_at
+        timestamp updated_at
     }
+    tbl_sessions {
+        varchar id PK
+        mediumtext data
+        int last_activity
+    }</code></pre>
+                </div>
+
+                <div class="diagram-canvas-container">
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+erDiagram
+    tbl_users |o--o{ tbl_transactions : processes
+    tbl_users |o--o{ tbl_audit_logs : logs
+    tbl_users |o..o{ tbl_shifts : "logical cashier link"
+    tbl_categories ||--o{ tbl_inventory : categorizes
+    tbl_inventory ||--o{ tbl_transaction_details : sold_in
+    tbl_inventory ||--o{ tbl_forecasts : predicts
+    tbl_transactions ||--o{ tbl_transaction_details : contains
+    tbl_shifts |o..o{ tbl_transactions : "logical optional shift link"
     tbl_audit_logs {
         int log_id PK
         int user_id FK
@@ -1158,18 +963,97 @@ erDiagram
         varchar module
         text description
         varchar ip_address
+        timestamp log_time
     }
-    tbl_suppliers {
-        int supplier_id PK
-        varchar company_name
-        varchar contact_person
-        varchar phone
+    tbl_categories {
+        int category_id PK
+        varchar category_name
+        text description
+        timestamp created_at
+    }
+    tbl_forecasts {
+        int forecast_id PK
+        int item_id FK
+        date forecast_period
+        decimal predicted_qty
+        varchar method
+        timestamp generated_at
+    }
+    tbl_inventory {
+        int item_id PK
+        varchar barcode UK
+        varchar item_name
+        int category_id FK
+        enum unit
+        decimal price
+        decimal cost_price
+        decimal stock_qty
+        int low_stock_threshold
+        date expiry_date
+        tinyint is_active
+        timestamp created_at
+        timestamp updated_at
     }
     tbl_settings {
         varchar setting_key PK
         varchar setting_value
     }
-                        </div>
+    tbl_shifts {
+        int shift_id PK
+        int cashier_id
+        decimal starting_cash
+        datetime start_time
+        datetime end_time
+        decimal expected_cash
+        decimal actual_cash
+        decimal short_over
+        enum status
+    }
+    tbl_suppliers {
+        int supplier_id PK
+        varchar company_name
+        varchar contact_person
+        varchar category
+        varchar phone
+        text address
+        datetime created_at
+        tinyint is_active
+    }
+    tbl_transaction_details {
+        int detail_id PK
+        int transaction_id FK
+        int item_id FK
+        decimal quantity
+        decimal unit_price
+        decimal subtotal
+    }
+    tbl_transactions {
+        int transaction_id PK
+        varchar transaction_code UK
+        int user_id FK
+        decimal total_amount
+        decimal amount_tendered
+        decimal change_amount
+        varchar status
+        timestamp transaction_date
+        int shift_id
+    }
+    tbl_users {
+        int user_id PK
+        varchar username UK
+        varchar password
+        varchar full_name
+        enum role
+        tinyint is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+    tbl_sessions {
+        varchar id PK
+        mediumtext data
+        int last_activity
+    }
+</div>
                     </div>
                 </div>
 
@@ -1178,15 +1062,15 @@ erDiagram
                         <div class="spec-block">
                             <h4 class="spec-block-title"><i class="fa-solid fa-key"></i> Key Constraints & Normalization</h4>
                             <ul class="spec-list">
-                                <li><strong>Foreign Key Integrity:</strong> <code>tbl_inventory.category_id</code> ON UPDATE CASCADE; <code>tbl_transaction_details.transaction_id</code> ON DELETE CASCADE ON UPDATE CASCADE.</li>
-                                <li><strong>Atomic Shift Tracking:</strong> <code>tbl_transactions.shift_id</code> links each checkout to the cashier's active shift float for instant drawer reconciliation.</li>
+                                <li><strong>Physical and Logical Links:</strong> Dotted ERD links for shifts are application associations, not foreign keys in the supplied SQL dump. Runtime schema initialization can make transaction user IDs and shift cashier IDs nullable. <code>tbl_sessions.data</code> stores serialized session content and has no user foreign key. <strong>Enforced Keys:</strong> <code>tbl_inventory.category_id</code> ON UPDATE CASCADE; <code>tbl_transaction_details.transaction_id</code> ON DELETE CASCADE ON UPDATE CASCADE.</li>
+                                <li><strong>Atomic Shift Tracking:</strong> <code>tbl_transactions.shift_id</code> links cashier checkout to an active shift; admin sales may have no shift for instant drawer reconciliation.</li>
                                 <li><strong>Unique Enforcements:</strong> <code>uq_barcode</code> on <code>tbl_inventory</code> prevents duplicate barcodes; <code>uq_txn_code</code> ensures uniqueness across daily transactions.</li>
                             </ul>
                         </div>
                         <div class="spec-block">
                             <h4 class="spec-block-title"><i class="fa-solid fa-calculator"></i> Quantitative Field Precision</h4>
                             <ul class="spec-list">
-                                <li><strong>Monetary Fields:</strong> <code>decimal(10,2)</code> used on all prices, tendered cash, and totals to completely eliminate floating-point rounding errors in retail currency.</li>
+                                <li><strong>Monetary Fields:</strong> <code>decimal(10,2)</code> used on all prices, tendered cash, and totals for database precision; application calculations still use PHP floating-point arithmetic and rounding.</li>
                                 <li><strong>Fractional Quantities:</strong> <code>quantity</code> and <code>stock_qty</code> defined as <code>decimal(10,2)</code> to support non-discrete consumer items sold in kilograms (e.g. sugar, rice).</li>
                             </ul>
                         </div>
@@ -1218,136 +1102,68 @@ erDiagram
                 </div>
                 
                 <div class="diagram-source-drawer" id="src-diag-7">
-                    <pre><code>%% ══════════════════════════════════════════════════════════
-%% INTEGRATED SYSTEM FLOWCHART (ENROLLED SYSTEM MODULES)
-%% ══════════════════════════════════════════════════════════
-flowchart TD
-    START([START: User Access]) --&gt; LOGIN[/Enter Username and Password/]
-    LOGIN --&gt; V_AUTH{Valid Credentials and Active?}
-    V_AUTH -- No --&gt; ERR_AUTH[&quot;Display Invalid Credentials Alert&quot;] --&gt; LOGIN
-    V_AUTH -- Yes --&gt; V_ROLE{User Role?}
+                    <pre><code>flowchart TB
+    START([User opens system]) --&gt; LOGIN[&quot;Enter credentials&quot;]
+    LOGIN --&gt; AUTH{&quot;Active account and valid password?&quot;}
+    AUTH -- No --&gt; ERROR[&quot;Show login error&quot;] --&gt; LOGIN
+    AUTH -- Yes --&gt; ROLE{&quot;Current role?&quot;}
+    ROLE -- Cashier --&gt; SHIFT{&quot;Own open shift?&quot;}
+    SHIFT -- No --&gt; OPEN[&quot;Enter manager PIN and starting cash&quot;]
+    OPEN --&gt; PIN{&quot;Valid PIN and float?&quot;}
+    PIN -- No --&gt; OPEN
+    PIN -- Yes --&gt; SAVE[&quot;Save open shift&quot;] --&gt; CASH[&quot;Cashier workspace&quot;]
+    SHIFT -- Yes --&gt; CASH
+    CASH --&gt; TASK{&quot;Select task&quot;}
+    TASK -- Sale --&gt; SALE[&quot;Scan or search; build cart; enter cash&quot;]
+    SALE --&gt; CHECK[&quot;Server locks stock; uses stored prices;&lt;br/&gt;validates stock, payment and shift&quot;]
+    CHECK --&gt; OK{&quot;All checks and writes succeed?&quot;}
+    OK -- No --&gt; FAIL[&quot;Rollback and show error&quot;] --&gt; CASH
+    OK -- Yes --&gt; COMMIT[&quot;Commit sale and stock deduction;&lt;br/&gt;then log audit event&quot;]
+    COMMIT --&gt; RECEIPT[&quot;Receipt and browser print dialog&quot;] --&gt; CASH
+    TASK -- Stock or live totals --&gt; MON[&quot;View shift-gated stock or live totals&quot;] --&gt; CASH
+    TASK -- Close shift --&gt; CLOSE[&quot;Manager PIN and counted cash;&lt;br/&gt;lock shift and reconcile&quot;]
+    CLOSE --&gt; CLOSED{&quot;Close successful?&quot;}
+    CLOSED -- No --&gt; CASH
+    CLOSED -- Yes --&gt; SUMMARY[&quot;Show reconciliation; keep session signed in&quot;] --&gt; SHIFT
+    ROLE -- Admin --&gt; ADMIN[&quot;Admin hub: catalog, suppliers, sales,&lt;br/&gt;shifts, reports, forecasts, accounts,&lt;br/&gt;audit, SQL backups and optional cloud upload&quot;]
+    ADMIN --&gt; RESULT[&quot;Perform selected action and show result&quot;] --&gt; ADMIN
+    CASH &amp; ADMIN --&gt;|Optional sign out| LOGOUT[&quot;Destroy session&quot;] --&gt; END([End])
 
-    %% 1. CASHIER WORKSTATION LIFECYCLE
-    subgraph CASHIER_FLOW [&quot;1. CASHIER WORKSTATION LIFECYCLE&quot;]
-        direction TB
-        C_START[&quot;Open Cashier Workspace&quot;] --&gt; CHK_S{Active Open Shift Exists?}
-        CHK_S -- No --&gt; PIN_IN[/Enter Manager Authorization PIN and Starting Cash Float/]
-        PIN_IN --&gt; V_PIN{Valid Manager PIN?}
-        V_PIN -- No --&gt; ERR_PIN[&quot;Invalid Authorization PIN&quot;] --&gt; PIN_IN
-        V_PIN -- Yes --&gt; OPEN_S[&quot;Open Cashier Shift with Recorded Float&quot;] --&gt; POS_MAIN
-        CHK_S -- Yes --&gt; POS_MAIN[&quot;Load POS Sales Register&quot;]
+%% Next diagram in this section
 
-        POS_MAIN --&gt; C_ACTION{Cashier Task}
-        C_ACTION -- Ring Up Sale --&gt; SCAN_PROD[/Scan Barcode with Reader or Search Item/]
-        C_ACTION -- Stock Monitor --&gt; C_STK_MON[/Search Real-Time Stock and Expiry Alerts/] --&gt; POS_MAIN
-        C_ACTION -- Shift Monitor --&gt; LIVE_SHIFT[/View Running Shift Sales and Expected Cash/] --&gt; POS_MAIN
-        C_ACTION -- Close Shift --&gt; CLOSE_PROMPT[/Enter Manager PIN and Counted Drawer Cash/]
+flowchart TB
+    LOGIN[&quot;Cashier signs in&quot;] --&gt; SHIFT{&quot;Own shift open?&quot;}
+    SHIFT -- No --&gt; PIN[&quot;Enter manager PIN and starting cash&quot;]
+    PIN --&gt; VALID{&quot;Valid PIN and cash?&quot;}
+    VALID -- No --&gt; PIN
+    VALID -- Yes --&gt; OPEN[&quot;Save open shift&quot;] --&gt; MENU
+    SHIFT -- Yes --&gt; MENU{&quot;Choose task&quot;}
+    MENU -- Sale --&gt; CART[&quot;Scan OR search; build cart; enter payment&quot;]
+    CART --&gt; SERVER[&quot;Server locks stock and shift;&lt;br/&gt;uses stored prices; validates cart and payment&quot;]
+    SERVER --&gt; OK{&quot;Checks and database writes succeed?&quot;}
+    OK -- No --&gt; ROLLBACK[&quot;Rollback; show error&quot;] --&gt; MENU
+    OK -- Yes --&gt; COMMIT[&quot;Commit sale and stock deduction;&lt;br/&gt;audit after commit&quot;]
+    COMMIT --&gt; RECEIPT[&quot;Display receipt and browser print dialog&quot;] --&gt; MENU
+    MENU -- Stock / Live shift --&gt; MON[&quot;View stock, expiry or running totals&quot;] --&gt; MENU
+    MENU -- Close --&gt; CLOSE[&quot;Manager PIN and counted cash&quot;]
+    CLOSE --&gt; RECON[&quot;Lock shift; calculate expected cash and variance&quot;]
+    RECON --&gt; CLOSED{&quot;Closed successfully?&quot;}
+    CLOSED -- No --&gt; MENU
+    CLOSED -- Yes --&gt; SUMMARY[&quot;Show summary; retain session&quot;] --&gt; SHIFT
+    MENU -- Sign out --&gt; END([Session ended])
 
-        SCAN_PROD --&gt; V_ITEM{Product Found in Catalog?}
-        V_ITEM -- No --&gt; ERR_ITEM[&quot;Product Not Found Alert&quot;] --&gt; POS_MAIN
-        V_ITEM -- Yes --&gt; V_STK{Stock Available?}
-        V_STK -- No --&gt; ERR_STK[&quot;Out of Stock Alert&quot;] --&gt; POS_MAIN
-        V_STK -- Yes --&gt; ADD_CART[&quot;Add Item to Cart and Update Subtotal&quot;]
+%% Next diagram in this section
 
-        ADD_CART --&gt; MORE_ITEMS{Scan More Items?}
-        MORE_ITEMS -- Yes --&gt; SCAN_PROD
-        MORE_ITEMS -- No --&gt; TENDER_IN[/Enter Cash Payment Tendered by Customer/]
-
-        TENDER_IN --&gt; V_TEND{Payment Sufficient?}
-        V_TEND -- No --&gt; ERR_TEND[&quot;Insufficient Cash Warning&quot;] --&gt; TENDER_IN
-        V_TEND -- Yes --&gt; CHANGE_CALC[&quot;Calculate Customer Change Due&quot;]
-
-        CHANGE_CALC --&gt; CONFIRM_SALE[&quot;Record Transaction and Deduct Sold Quantities from Stock&quot;]
-        CONFIRM_SALE --&gt; DISP_RCPT[/Display Digital Receipt and Print Customer Copy/] --&gt; POS_MAIN
-
-        CLOSE_PROMPT --&gt; V_PIN_CLOSE{Manager PIN Valid?}
-        V_PIN_CLOSE -- No --&gt; ERR_PIN_CLOSE[&quot;Invalid Manager PIN&quot;] --&gt; CLOSE_PROMPT
-        V_PIN_CLOSE -- Yes --&gt; RECON_CALC[&quot;Calculate Cash Drawer Over / Short Reconciliation&quot;]
-        RECON_CALC --&gt; CLOSE_S[&quot;Close Shift and Save Reconciliation Summary&quot;]
-        CLOSE_S --&gt; DISP_S_MODAL[/Display Shift Summary Report/]
-        DISP_S_MODAL --&gt; C_LOGOUT[&quot;Sign Out Cashier Session&quot;]
-    end
-
-    %% 2. ADMINISTRATIVE MANAGEMENT HUB
-    subgraph ADMIN_FLOW [&quot;2. ADMINISTRATIVE MANAGEMENT HUB&quot;]
-        direction TB
-        ADM_START[&quot;Open Admin Dashboard Hub&quot;] --&gt; ADM_ROUTER{Select Management Area}
-
-        %% Area 1: Inventory &amp; Suppliers
-        subgraph PIL_INV [&quot;Area 1: Inventory &amp; Suppliers&quot;]
-            direction TB
-            INV_MENU{Inventory Actions}
-            INV_MENU -- Add Product --&gt; INV_ADD[&quot;Register New Product: Barcode, Pricing, and Reorder Threshold&quot;]
-            INV_MENU -- Edit Details --&gt; INV_EDIT[&quot;Update Product Information, Prices, and Thresholds&quot;]
-            INV_MENU -- Adjust Stock --&gt; INV_ADJ[&quot;Record Stock In Deliveries, Spoilage, or Damaged Items&quot;]
-            INV_MENU -- Categories --&gt; INV_CAT[&quot;Create, Edit, and Organize Product Categories&quot;]
-            INV_MENU -- Suppliers --&gt; SUPP_OPS[&quot;Manage Wholesale Suppliers and Vendor Contact Records&quot;]
-            INV_ADD &amp; INV_EDIT &amp; INV_ADJ &amp; INV_CAT &amp; SUPP_OPS --&gt; INV_DONE[&quot;Save Changes and Return to Hub&quot;]
-        end
-
-        %% Area 2: Point of Sale &amp; Stock Monitor
-        subgraph PIL_POS [&quot;Area 2: Point of Sale &amp; Stock Monitor&quot;]
-            direction TB
-            POS_MENU{Operations Actions}
-            POS_MENU -- Open Register --&gt; ADM_POS_DIRECT[&quot;Open Cashier Register for Direct Store Sales&quot;]
-            POS_MENU -- Stock Monitor --&gt; ADM_STK_MON[&quot;Inspect Real-Time Stock Levels and Expiry Alerts&quot;]
-            ADM_POS_DIRECT &amp; ADM_STK_MON --&gt; POS_DONE[&quot;Return to Hub&quot;]
-        end
-
-        %% Area 3: Financial Analytics &amp; Shift History
-        subgraph PIL_FIN [&quot;Area 3: Financial Analytics &amp; Shift History&quot;]
-            direction TB
-            FIN_MENU{Financial Actions}
-            FIN_MENU -- Sales Reports --&gt; REP_GEN[&quot;Generate Daily, Weekly, and Monthly Revenue &amp; Profit Reports&quot;]
-            FIN_MENU -- Item Sales --&gt; REP_ITEMS[&quot;View Itemized Sales Breakdown and Top-Selling Products&quot;]
-            FIN_MENU -- Store Valuation --&gt; REP_VALU[&quot;Calculate Total Inventory Value: Cost vs Retail Value&quot;]
-            FIN_MENU -- Shift History --&gt; SHIFTS_AUDIT[&quot;Review Cashier Shift Logs, Float, and Cash Variances&quot;]
-            FIN_MENU -- Manager PIN --&gt; PIN_MGT[&quot;View or Change Today&#039;s 4-Digit Manager PIN&quot;]
-            REP_GEN &amp; REP_ITEMS &amp; REP_VALU &amp; SHIFTS_AUDIT &amp; PIN_MGT --&gt; FIN_DONE[&quot;Export PDF or CSV, Print, or Return&quot;]
-        end
-
-        %% Area 4: Forecasting &amp; System Administration
-        subgraph PIL_SYS [&quot;Area 4: Forecasting &amp; System Admin&quot;]
-            direction TB
-            SYS_MENU{Admin Actions}
-            SYS_MENU -- BI Dashboard --&gt; BI_VIEW[&quot;View Real-Time Sales KPIs, Trends, and Low-Stock Warnings&quot;]
-            SYS_MENU -- Demand Forecasting --&gt; FCST_RUN[&quot;Run Moving Average Demand Forecasts and Restocking Quantities&quot;]
-            SYS_MENU -- Staff Accounts --&gt; ACC_MGT[&quot;Manage Staff Accounts, Assign Roles, and Reset Passwords&quot;]
-            SYS_MENU -- Database Backup --&gt; BAK_MGT[&quot;Create, Download, or Manage Database Backups&quot;]
-            BI_VIEW &amp; FCST_RUN &amp; ACC_MGT &amp; BAK_MGT --&gt; SYS_DONE[&quot;Return to Hub&quot;]
-        end
-
-        ADM_ROUTER --&gt; INV_MENU
-        ADM_ROUTER --&gt; POS_MENU
-        ADM_ROUTER --&gt; FIN_MENU
-        ADM_ROUTER --&gt; SYS_MENU
-
-        INV_DONE &amp; POS_DONE &amp; FIN_DONE &amp; SYS_DONE --&gt; ADM_CYCLE{Next Admin Action?}
-        ADM_CYCLE -- Select Another Area --&gt; ADM_START
-        ADM_CYCLE -- Sign Out --&gt; ADM_LOGOUT[&quot;Sign Out Admin Session&quot;]
-    end
-
-    %% Role Routing
-    V_ROLE -- Cashier --&gt; C_START
-    V_ROLE -- Admin --&gt; ADM_START
-
-    C_LOGOUT --&gt; END_TERM([END: Session Terminated])
-    ADM_LOGOUT --&gt; END_TERM
-
-    %% Styling
-    style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
-    style END_TERM fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
-    style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
-    style V_ROLE fill:#dbeafe,stroke:#2563eb,stroke-width:2.5px
-    style CONFIRM_SALE fill:#dcfce7,stroke:#16a34a,stroke-width:2px
-    style FCST_RUN fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
-    style RECON_CALC fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
-    style CASHIER_FLOW fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
-    style ADMIN_FLOW fill:#eff6ff,stroke:#2563eb,stroke-width:2px
-    style PIL_INV fill:#ffffff,stroke:#64748b,stroke-width:1.5px
-    style PIL_POS fill:#ffffff,stroke:#64748b,stroke-width:1.5px
-    style PIL_FIN fill:#ffffff,stroke:#64748b,stroke-width:1.5px
-    style PIL_SYS fill:#ffffff,stroke:#64748b,stroke-width:1.5px</code></pre>
+flowchart TB
+    LOGIN[&quot;Admin signs in&quot;] --&gt; AUTH{&quot;Active account, valid password and admin role?&quot;}
+    AUTH -- No --&gt; LOGIN
+    AUTH -- Yes --&gt; HUB{&quot;Select admin action&quot;}
+    HUB --&gt; INV[&quot;Products and categories&lt;br/&gt;Add / Edit products; adjust stock;&lt;br/&gt;create / delete / reassign categories&quot;]
+    HUB --&gt; OPS[&quot;Store operations&lt;br/&gt;POS checkout, voids, stock monitor,&lt;br/&gt;own shift opening / closing and live totals&quot;]
+    HUB --&gt; FIN[&quot;Analytics&lt;br/&gt;Dashboard, sales and valuation reports,&lt;br/&gt;shift history and generated daily PIN&quot;]
+    HUB --&gt; SYS[&quot;Administration&lt;br/&gt;SMA / WMA forecasts, supplier directory,&lt;br/&gt;accounts, audit, SQL backup / restore,&lt;br/&gt;optional Google Drive upload&quot;]
+    INV &amp; OPS &amp; FIN &amp; SYS --&gt; RESULT[&quot;Show results or validation errors&quot;] --&gt; HUB
+    HUB -- Sign out --&gt; END([Session ended])</code></pre>
                 </div>
                 
                 <div class="diagram-canvas-container">
@@ -1362,134 +1178,34 @@ flowchart TD
                     <div class="flowchart-view active" id="flowchart-integrated">
                         <div class="mermaid-wrapper">
                             <div class="mermaid">
-flowchart TD
-    START([START: User Access]) --> LOGIN[/Enter Username and Password/]
-    LOGIN --> V_AUTH{Valid Credentials and Active?}
-    V_AUTH -- No --> ERR_AUTH["Display Invalid Credentials Alert"] --> LOGIN
-    V_AUTH -- Yes --> V_ROLE{User Role?}
+flowchart TB
+    START([User opens system]) --&gt; LOGIN["Enter credentials"]
+    LOGIN --&gt; AUTH{"Active account and valid password?"}
+    AUTH -- No --&gt; ERROR["Show login error"] --&gt; LOGIN
+    AUTH -- Yes --&gt; ROLE{"Current role?"}
+    ROLE -- Cashier --&gt; SHIFT{"Own open shift?"}
+    SHIFT -- No --&gt; OPEN["Enter manager PIN and starting cash"]
+    OPEN --&gt; PIN{"Valid PIN and float?"}
+    PIN -- No --&gt; OPEN
+    PIN -- Yes --&gt; SAVE["Save open shift"] --&gt; CASH["Cashier workspace"]
+    SHIFT -- Yes --&gt; CASH
+    CASH --&gt; TASK{"Select task"}
+    TASK -- Sale --&gt; SALE["Scan or search; build cart; enter cash"]
+    SALE --&gt; CHECK["Server locks stock; uses stored prices;&lt;br/&gt;validates stock, payment and shift"]
+    CHECK --&gt; OK{"All checks and writes succeed?"}
+    OK -- No --&gt; FAIL["Rollback and show error"] --&gt; CASH
+    OK -- Yes --&gt; COMMIT["Commit sale and stock deduction;&lt;br/&gt;then log audit event"]
+    COMMIT --&gt; RECEIPT["Receipt and browser print dialog"] --&gt; CASH
+    TASK -- Stock or live totals --&gt; MON["View shift-gated stock or live totals"] --&gt; CASH
+    TASK -- Close shift --&gt; CLOSE["Manager PIN and counted cash;&lt;br/&gt;lock shift and reconcile"]
+    CLOSE --&gt; CLOSED{"Close successful?"}
+    CLOSED -- No --&gt; CASH
+    CLOSED -- Yes --&gt; SUMMARY["Show reconciliation; keep session signed in"] --&gt; SHIFT
+    ROLE -- Admin --&gt; ADMIN["Admin hub: catalog, suppliers, sales,&lt;br/&gt;shifts, reports, forecasts, accounts,&lt;br/&gt;audit, SQL backups and optional cloud upload"]
+    ADMIN --&gt; RESULT["Perform selected action and show result"] --&gt; ADMIN
+    CASH &amp; ADMIN --&gt;|Optional sign out| LOGOUT["Destroy session"] --&gt; END([End])
 
-    %% 1. CASHIER WORKSTATION LIFECYCLE
-    subgraph CASHIER_FLOW ["1. CASHIER WORKSTATION LIFECYCLE"]
-        direction TB
-        C_START["Open Cashier Workspace"] --> CHK_S{Active Open Shift Exists?}
-        CHK_S -- No --> PIN_IN[/Enter Manager Authorization PIN and Starting Cash Float/]
-        PIN_IN --> V_PIN{Valid Manager PIN?}
-        V_PIN -- No --> ERR_PIN["Invalid Authorization PIN"] --> PIN_IN
-        V_PIN -- Yes --> OPEN_S["Open Cashier Shift with Recorded Float"] --> POS_MAIN
-        CHK_S -- Yes --> POS_MAIN["Load POS Sales Register"]
-
-        POS_MAIN --> C_ACTION{Cashier Task}
-        C_ACTION -- Ring Up Sale --> SCAN_PROD[/Scan Barcode with Reader or Search Item/]
-        C_ACTION -- Stock Monitor --> C_STK_MON[/Search Real-Time Stock and Expiry Alerts/] --> POS_MAIN
-        C_ACTION -- Shift Monitor --> LIVE_SHIFT[/View Running Shift Sales and Expected Cash/] --> POS_MAIN
-        C_ACTION -- Close Shift --> CLOSE_PROMPT[/Enter Manager PIN and Counted Drawer Cash/]
-
-        SCAN_PROD --> V_ITEM{Product Found in Catalog?}
-        V_ITEM -- No --> ERR_ITEM["Product Not Found Alert"] --> POS_MAIN
-        V_ITEM -- Yes --> V_STK{Stock Available?}
-        V_STK -- No --> ERR_STK["Out of Stock Alert"] --> POS_MAIN
-        V_STK -- Yes --> ADD_CART["Add Item to Cart and Update Subtotal"]
-
-        ADD_CART --> MORE_ITEMS{Scan More Items?}
-        MORE_ITEMS -- Yes --> SCAN_PROD
-        MORE_ITEMS -- No --> TENDER_IN[/Enter Cash Payment Tendered by Customer/]
-
-        TENDER_IN --> V_TEND{Payment Sufficient?}
-        V_TEND -- No --> ERR_TEND["Insufficient Cash Warning"] --> TENDER_IN
-        V_TEND -- Yes --> CHANGE_CALC["Calculate Customer Change Due"]
-
-        CHANGE_CALC --> CONFIRM_SALE["Record Transaction and Deduct Sold Quantities from Stock"]
-        CONFIRM_SALE --> DISP_RCPT[/Display Digital Receipt and Print Customer Copy/] --> POS_MAIN
-
-        CLOSE_PROMPT --> V_PIN_CLOSE{Manager PIN Valid?}
-        V_PIN_CLOSE -- No --> ERR_PIN_CLOSE["Invalid Manager PIN"] --> CLOSE_PROMPT
-        V_PIN_CLOSE -- Yes --> RECON_CALC["Calculate Cash Drawer Over / Short Reconciliation"]
-        RECON_CALC --> CLOSE_S["Close Shift and Save Reconciliation Summary"]
-        CLOSE_S --> DISP_S_MODAL[/Display Shift Summary Report/]
-        DISP_S_MODAL --> C_LOGOUT["Sign Out Cashier Session"]
-    end
-
-    %% 2. ADMINISTRATIVE MANAGEMENT HUB
-    subgraph ADMIN_FLOW ["2. ADMINISTRATIVE MANAGEMENT HUB"]
-        direction TB
-        ADM_START["Open Admin Dashboard Hub"] --> ADM_ROUTER{Select Management Area}
-
-        %% Area 1: Inventory & Suppliers
-        subgraph PIL_INV ["Area 1: Inventory & Suppliers"]
-            direction TB
-            INV_MENU{Inventory Actions}
-            INV_MENU -- Add Product --> INV_ADD["Register New Product: Barcode, Pricing, and Reorder Threshold"]
-            INV_MENU -- Edit Details --> INV_EDIT["Update Product Information, Prices, and Thresholds"]
-            INV_MENU -- Adjust Stock --> INV_ADJ["Record Stock In Deliveries, Spoilage, or Damaged Items"]
-            INV_MENU -- Categories --> INV_CAT["Create, Edit, and Organize Product Categories"]
-            INV_MENU -- Suppliers --> SUPP_OPS["Manage Wholesale Suppliers and Vendor Contact Records"]
-            INV_ADD & INV_EDIT & INV_ADJ & INV_CAT & SUPP_OPS --> INV_DONE["Save Changes and Return to Hub"]
-        end
-
-        %% Area 2: Point of Sale & Stock Monitor
-        subgraph PIL_POS ["Area 2: Point of Sale & Stock Monitor"]
-            direction TB
-            POS_MENU{Operations Actions}
-            POS_MENU -- Open Register --> ADM_POS_DIRECT["Open Cashier Register for Direct Store Sales"]
-            POS_MENU -- Stock Monitor --> ADM_STK_MON["Inspect Real-Time Stock Levels and Expiry Alerts"]
-            ADM_POS_DIRECT & ADM_STK_MON --> POS_DONE["Return to Hub"]
-        end
-
-        %% Area 3: Financial Analytics & Shift History
-        subgraph PIL_FIN ["Area 3: Financial Analytics & Shift History"]
-            direction TB
-            FIN_MENU{Financial Actions}
-            FIN_MENU -- Sales Reports --> REP_GEN["Generate Daily, Weekly, and Monthly Revenue & Profit Reports"]
-            FIN_MENU -- Item Sales --> REP_ITEMS["View Itemized Sales Breakdown and Top-Selling Products"]
-            FIN_MENU -- Store Valuation --> REP_VALU["Calculate Total Inventory Value: Cost vs Retail Value"]
-            FIN_MENU -- Shift History --> SHIFTS_AUDIT["Review Cashier Shift Logs, Float, and Cash Variances"]
-            FIN_MENU -- Manager PIN --> PIN_MGT["View or Change Today's 4-Digit Manager PIN"]
-            REP_GEN & REP_ITEMS & REP_VALU & SHIFTS_AUDIT & PIN_MGT --> FIN_DONE["Export PDF or CSV, Print, or Return"]
-        end
-
-        %% Area 4: Forecasting & System Administration
-        subgraph PIL_SYS ["Area 4: Forecasting & System Admin"]
-            direction TB
-            SYS_MENU{Admin Actions}
-            SYS_MENU -- BI Dashboard --> BI_VIEW["View Real-Time Sales KPIs, Trends, and Low-Stock Warnings"]
-            SYS_MENU -- Demand Forecasting --> FCST_RUN["Run Moving Average Demand Forecasts and Restocking Quantities"]
-            SYS_MENU -- Staff Accounts --> ACC_MGT["Manage Staff Accounts, Assign Roles, and Reset Passwords"]
-            SYS_MENU -- Database Backup --> BAK_MGT["Create, Download, or Manage Database Backups"]
-            BI_VIEW & FCST_RUN & ACC_MGT & BAK_MGT --> SYS_DONE["Return to Hub"]
-        end
-
-        ADM_ROUTER --> INV_MENU
-        ADM_ROUTER --> POS_MENU
-        ADM_ROUTER --> FIN_MENU
-        ADM_ROUTER --> SYS_MENU
-
-        INV_DONE & POS_DONE & FIN_DONE & SYS_DONE --> ADM_CYCLE{Next Admin Action?}
-        ADM_CYCLE -- Select Another Area --> ADM_START
-        ADM_CYCLE -- Sign Out --> ADM_LOGOUT["Sign Out Admin Session"]
-    end
-
-    %% Role Routing
-    V_ROLE -- Cashier --> C_START
-    V_ROLE -- Admin --> ADM_START
-
-    C_LOGOUT --> END_TERM([END: Session Terminated])
-    ADM_LOGOUT --> END_TERM
-
-    %% Styling
-    style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
-    style END_TERM fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
-    style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
-    style V_ROLE fill:#dbeafe,stroke:#2563eb,stroke-width:2.5px
-    style CONFIRM_SALE fill:#dcfce7,stroke:#16a34a,stroke-width:2px
-    style FCST_RUN fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
-    style RECON_CALC fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
-    style CASHIER_FLOW fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
-    style ADMIN_FLOW fill:#eff6ff,stroke:#2563eb,stroke-width:2px
-    style PIL_INV fill:#ffffff,stroke:#64748b,stroke-width:1.5px
-    style PIL_POS fill:#ffffff,stroke:#64748b,stroke-width:1.5px
-    style PIL_FIN fill:#ffffff,stroke:#64748b,stroke-width:1.5px
-    style PIL_SYS fill:#ffffff,stroke:#64748b,stroke-width:1.5px
-                            </div>
+</div>
                         </div>
                     </div>
 
@@ -1497,54 +1213,28 @@ flowchart TD
                     <div class="flowchart-view" id="flowchart-cashier">
                         <div class="mermaid-wrapper">
                             <div class="mermaid">
-flowchart TD
-    START([START: Cashier Access]) --> LOGIN[/Enter Cashier Username and Password/]
-    LOGIN --> V_AUTH{Valid Credentials?}
-    V_AUTH -- No --> ERR_AUTH["Display Invalid Credentials Alert"] --> LOGIN
-    V_AUTH -- Yes --> CHK_S{Active Open Shift Exists?}
+flowchart TB
+    LOGIN["Cashier signs in"] --&gt; SHIFT{"Own shift open?"}
+    SHIFT -- No --&gt; PIN["Enter manager PIN and starting cash"]
+    PIN --&gt; VALID{"Valid PIN and cash?"}
+    VALID -- No --&gt; PIN
+    VALID -- Yes --&gt; OPEN["Save open shift"] --&gt; MENU
+    SHIFT -- Yes --&gt; MENU{"Choose task"}
+    MENU -- Sale --&gt; CART["Scan OR search; build cart; enter payment"]
+    CART --&gt; SERVER["Server locks stock and shift;&lt;br/&gt;uses stored prices; validates cart and payment"]
+    SERVER --&gt; OK{"Checks and database writes succeed?"}
+    OK -- No --&gt; ROLLBACK["Rollback; show error"] --&gt; MENU
+    OK -- Yes --&gt; COMMIT["Commit sale and stock deduction;&lt;br/&gt;audit after commit"]
+    COMMIT --&gt; RECEIPT["Display receipt and browser print dialog"] --&gt; MENU
+    MENU -- Stock / Live shift --&gt; MON["View stock, expiry or running totals"] --&gt; MENU
+    MENU -- Close --&gt; CLOSE["Manager PIN and counted cash"]
+    CLOSE --&gt; RECON["Lock shift; calculate expected cash and variance"]
+    RECON --&gt; CLOSED{"Closed successfully?"}
+    CLOSED -- No --&gt; MENU
+    CLOSED -- Yes --&gt; SUMMARY["Show summary; retain session"] --&gt; SHIFT
+    MENU -- Sign out --&gt; END([Session ended])
 
-    CHK_S -- No --> PIN_IN[/Enter Manager Authorization PIN and Starting Cash Float/]
-    PIN_IN --> V_PIN{Valid Manager PIN?}
-    V_PIN -- No --> ERR_PIN["Invalid Authorization PIN"] --> PIN_IN
-    V_PIN -- Yes --> OPEN_S["Open Cashier Shift with Recorded Float"] --> POS_MAIN
-    CHK_S -- Yes --> POS_MAIN["Load POS Sales Register Workspace"]
-
-    POS_MAIN --> C_MENU{Select Cashier Action}
-    C_MENU -- Ring Up Sale --> SCAN_PROD[/Scan Barcode with Reader or Search Item by Name/]
-    C_MENU -- Check Stock --> STK_LOOKUP[/Open Stock Monitor: Check Available Stock & Expiry/] --> POS_MAIN
-    C_MENU -- Shift Monitor --> LIVE_SHIFT[/Open Live Shift Monitor: View Sales & Expected Cash/] --> POS_MAIN
-    C_MENU -- Close Shift --> CLOSE_PROMPT[/Enter Manager PIN and Counted Drawer Cash/]
-
-    SCAN_PROD --> V_ITEM{Product Found in Catalog?}
-    V_ITEM -- No --> ERR_ITEM["Product Not Found Alert"] --> POS_MAIN
-    V_ITEM -- Yes --> V_STK{Stock Available?}
-    V_STK -- No --> ERR_STK["Out of Stock Alert"] --> POS_MAIN
-    V_STK -- Yes --> ADD_CART["Add Item to Cart and Update Subtotal"]
-
-    ADD_CART --> MORE_ITEMS{Scan More Items?}
-    MORE_ITEMS -- Yes --> SCAN_PROD
-    MORE_ITEMS -- No --> TENDER_IN[/Enter Cash Payment Tendered by Customer/]
-
-    TENDER_IN --> V_TEND{Payment Sufficient?}
-    V_TEND -- No --> ERR_TEND["Insufficient Cash Warning"] --> TENDER_IN
-    V_TEND -- Yes --> CHANGE_CALC["Calculate Customer Change Due"]
-
-    CHANGE_CALC --> CONFIRM_SALE["Record Transaction and Deduct Sold Quantities from Stock"]
-    CONFIRM_SALE --> DISP_RCPT[/Display Digital Receipt and Print Customer Copy/] --> POS_MAIN
-
-    CLOSE_PROMPT --> V_PIN_CLOSE{Manager PIN Valid?}
-    V_PIN_CLOSE -- No --> ERR_PIN_CLOSE["Invalid Manager PIN"] --> CLOSE_PROMPT
-    V_PIN_CLOSE -- Yes --> RECON_CALC["Calculate Cash Drawer Over / Short Reconciliation"]
-    RECON_CALC --> CLOSE_S["Close Shift and Save Reconciliation Summary"]
-    CLOSE_S --> DISP_S_MODAL[/Display Shift Summary Report/]
-    DISP_S_MODAL --> C_LOGOUT["Sign Out Cashier Session"] --> END_NODE([END: Session Terminated])
-
-    style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
-    style END_NODE fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
-    style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
-    style CONFIRM_SALE fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px
-    style RECON_CALC fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
-                            </div>
+</div>
                         </div>
                     </div>
 
@@ -1552,76 +1242,18 @@ flowchart TD
                     <div class="flowchart-view" id="flowchart-admin">
                         <div class="mermaid-wrapper">
                             <div class="mermaid">
-flowchart TD
-    START([START: Admin Access]) --> LOGIN[/Enter Administrator Username and Password/]
-    LOGIN --> V_AUTH{Valid Credentials?}
-    V_AUTH -- No --> ERR_AUTH["Display Invalid Credentials Alert"] --> LOGIN
-    V_AUTH -- Yes --> ADM_HUB["Open Administrator Control Center"]
+flowchart TB
+    LOGIN["Admin signs in"] --&gt; AUTH{"Active account, valid password and admin role?"}
+    AUTH -- No --&gt; LOGIN
+    AUTH -- Yes --&gt; HUB{"Select admin action"}
+    HUB --&gt; INV["Products and categories&lt;br/&gt;Add / Edit products; adjust stock;&lt;br/&gt;create / delete / reassign categories"]
+    HUB --&gt; OPS["Store operations&lt;br/&gt;POS checkout, voids, stock monitor,&lt;br/&gt;own shift opening / closing and live totals"]
+    HUB --&gt; FIN["Analytics&lt;br/&gt;Dashboard, sales and valuation reports,&lt;br/&gt;shift history and generated daily PIN"]
+    HUB --&gt; SYS["Administration&lt;br/&gt;SMA / WMA forecasts, supplier directory,&lt;br/&gt;accounts, audit, SQL backup / restore,&lt;br/&gt;optional Google Drive upload"]
+    INV &amp; OPS &amp; FIN &amp; SYS --&gt; RESULT["Show results or validation errors"] --&gt; HUB
+    HUB -- Sign out --&gt; END([Session ended])
 
-    ADM_HUB --> ADM_ROUTER{Select Enrolled Module}
-
-    %% 1. Inventory & Suppliers
-    subgraph SUB_INV ["1. Inventory & Suppliers"]
-        direction TB
-        INV_OP{Inventory Actions}
-        INV_OP -- Add Product --> I_ADD["Register New Product: Barcode, Pricing, and Reorder Threshold"]
-        INV_OP -- Edit Details --> I_EDIT["Update Product Information, Selling Prices, and Thresholds"]
-        INV_OP -- Adjust Stock --> I_ADJ["Record Stock In Deliveries, Spoilage, or Damaged Items"]
-        INV_OP -- Categories --> I_CAT["Create, Edit, and Organize Product Categories"]
-        INV_OP -- Suppliers --> I_SUPP["Manage Wholesale Suppliers and Contact Records"]
-        I_ADD & I_EDIT & I_ADJ & I_CAT & I_SUPP --> INV_LOG["Save Changes and Return"]
-    end
-
-    %% 2. Point of Sale & Stock Monitor
-    subgraph SUB_SALES ["2. Point of Sale & Stock Monitor"]
-        direction TB
-        SALES_OP{Operations Actions}
-        SALES_OP -- Point of Sale --> S_POS["Open Cashier Register for Direct Store Sales"]
-        SALES_OP -- Stock Monitor --> S_MON["Inspect Real-Time Stock Levels and Expiry Alerts"]
-        S_POS & S_MON --> SALES_LOG["Complete Action and Return"]
-    end
-
-    %% 3. Financial Analytics & Shift History
-    subgraph SUB_FIN ["3. Financial Analytics & Shift History"]
-        direction TB
-        FIN_OP{Financial Actions}
-        FIN_OP -- Sales Reports --> F_REP["Generate Daily, Weekly, and Monthly Revenue & Profit Reports"]
-        FIN_OP -- Item Sales --> F_ITEMS["View Itemized Sales Breakdown and Top-Selling Products"]
-        FIN_OP -- Store Valuation --> F_VAL["Calculate Total Store Inventory Value: Cost vs Retail Value"]
-        FIN_OP -- Shift History --> F_SHIFTS["Audit Cashier Shift Logs, Float, Sales, and Cash Variances"]
-        FIN_OP -- Manager PIN --> F_PIN["View or Change Today's 4-Digit Manager PIN"]
-        F_REP & F_ITEMS & F_VAL & F_SHIFTS & F_PIN --> F_EXPORT["Export to PDF or CSV, Print, or Return"]
-    end
-
-    %% 4. Forecasting & System Admin
-    subgraph SUB_SYS ["4. Forecasting & System Admin"]
-        direction TB
-        SYS_OP{Admin Actions}
-        SYS_OP -- BI Dashboard --> Y_BI["View Real-Time Sales KPIs, Trends, and Low-Stock Warnings"]
-        SYS_OP -- Demand Forecasting --> Y_FCST["Run Moving Average Demand Forecasts and Restocking Quantities"]
-        SYS_OP -- Staff Accounts --> Y_ACC["Manage Staff Accounts, Assign Roles, and Reset Passwords"]
-        SYS_OP -- Database Backup --> Y_BAK["Create, Download, or Manage Database Backups"]
-        Y_BI & Y_FCST & Y_ACC & Y_BAK --> SYS_LOG["Complete Action and Return"]
-    end
-
-    ADM_ROUTER --> INV_OP
-    ADM_ROUTER --> SALES_OP
-    ADM_ROUTER --> FIN_OP
-    ADM_ROUTER --> SYS_OP
-
-    INV_LOG & SALES_LOG & F_EXPORT & SYS_LOG --> ADM_DECIDE{Next Admin Action?}
-    ADM_DECIDE -- Perform Another Task --> ADM_HUB
-    ADM_DECIDE -- Sign Out --> ADM_EXIT["Sign Out Admin Session"] --> END_TERM([END: Session Terminated])
-
-    style START fill:#10b981,color:#fff,stroke:#059669,stroke-width:2.5px
-    style END_TERM fill:#0f172a,color:#fff,stroke:#334155,stroke-width:2.5px
-    style V_AUTH fill:#fef3c7,stroke:#d97706,stroke-width:2px
-    style Y_FCST fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
-    style SUB_INV fill:#f8fafc,stroke:#64748b,stroke-width:1.5px
-    style SUB_SALES fill:#f8fafc,stroke:#64748b,stroke-width:1.5px
-    style SUB_FIN fill:#f8fafc,stroke:#64748b,stroke-width:1.5px
-    style SUB_SYS fill:#f8fafc,stroke:#64748b,stroke-width:1.5px
-                            </div>
+</div>
                         </div>
                     </div>
                 </div>
@@ -1640,8 +1272,8 @@ flowchart TD
                         <div class="spec-block">
                             <h4 class="spec-block-title"><i class="fa-solid fa-cart-shopping"></i> Cashier Access & POS Checkout Rules</h4>
                             <ul class="spec-list">
-                                <li><strong>Unlocked Stock Monitoring:</strong> Cashiers can freely open the Stock Monitor at any time to check product availability, remaining quantities, and expiry dates without entering the Manager PIN.</li>
-                                <li><strong>Locked POS Register Workspace:</strong> Only the Point of Sale checkout register is locked; it strictly requires a daily Manager PIN and starting cash float to unlock the cash drawer and begin ringing up sales.</li>
+                                <li><strong>Shift-Gated Stock Monitoring:</strong> Cashiers require an open, manager-authorized shift to access the stock-monitoring lists, statistics and expiry alerts.</li>
+                                <li><strong>Locked POS Register Workspace:</strong> Cashier checkout and stock monitoring are locked without an open shift; it strictly requires a daily Manager PIN and starting cash float to unlock the cash drawer and begin ringing up sales.</li>
                                 <li><strong>Automated Stock Deduction:</strong> Automatically decrements product quantities and prints customer receipts upon completing customer sales.</li>
                             </ul>
                         </div>
@@ -1649,7 +1281,7 @@ flowchart TD
                             <h4 class="spec-block-title"><i class="fa-solid fa-boxes-stacked"></i> Inventory & Wholesale Suppliers</h4>
                             <ul class="spec-list">
                                 <li><strong>Catalog Maintenance:</strong> Add new items, update selling prices, record delivery restocks or damage write-offs, and organize categories.</li>
-                                <li><strong>Supplier Directory:</strong> Maintain wholesale vendor profiles, contact information, and supplier associations per product.</li>
+                                <li><strong>Supplier Directory:</strong> Maintain wholesale vendor profiles, contact information, and a standalone supplier directory; products have no supplier foreign key.</li>
                                 <li><strong>Stock Monitoring:</strong> Real-time lookup of stock levels, minimum safety thresholds, and 30-day expiration alerts.</li>
                             </ul>
                         </div>
@@ -1677,7 +1309,7 @@ flowchart TD
                             <span class="badge-tag badge-appendix">Hardware Topology</span>
                         </div>
                         <h3 class="diagram-title"><i class="fa-solid fa-server text-secondary"></i> System Architecture & Deployment Topology</h3>
-                        <p class="diagram-subtitle">Three-tier physical and software distribution running on offline-first local XAMPP infrastructure.</p>
+                        <p class="diagram-subtitle">Presentation, PHP application and storage layers with local or cloud deployment.</p>
                     </div>
                     <div class="diagram-header-actions">
                         <button class="tool-btn" onclick="zoomDiagram('diagram-8', 0.25)" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
@@ -1690,83 +1322,62 @@ flowchart TD
                 
                 <div class="diagram-source-drawer" id="src-diag-8">
                     <pre><code>flowchart TB
-    subgraph PRESENTATION_TIER ["1. PRESENTATION TIER (Client Devices)"]
-        direction LR
-        BROWSER["Modern Web Browser<br/>(Chrome / Edge / Firefox)"]
-        UI_FRAMEWORK["UI & Client Stack:<br/>• Bootstrap 5.3 Responsive Grid<br/>• Font Awesome 6.5 Icons<br/>• Vanilla JavaScript ES6 (Fetch API)<br/>• Chart.js (Dashboard Visuals)<br/>• Custom CSS (style.css, pos.css)"]
+    subgraph CLIENT[&quot;Presentation&quot;]
+        C[&quot;Cashier browser: POS, stock and shifts&quot;]
+        A[&quot;Admin browser: management and analytics&quot;]
+        SC[&quot;USB / Bluetooth HID scanner&quot;] --&gt; C
+        CDN[&quot;External CDN: Bootstrap, icons and charts&quot;]
     end
-
-    subgraph HARDWARE_LAYER ["Hardware Peripherals Layer"]
-        BARCODE["USB / Bluetooth Barcode Scanner<br/>(HID Keyboard Emulation)"]
-        PRINTER["Document / Receipt Printer<br/>(Sales Reports & Invoices)"]
-        TERMINAL["Cashier & Admin Workstation<br/>(Intel Core i3/i5, 8-16GB RAM)"]
+    subgraph SERVER[&quot;Application deployment alternatives&quot;]
+        LOCAL[&quot;Local XAMPP Apache / PHP&quot;]
+        CLOUD[&quot;Vercel PHP functions / api/index.php router&quot;]
+        APP[&quot;PHP pages and JSON action endpoints&quot;]
+        AUTH[&quot;Current account checks and database-backed sessions&quot;]
+        LOGIC[&quot;Checkout, shifts, inventory, forecasts and reports&quot;]
+        BACK[&quot;PHP / PDO SQL exporter and importer&quot;]
+        LOCAL &amp; CLOUD --&gt; APP
+        APP --&gt; AUTH &amp; LOGIC &amp; BACK
     end
-
-    subgraph APPLICATION_TIER ["2. APPLICATION / LOGIC TIER (Local Server)"]
-        APACHE["Apache Web Server 2.4<br/>(XAMPP Local Deployment)"]
-        PHP_RUNTIME["PHP 8.2 Runtime Engine"]
-        API_ENDPOINTS["RESTful JSON Endpoints (/api/):<br/>• transactions.php (POS Checkout & Stock sync)<br/>• forecasting.php (SMA & WMA Algorithms)<br/>• inventory.php (Product CRUD & Categories)<br/>• shifts.php (Daily PIN & Cash Drawer)<br/>• dashboard.php (BI Aggregates & Charts)<br/>• backup.php (mysqldump Wrapper)"]
-        CORE_SERVICES["Core Services (/includes/):<br/>• auth_check.php (Session RBAC Middleware)<br/>• db.php (PDO Singleton Connection)<br/>• audit.php (Security & IP Audit Logger)"]
-    end
-
-    subgraph DATA_TIER ["3. DATA STORAGE TIER (Database Server)"]
-        MYSQL["MariaDB 10.4 / MySQL Server<br/>(Database: sharonstore_db)"]
-        TABLES["InnoDB Relational Tables:<br/>tbl_users | tbl_inventory | tbl_categories<br/>tbl_transactions | tbl_transaction_details<br/>tbl_shifts | tbl_forecasts | tbl_suppliers<br/>tbl_audit_logs | tbl_settings"]
-        BACKUPS["Local Backup Storage:<br/>/backups/*.sql (Automated & Manual Dumps)"]
-    end
-
-    BARCODE --> BROWSER
-    BROWSER -->|HTTP Requests| APACHE
-    APACHE -->|HTML & JSON Assets| BROWSER
-    APACHE --> PHP_RUNTIME
-    PHP_RUNTIME --> API_ENDPOINTS & CORE_SERVICES
-    API_ENDPOINTS & CORE_SERVICES -->|PDO Queries| MYSQL
-    MYSQL -->|Record Sets| API_ENDPOINTS & CORE_SERVICES
-    MYSQL --> TABLES
-    API_ENDPOINTS -.->|mysqldump| BACKUPS
-    BROWSER -.->|window.print| PRINTER</code></pre>
+    DB[(&quot;Local MariaDB OR remote MySQL-compatible database&lt;br/&gt;11 tables including tbl_sessions&quot;)]
+    FILE[(&quot;Local backups/ OR serverless temporary files&quot;)]
+    DRIVE[&quot;Google Drive via configured Apps Script webhook&quot;]
+    C &amp; A &lt;--&gt;|HTML and JSON over HTTP / HTTPS| APP
+    CDN --&gt;|Frontend dependencies| C &amp; A
+    AUTH &amp; LOGIC &amp; BACK &lt;--&gt;|PDO queries; remote TLS configuration| DB
+    BACK &lt;--&gt;|SQL files| FILE
+    BACK --&gt;|Optional HTTPS upload| DRIVE</code></pre>
                 </div>
 
                 <div class="diagram-canvas-container">
                     <div class="mermaid-wrapper">
                         <div class="mermaid">
 flowchart TB
-    subgraph PRESENTATION ["1. Presentation Layer (Workstations & UI)"]
-        C_TERM["Cashier Terminal<br/>(POS Interface)"]
-        A_TERM["Admin Terminal<br/>(BI Dashboard & Inventory)"]
-        SCAN["Barcode Scanner<br/>(HID Input)"]
-        SCAN --> C_TERM
+    subgraph CLIENT["Presentation"]
+        C["Cashier browser: POS, stock and shifts"]
+        A["Admin browser: management and analytics"]
+        SC["USB / Bluetooth HID scanner"] --&gt; C
+        CDN["External CDN: Bootstrap, icons and charts"]
     end
-
-    subgraph APPLICATION ["2. Application Layer (XAMPP Server)"]
-        APACHE["Apache 2.4 Web Server"]
-        PHP["PHP 8.2 Backend Engine"]
-        AUTH["auth_check.php<br/>(RBAC Security)"]
-        FCST_ENG["Forecasting Engine<br/>(SMA & WMA)"]
-        POS_ENG["POS Transaction Handler<br/>(Stock Deduction)"]
-        AUDIT_ENG["Audit Logger<br/>(IP & Activity)"]
-
-        APACHE --> PHP
-        PHP --> AUTH & FCST_ENG & POS_ENG & AUDIT_ENG
+    subgraph SERVER["Application deployment alternatives"]
+        LOCAL["Local XAMPP Apache / PHP"]
+        CLOUD["Vercel PHP functions / api/index.php router"]
+        APP["PHP pages and JSON action endpoints"]
+        AUTH["Current account checks and database-backed sessions"]
+        LOGIC["Checkout, shifts, inventory, forecasts and reports"]
+        BACK["PHP / PDO SQL exporter and importer"]
+        LOCAL &amp; CLOUD --&gt; APP
+        APP --&gt; AUTH &amp; LOGIC &amp; BACK
     end
+    DB[("Local MariaDB OR remote MySQL-compatible database&lt;br/&gt;11 tables including tbl_sessions")]
+    FILE[("Local backups/ OR serverless temporary files")]
+    DRIVE["Google Drive via configured Apps Script webhook"]
+    C &amp; A &lt;--&gt;|HTML and JSON over HTTP / HTTPS| APP
+    CDN --&gt;|Frontend dependencies| C &amp; A
+    AUTH &amp; LOGIC &amp; BACK &lt;--&gt;|PDO queries; remote TLS configuration| DB
+    BACK &lt;--&gt;|SQL files| FILE
+    BACK --&gt;|Optional HTTPS upload| DRIVE
 
-    subgraph DATA ["3. Data Storage Layer (MariaDB)"]
-        MARIADB[("MariaDB 10.4 Server<br/>sharonstore_db")]
-        DUMPS[("Local SQL Backups<br/>/backups/*.sql")]
-        MARIADB -.->|Export| DUMPS
-    end
-
-    C_TERM -->|HTTP / JSON Requests| APACHE
-    A_TERM -->|HTTP / JSON Requests| APACHE
-    APACHE -->|Response Payloads| C_TERM
-    APACHE -->|Response Payloads| A_TERM
-    PHP -->|PDO Prepared Statements| MARIADB
-    MARIADB -->|Result Sets| PHP
-
-    style PRESENTATION fill:#f0fdf4,stroke:#10b981,stroke-width:2.5px
-    style APPLICATION fill:#eff6ff,stroke:#3b82f6,stroke-width:2.5px
-    style DATA fill:#faf5ff,stroke:#8b5cf6,stroke-width:2.5px
-                        </div>
+</div>
                     </div>
                 </div>
 
@@ -1783,8 +1394,8 @@ flowchart TB
                         <div class="spec-block">
                             <h4 class="spec-block-title"><i class="fa-solid fa-shield-virus"></i> Offline Operational Stability</h4>
                             <ul class="spec-list">
-                                <li><strong>Zero External Cloud Dependency:</strong> All core checkout and inventory functions run on the local Apache/MariaDB instance, ensuring 100% operational continuity during market power or internet interruptions.</li>
-                                <li><strong>Backup Redundancy:</strong> The <code>api/backup.php</code> endpoint invokes <code>mysqldump.exe</code> directly into the secure <code>/backups/</code> directory with timestamped SQL filenames.</li>
+                                <li><strong>Deployment Dependencies:</strong> Local deployment needs a running server, database and power. Cloud deployment needs network access. CDN-hosted frontend dependencies also need connectivity unless cached.</li>
+                                <li><strong>Backup Redundancy:</strong> The backup endpoint exports SQL using PDO and PHP file writes. Local files use <code>/backups/</code>; serverless files may use temporary storage. Google Drive upload is optional.</li>
                             </ul>
                         </div>
                     </div>
@@ -1818,32 +1429,38 @@ flowchart TB
                     <pre><code>sequenceDiagram
     autonumber
     actor Cashier
-    participant Scanner as Barcode Scanner
-    participant POS_UI as POS Client (pos.js)
+    participant UI as POS Interface
     participant API as transactions.php
-    participant DB as MariaDB (InnoDB)
-    participant Audit as audit.php
-
-    Cashier->>Scanner: Scans grocery item barcode
-    Scanner->>POS_UI: Emulates keyboard scan string
-    POS_UI->>API: GET ?action=barcode_lookup&barcode=X
-    API->>DB: SELECT item_id, stock_qty, price FROM tbl_inventory
-    DB-->>API: Item Record (stock_qty = 120, price = 18.00)
-    API-->>POS_UI: JSON {success: true, item: {...}}
-    POS_UI->>POS_UI: Update Cart Table & Total Amount
-
-    Cashier->>POS_UI: Enters Cash Tendered (₱500.00) & Submits
-    POS_UI->>API: POST complete_sale {items, amount_tendered}
-    API->>DB: beginTransaction()
-    API->>DB: SELECT stock_qty FROM tbl_inventory FOR UPDATE
-    API->>DB: INSERT INTO tbl_transactions (code, total, shift_id)
-    API->>DB: INSERT INTO tbl_transaction_details (txn_id, item_id, qty)
-    API->>DB: UPDATE tbl_inventory SET stock_qty = stock_qty - qty
-    API->>Audit: logAudit(user_id, 'COMPLETE_SALE', 'POS', 'TXN-xxx')
-    Audit->>DB: INSERT INTO tbl_audit_logs
-    API->>DB: commit()
-    API-->>POS_UI: JSON {success: true, change: ₱323.00, txn_code: '...'}
-    POS_UI->>Cashier: Render Digital Receipt & Change Display</code></pre>
+    participant DB as MySQL-compatible Database
+    Cashier-&gt;&gt;UI: Scan barcode OR search for item
+    UI-&gt;&gt;API: GET barcode_lookup OR search_items
+    API-&gt;&gt;DB: Read active product
+    DB--&gt;&gt;API: Name, stored price and available quantity
+    API--&gt;&gt;UI: Product data or lookup error
+    Cashier-&gt;&gt;UI: Enter cash and confirm checkout
+    UI-&gt;&gt;API: POST complete_sale with cart and payment
+    Note over API: Require current active account, refresh role
+    API-&gt;&gt;DB: BEGIN, lock inventory rows FOR UPDATE
+    DB--&gt;&gt;API: Authoritative prices and current stock
+    API-&gt;&gt;API: Validate quantities, calculate total from stored prices
+    API-&gt;&gt;DB: Lock and read active shift
+    Note over API: Cashier requires own open shift, admin may sell without one
+    alt Invalid item, stock, payment or cashier shift
+        API-&gt;&gt;DB: ROLLBACK
+        API--&gt;&gt;UI: Validation error, no sale saved
+    else Valid checkout
+        API-&gt;&gt;DB: Insert transaction and line items
+        API-&gt;&gt;DB: Conditional stock deductions
+        alt Database failure or stock deduction rejected
+            API-&gt;&gt;DB: ROLLBACK
+            API--&gt;&gt;UI: Failure, no partial sale
+        else All writes succeed
+            API-&gt;&gt;DB: COMMIT
+            API-&gt;&gt;DB: Write audit log after commit
+            API--&gt;&gt;UI: Receipt, transaction code and change
+            UI-&gt;&gt;Cashier: Show receipt, open browser print dialog
+        end
+    end</code></pre>
                 </div>
 
                 <div class="diagram-canvas-container">
@@ -1854,23 +1471,38 @@ sequenceDiagram
     actor Cashier
     participant UI as POS Interface
     participant API as transactions.php
-    participant DB as Database (MySQL)
+    participant DB as MySQL-compatible Database
+    Cashier-&gt;&gt;UI: Scan barcode OR search for item
+    UI-&gt;&gt;API: GET barcode_lookup OR search_items
+    API-&gt;&gt;DB: Read active product
+    DB--&gt;&gt;API: Name, stored price and available quantity
+    API--&gt;&gt;UI: Product data or lookup error
+    Cashier-&gt;&gt;UI: Enter cash and confirm checkout
+    UI-&gt;&gt;API: POST complete_sale with cart and payment
+    Note over API: Require current active account, refresh role
+    API-&gt;&gt;DB: BEGIN, lock inventory rows FOR UPDATE
+    DB--&gt;&gt;API: Authoritative prices and current stock
+    API-&gt;&gt;API: Validate quantities, calculate total from stored prices
+    API-&gt;&gt;DB: Lock and read active shift
+    Note over API: Cashier requires own open shift, admin may sell without one
+    alt Invalid item, stock, payment or cashier shift
+        API-&gt;&gt;DB: ROLLBACK
+        API--&gt;&gt;UI: Validation error, no sale saved
+    else Valid checkout
+        API-&gt;&gt;DB: Insert transaction and line items
+        API-&gt;&gt;DB: Conditional stock deductions
+        alt Database failure or stock deduction rejected
+            API-&gt;&gt;DB: ROLLBACK
+            API--&gt;&gt;UI: Failure, no partial sale
+        else All writes succeed
+            API-&gt;&gt;DB: COMMIT
+            API-&gt;&gt;DB: Write audit log after commit
+            API--&gt;&gt;UI: Receipt, transaction code and change
+            UI-&gt;&gt;Cashier: Show receipt, open browser print dialog
+        end
+    end
 
-    Cashier->>UI: 1. Scans Barcode or Searches Item
-    UI->>API: 2. GET ?action=barcode_lookup
-    API->>DB: 3. Query tbl_inventory by Barcode
-    DB-->>API: 4. Returns Item Name, Price, Stock
-    API-->>UI: 5. Displays Item in Cart & Computes Total
-
-    Cashier->>UI: 6. Enters Cash Tendered & Clicks Pay
-    UI->>API: 7. POST complete_sale (Cart Payload)
-    API->>DB: 8. BEGIN TRANSACTION
-    API->>DB: 9. Insert into tbl_transactions & details
-    API->>DB: 10. Deduct Stock: UPDATE tbl_inventory
-    API->>DB: 11. Write Audit Log & COMMIT
-    API-->>UI: 12. Return Success, TXN Code & Change
-    UI->>Cashier: 13. Displays Final Receipt Summary
-                        </div>
+</div>
                     </div>
                 </div>
 
@@ -1881,7 +1513,7 @@ sequenceDiagram
                             <div class="math-formula-box">
                                 <div class="math-formula-title">1. Simple Moving Average (SMA)</div>
                                 <div class="math-formula-content">SMA = (&Sigma; Qty_sold) / n</div>
-                                <div class="math-formula-note">Where <i>n</i> is 3, 6, or 12 historical months. Gives equal weight to each month.</div>
+                                <div class="math-formula-note">The window contains 3, 6 or 12 consecutive calendar months ending in the current month. Zero-sales months count as zero; the current month may be incomplete.</div>
                             </div>
                             <div class="math-formula-box">
                                 <div class="math-formula-title">2. Weighted Moving Average (WMA)</div>
@@ -1894,7 +1526,7 @@ sequenceDiagram
                             <div class="math-formula-box">
                                 <div class="math-formula-title">Recommended Restock Quantity</div>
                                 <div class="math-formula-content">Restock_Qty = max(0, Predicted_Qty &minus; Current_Stock_Qty)</div>
-                                <div class="math-formula-note">If current stock exceeds forecasted demand, restock recommendation evaluates to 0, completely preventing retail overstocking and financial spoilage.</div>
+                                <div class="math-formula-note">If current stock exceeds forecasted demand, restock recommendation evaluates to 0, avoiding a negative replenishment suggestion; forecasts cannot guarantee prevention of overstocking or spoilage.</div>
                             </div>
                         </div>
                     </div>
@@ -1926,51 +1558,82 @@ sequenceDiagram
                 
                 <div class="diagram-source-drawer" id="src-diag-10">
                     <pre><code>stateDiagram-v2
-    [*] --> InStock : Wholesale Delivery Received (stock_qty > threshold)
-    
-    InStock --> InStock : Normal POS Checkout Sale
-    InStock --> LowStock : stock_qty <= low_stock_threshold
-    LowStock --> InStock : Wholesale Restock Added
-    LowStock --> OutOfStock : stock_qty = 0
-    OutOfStock --> InStock : Wholesale Restock Added
-    
-    InStock --> ExpiringSoon : Current Date >= (expiry_date - 30 days)
-    LowStock --> ExpiringSoon : Current Date >= (expiry_date - 30 days)
-    
-    ExpiringSoon --> Expired : Current Date > expiry_date
-    Expired --> Disposed : Removed & Documented
-    
-    InStock --> Archived : Admin Soft Delete (is_active = 0)
-    LowStock --> Archived : Admin Soft Delete (is_active = 0)
-    OutOfStock --> Archived : Admin Soft Delete (is_active = 0)
-    Disposed --> Archived : Admin Soft Delete (is_active = 0)
-    Archived --> [*]</code></pre>
+    [*] --&gt; Active
+    state Active {
+        state StockClassification {
+            [*] --&gt; EvaluateStock
+            state EvaluateStock &lt;&lt;choice&gt;&gt;
+            EvaluateStock --&gt; Healthy: quantity &gt; threshold
+            EvaluateStock --&gt; LowStock: 0 &lt; quantity &lt;= threshold
+            EvaluateStock --&gt; OutOfStock: quantity &lt;= 0
+            Healthy --&gt; EvaluateStock: sale or stock adjustment
+            LowStock --&gt; EvaluateStock: sale, restock or adjustment
+            OutOfStock --&gt; EvaluateStock: restock or adjustment
+        }
+        --
+        state ExpiryClassification {
+            [*] --&gt; EvaluateExpiry
+            state EvaluateExpiry &lt;&lt;choice&gt;&gt;
+            EvaluateExpiry --&gt; NoExpiry: date not set
+            EvaluateExpiry --&gt; InDate: expiry &gt; today + 30 days
+            EvaluateExpiry --&gt; ExpiringSoon: today &lt; expiry &lt;= today + 30 days
+            EvaluateExpiry --&gt; Expired: expiry &lt;= today
+            InDate --&gt; EvaluateExpiry: time passes or date edited
+            ExpiringSoon --&gt; EvaluateExpiry: time passes or date edited
+            Expired --&gt; EvaluateExpiry: date corrected
+            NoExpiry --&gt; EvaluateExpiry: date entered
+        }
+    }
+    Active --&gt; Archived: admin soft deletes item, is_active = 0
+    Archived --&gt; [*]
+    note right of Active
+        Stock and expiry are independent derived conditions.
+        Expiry alerts include overdue products.
+        Disposal requires a manual stock adjustment.
+        The system does not automatically dispose of stock.
+    end note</code></pre>
                 </div>
 
                 <div class="diagram-canvas-container">
                     <div class="mermaid-wrapper">
                         <div class="mermaid">
 stateDiagram-v2
-    [*] --> InStock : Item Delivered & Stock Added
-    
-    state InStock {
-        [*] --> Healthy : stock_qty > threshold
+    [*] --&gt; Active
+    state Active {
+        state StockClassification {
+            [*] --&gt; EvaluateStock
+            state EvaluateStock &lt;&lt;choice&gt;&gt;
+            EvaluateStock --&gt; Healthy: quantity &gt; threshold
+            EvaluateStock --&gt; LowStock: 0 &lt; quantity &lt;= threshold
+            EvaluateStock --&gt; OutOfStock: quantity &lt;= 0
+            Healthy --&gt; EvaluateStock: sale or stock adjustment
+            LowStock --&gt; EvaluateStock: sale, restock or adjustment
+            OutOfStock --&gt; EvaluateStock: restock or adjustment
+        }
+        --
+        state ExpiryClassification {
+            [*] --&gt; EvaluateExpiry
+            state EvaluateExpiry &lt;&lt;choice&gt;&gt;
+            EvaluateExpiry --&gt; NoExpiry: date not set
+            EvaluateExpiry --&gt; InDate: expiry &gt; today + 30 days
+            EvaluateExpiry --&gt; ExpiringSoon: today &lt; expiry &lt;= today + 30 days
+            EvaluateExpiry --&gt; Expired: expiry &lt;= today
+            InDate --&gt; EvaluateExpiry: time passes or date edited
+            ExpiringSoon --&gt; EvaluateExpiry: time passes or date edited
+            Expired --&gt; EvaluateExpiry: date corrected
+            NoExpiry --&gt; EvaluateExpiry: date entered
+        }
     }
+    Active --&gt; Archived: admin soft deletes item, is_active = 0
+    Archived --&gt; [*]
+    note right of Active
+        Stock and expiry are independent derived conditions.
+        Expiry alerts include overdue products.
+        Disposal requires a manual stock adjustment.
+        The system does not automatically dispose of stock.
+    end note
 
-    InStock --> LowStockAlert : stock_qty <= threshold
-    LowStockAlert --> OutOfStock : stock_qty = 0
-    OutOfStock --> InStock : Wholesale Restock Recorded
-    LowStockAlert --> InStock : Wholesale Restock Recorded
-
-    InStock --> ExpiringSoon : <= 30 Days to Expiry
-    LowStockAlert --> ExpiringSoon : <= 30 Days to Expiry
-    ExpiringSoon --> Expired : Past Expiration Date
-    Expired --> Archived : Disposed (is_active = 0)
-
-    InStock --> Archived : Soft Delete
-    OutOfStock --> Archived : Soft Delete
-    Archived --> [*]
-                        </div>
+</div>
                     </div>
                 </div>
 
@@ -1987,7 +1650,7 @@ stateDiagram-v2
                         <div class="spec-block">
                             <h4 class="spec-block-title"><i class="fa-solid fa-calendar-xmark"></i> Expiration Monitoring Thresholds</h4>
                             <ul class="spec-list">
-                                <li><strong>Expiring Soon State:</strong> Triggered when <code>expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)</code>. Highlighted on dashboard to enable clearance price promotions.</li>
+                                <li><strong>Expiring Soon State:</strong> Alert queries select dated active products with <code>expiry_date &lt;= DATE_ADD(CURDATE(), INTERVAL 30 DAY)</code>, including overdue products. Inventory lists classify expiry on or before today as expired.</li>
                                 <li><strong>Soft Delete Architecture:</strong> Items are never physically dropped from MySQL; <code>is_active = 0</code> preserves referential integrity for historical transaction reports.</li>
                             </ul>
                         </div>
@@ -2003,10 +1666,10 @@ stateDiagram-v2
                     <div class="diagram-header-info">
                         <div class="diagram-badges">
                             <span class="badge-tag badge-system">Software Architecture</span>
-                            <span class="badge-tag badge-category">Component Hierarchy</span>
-                            <span class="badge-tag badge-appendix">MVC Layout</span>
+                            <span class="badge-tag badge-category">Component Dependencies</span>
+                            <span class="badge-tag badge-appendix">Module Dependencies</span>
                         </div>
-                        <h3 class="diagram-title"><i class="fa-solid fa-sitemap text-primary"></i> System Component & Software Architecture</h3>
+                        <h3 class="diagram-title"><i class="fa-solid fa-sitemap text-primary"></i> System Components and Dependencies</h3>
                         <p class="diagram-subtitle">Directory decomposition, modular dependencies, API controllers, and core library services.</p>
                     </div>
                     <div class="diagram-header-actions">
@@ -2019,113 +1682,51 @@ stateDiagram-v2
                 </div>
                 
                 <div class="diagram-source-drawer" id="src-diag-11">
-                    <pre><code>graph TD
-    subgraph VIEW_LAYER ["User Interface / View Layer"]
-        V_LOGIN["index.php<br/>(Authentication)"]
-        V_DASH["dashboard.php<br/>(BI Visualizations)"]
-        V_POS["pos.php<br/>(Point of Sale)"]
-        V_INV["inventory.php<br/>(FMCG Catalog)"]
-        V_FCST["forecasting.php<br/>(Demand Prediction)"]
-        V_SHIFTS["shifts.php<br/>(Cash Drawer)"]
-        V_SUPP["suppliers.php<br/>(Vendor Directory)"]
-        V_REP["reports.php<br/>(Financial Analytics)"]
-        V_ACC["accounts.php<br/>(Cashier Accounts)"]
-        V_BAK["backup.php<br/>(DB Archive)"]
-        V_AUD["audit.php<br/>(Activity Logs)"]
-    end
-
-    subgraph API_CONTROLLERS ["RESTful API Controller Layer (/api/)"]
-        A_TXN["transactions.php"]
-        A_FCST["forecasting.php"]
-        A_INV["inventory.php"]
-        A_SHIFTS["shifts.php"]
-        A_DASH["dashboard.php"]
-        A_REPS["reports.php"]
-        A_ACCS["accounts.php"]
-        A_BAK["backup.php"]
-        A_AUD["audit_logs.php"]
-        A_SUPP["suppliers.php"]
-    end
-
-    subgraph CORE_INCLUDES ["Core Services & Middleware (/includes/)"]
-        I_AUTH["auth_check.php<br/>(RBAC Security)"]
-        I_DB["db.php<br/>(PDO Database Connection & Daily PIN)"]
-        I_AUD["audit.php<br/>(logAudit Service)"]
-        I_HEAD["header.php<br/>(Topbar & Initials)"]
-        I_SIDE["sidebar.php<br/>(Responsive Navigation)"]
-    end
-
-    subgraph DATABASE_LAYER ["Database Storage Layer (sharonstore_db)"]
-        DB_USERS[("tbl_users")]
-        DB_INV[("tbl_inventory & categories")]
-        DB_TXN[("tbl_transactions & details")]
-        DB_SHIFTS[("tbl_shifts")]
-        DB_FCST[("tbl_forecasts")]
-        DB_AUD[("tbl_audit_logs")]
-        DB_SUPP[("tbl_suppliers")]
-        DB_SET[("tbl_settings")]
-    end
-
-    V_POS --> A_TXN
-    V_FCST --> A_FCST
-    V_INV --> A_INV
-    V_SHIFTS --> A_SHIFTS
-    V_DASH --> A_DASH
-    V_REP --> A_REPS
-    V_ACC --> A_ACCS
-    V_BAK --> A_BAK
-    V_AUD --> A_AUD
-    V_SUPP --> A_SUPP
-
-    VIEW_LAYER --> I_AUTH & I_HEAD & I_SIDE
-    API_CONTROLLERS --> I_AUTH & I_DB & I_AUD
-
-    I_DB --> DATABASE_LAYER</code></pre>
+                    <pre><code>flowchart TB
+    V[&quot;PHP views: index, dashboard, pos, stock-monitor,&lt;br/&gt;inventory, suppliers, shifts, forecasting,&lt;br/&gt;reports, accounts, audit and backup&quot;]
+    J[&quot;JavaScript: app.js, pos.js and page scripts&quot;]
+    API[&quot;JSON action endpoints: transactions, inventory,&lt;br/&gt;suppliers, shifts, dashboard, forecasting,&lt;br/&gt;reports, accounts, audit_logs and backup&quot;]
+    ROUTE[&quot;api/index.php: Vercel page router&quot;]
+    AUTH[&quot;includes/auth_check.php&lt;br/&gt;Account verification and role guards&quot;]
+    DB[&quot;includes/db.php&lt;br/&gt;PDO, database sessions, daily PIN and schema helpers&quot;]
+    FC[&quot;includes/forecast_history.php&lt;br/&gt;Consecutive calendar months, including zero sales&quot;]
+    AUD[&quot;includes/audit.php&lt;br/&gt;Activity logging&quot;]
+    UI[&quot;Shared header, sidebar and shift modals&quot;]
+    SQL[(&quot;11 tables: users, sessions, shifts, inventory,&lt;br/&gt;categories, transactions, transaction_details,&lt;br/&gt;forecasts, suppliers, audit_logs and settings&quot;)]
+    ROUTE --&gt; V
+    V --&gt; UI &amp; AUTH &amp; DB
+    V --&gt; J
+    J --&gt;|Fetch action requests| API
+    API --&gt; AUTH &amp; DB &amp; AUD
+    API --&gt;|Forecast endpoint| FC
+    AUTH &amp; AUD --&gt; DB
+    DB &lt;--&gt;|PDO| SQL</code></pre>
                 </div>
 
                 <div class="diagram-canvas-container">
                     <div class="mermaid-wrapper">
                         <div class="mermaid">
-graph TD
-    subgraph UI ["1. Presentation Views (PHP & HTML5)"]
-        V1["index.php (Login)"]
-        V2["dashboard.php (BI Visuals)"]
-        V3["pos.php (Barcode Checkout)"]
-        V4["inventory.php (Product Management)"]
-        V5["forecasting.php (SMA/WMA Analytics)"]
-        V6["shifts.php (Cash Drawer Floating)"]
-        V7["reports.php, backup.php, accounts.php"]
-    end
+flowchart TB
+    V["PHP views: index, dashboard, pos, stock-monitor,&lt;br/&gt;inventory, suppliers, shifts, forecasting,&lt;br/&gt;reports, accounts, audit and backup"]
+    J["JavaScript: app.js, pos.js and page scripts"]
+    API["JSON action endpoints: transactions, inventory,&lt;br/&gt;suppliers, shifts, dashboard, forecasting,&lt;br/&gt;reports, accounts, audit_logs and backup"]
+    ROUTE["api/index.php: Vercel page router"]
+    AUTH["includes/auth_check.php&lt;br/&gt;Account verification and role guards"]
+    DB["includes/db.php&lt;br/&gt;PDO, database sessions, daily PIN and schema helpers"]
+    FC["includes/forecast_history.php&lt;br/&gt;Consecutive calendar months, including zero sales"]
+    AUD["includes/audit.php&lt;br/&gt;Activity logging"]
+    UI["Shared header, sidebar and shift modals"]
+    SQL[("11 tables: users, sessions, shifts, inventory,&lt;br/&gt;categories, transactions, transaction_details,&lt;br/&gt;forecasts, suppliers, audit_logs and settings")]
+    ROUTE --&gt; V
+    V --&gt; UI &amp; AUTH &amp; DB
+    V --&gt; J
+    J --&gt;|Fetch action requests| API
+    API --&gt; AUTH &amp; DB &amp; AUD
+    API --&gt;|Forecast endpoint| FC
+    AUTH &amp; AUD --&gt; DB
+    DB &lt;--&gt;|PDO| SQL
 
-    subgraph API ["2. API Controller Layer (/api/)"]
-        C1["transactions.php"]
-        C2["forecasting.php"]
-        C3["inventory.php"]
-        C4["shifts.php"]
-        C5["dashboard.php"]
-        C6["backup.php & audit_logs.php"]
-    end
-
-    subgraph INCLUDES ["3. Core Library Services (/includes/)"]
-        S1["auth_check.php (Session RBAC)"]
-        S2["db.php (PDO Connection & Daily PIN)"]
-        S3["audit.php (Activity Logger)"]
-    end
-
-    subgraph DB ["4. MySQL Database (sharonstore_db)"]
-        M1[("10 Relational Tables")]
-    end
-
-    UI --> |AJAX Fetch API| API
-    UI --> |Security Guard| S1
-    API --> S1 & S2 & S3
-    S2 --> DB
-
-    style UI fill:#f0fdf4,stroke:#10b981,stroke-width:2px
-    style API fill:#eff6ff,stroke:#3b82f6,stroke-width:2px
-    style INCLUDES fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
-    style DB fill:#faf5ff,stroke:#8b5cf6,stroke-width:2px
-                        </div>
+</div>
                     </div>
                 </div>
 
@@ -2143,7 +1744,7 @@ graph TD
                             <h4 class="spec-block-title"><i class="fa-solid fa-code"></i> Engineering Design Decisions</h4>
                             <ul class="spec-list">
                                 <li><strong>Vanilla JavaScript ES6:</strong> Avoids heavy bloated frontend node-module frameworks, ensuring ultra-fast load times on low-power store market terminals.</li>
-                                <li><strong>PDO Prepared Statements:</strong> 100% parameterization across all SQL queries completely mitigates SQL injection vulnerabilities.</li>
+                                <li><strong>PDO Prepared Statements:</strong> Prepared parameters are used for data values; dynamically selected identifiers and numeric query fragments require validation. This is not a guarantee against all injection risks.</li>
                             </ul>
                         </div>
                     </div>

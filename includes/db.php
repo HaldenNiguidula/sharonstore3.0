@@ -42,6 +42,9 @@ function getDB(): PDO {
                 ensureSchema($pdo);
             }
         } catch (PDOException $e) {
+            if (PHP_SAPI === 'cli') {
+                throw new RuntimeException('Database connection failed. Check that MySQL is running and the database settings are correct.', 0, $e);
+            }
             http_response_code(500);
             if (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
                 die(json_encode(['success' => false, 'message' => 'Database connection failed: ' . $e->getMessage()]));

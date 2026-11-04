@@ -1,14 +1,17 @@
 <?php
 // ============================================================
 // setup.php — One-time setup: imports DB and fixes passwords
-// Run this ONCE at: http://localhost/sharonstore3.0/setup.php
-// DELETE this file after running!
+// Run intentionally from a local terminal: php setup.php --initialize
+// This imports the seed database and resets the default accounts.
 // ============================================================
 
-// Prevent running in production accidentally
-$secret = $_GET['key'] ?? '';
-if ($secret !== 'sharonstore2024setup') {
-    die('<h2>Access Denied. Add ?key=sharonstore2024setup to the URL.</h2>');
+// Destructive initialization is available only to a local command-line operator.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit('Setup is disabled over HTTP.');
+}
+if (!in_array('--initialize', $argv ?? [], true)) {
+    exit("This resets store data. Run php setup.php --initialize only for intentional initialization.\n");
 }
 
 error_reporting(E_ALL);

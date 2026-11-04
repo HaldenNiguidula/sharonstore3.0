@@ -73,37 +73,47 @@ if ($action === 'end') {
         respond(false, 'Actual cash cannot be negative.');
     }
 
-    // Get current open shift
-    $stmt = $db->prepare("SELECT * FROM tbl_shifts WHERE cashier_id = ? AND status = 'open' ORDER BY shift_id DESC LIMIT 1");
-    $stmt->execute([$userId]);
-    $shift = $stmt->fetch();
+    try {
+        $db->beginTransaction();
+        // Serialize closing with checkout so every committed sale is reconciled.
+        $stmt = $db->prepare("SELECT * FROM tbl_shifts WHERE cashier_id = ? AND status = 'open' ORDER BY shift_id DESC LIMIT 1 FOR UPDATE");
+        $stmt->execute([$userId]);
+        $shift = $stmt->fetch();
 
-    if (!$shift) {
-        respond(false, 'No open shift found.');
-    }
+        if (!$shift) {
+            $db->rollBack();
+            respond(false, 'No open shift found.');
+        }
 
-    $shiftId = $shift['shift_id'];
-    $startingCash = (float)$shift['starting_cash'];
+        $shiftId = $shift['shift_id'];
+        $startingCash = (float)$shift['starting_cash'];
 
-    // Calculate total cash sales during this shift (ignoring e-wallets, credit cards etc if implemented, but currently we only have total_amount)
-    // In this basic version, all sales are cash.
-    $stmt = $db->prepare("SELECT SUM(total_amount) FROM tbl_transactions WHERE shift_id = ? AND (status IS NULL OR status != 'voided')");
-    $stmt->execute([$shiftId]);
-    $totalSales = (float)$stmt->fetchColumn();
+        // Calculate total cash sales during this shift (ignoring e-wallets, credit cards etc if implemented, but currently we only have total_amount)
+        // In this basic version, all sales are cash.
+        $stmt = $db->prepare("SELECT SUM(total_amount) FROM tbl_transactions WHERE shift_id = ? AND (status IS NULL OR status != 'voided')");
+        $stmt->execute([$shiftId]);
+        $totalSales = (float)$stmt->fetchColumn();
 
-    $expectedCash = $startingCash + $totalSales;
-    $shortOver = $actualCash - $expectedCash;
+        $expectedCash = $startingCash + $totalSales;
+        $shortOver = $actualCash - $expectedCash;
 
-    $stmt = $db->prepare("UPDATE tbl_shifts SET end_time = CURRENT_TIMESTAMP, expected_cash = ?, actual_cash = ?, short_over = ?, status = 'closed' WHERE shift_id = ?");
+        $stmt = $db->prepare("UPDATE tbl_shifts SET end_time = CURRENT_TIMESTAMP, expected_cash = ?, actual_cash = ?, short_over = ?, status = 'closed' WHERE shift_id = ?");
     
-    if ($stmt->execute([$expectedCash, $actualCash, $shortOver, $shiftId])) {
-        respond(true, 'Shift closed successfully.', [
-            'expected_cash' => $expectedCash,
-            'actual_cash' => $actualCash,
-            'short_over' => $shortOver
-        ]);
-    } else {
-        respond(false, 'Failed to close shift.');
+        if ($stmt->execute([$expectedCash, $actualCash, $shortOver, $shiftId])) {
+            $db->commit();
+            respond(true, 'Shift closed successfully.', [
+                'expected_cash' => $expectedCash,
+                'actual_cash' => $actualCash,
+                'short_over' => $shortOver
+            ]);
+        } else {
+            $db->rollBack();
+            respond(false, 'Failed to close shift.');
+        }
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) $db->rollBack();
+        error_log('Close shift error: ' . $e->getMessage());
+        respond(false, 'Failed to close shift. Please try again.');
     }
 }
 

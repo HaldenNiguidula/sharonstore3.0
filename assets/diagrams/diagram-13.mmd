@@ -1,0 +1,20 @@
+flowchart TB
+    V["PHP views: index, dashboard, pos, stock-monitor,<br/>inventory, suppliers, shifts, forecasting,<br/>reports, accounts, audit and backup"]
+    J["JavaScript: app.js, pos.js and page scripts"]
+    API["JSON action endpoints: transactions, inventory,<br/>suppliers, shifts, dashboard, forecasting,<br/>reports, accounts, audit_logs and backup"]
+    ROUTE["api/index.php: Vercel page router"]
+    AUTH["includes/auth_check.php<br/>Account verification and role guards"]
+    DB["includes/db.php<br/>PDO, database sessions, daily PIN and schema helpers"]
+    FC["includes/forecast_history.php<br/>Consecutive calendar months, including zero sales"]
+    AUD["includes/audit.php<br/>Activity logging"]
+    UI["Shared header, sidebar and shift modals"]
+    SQL[("11 tables: users, sessions, shifts, inventory,<br/>categories, transactions, transaction_details,<br/>forecasts, suppliers, audit_logs and settings")]
+    ROUTE --> V
+    V --> UI & AUTH & DB
+    V --> J
+    J -->|Fetch action requests| API
+    API --> AUTH & DB & AUD
+    API -->|Forecast endpoint| FC
+    AUTH & AUD --> DB
+    DB <-->|PDO| SQL
+

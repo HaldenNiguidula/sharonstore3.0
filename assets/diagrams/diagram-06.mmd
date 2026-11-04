@@ -1,0 +1,106 @@
+erDiagram
+    tbl_users |o--o{ tbl_transactions : processes
+    tbl_users |o--o{ tbl_audit_logs : logs
+    tbl_users |o..o{ tbl_shifts : "logical cashier link"
+    tbl_categories ||--o{ tbl_inventory : categorizes
+    tbl_inventory ||--o{ tbl_transaction_details : sold_in
+    tbl_inventory ||--o{ tbl_forecasts : predicts
+    tbl_transactions ||--o{ tbl_transaction_details : contains
+    tbl_shifts |o..o{ tbl_transactions : "logical optional shift link"
+    tbl_audit_logs {
+        int log_id PK
+        int user_id FK
+        varchar action
+        varchar module
+        text description
+        varchar ip_address
+        timestamp log_time
+    }
+    tbl_categories {
+        int category_id PK
+        varchar category_name
+        text description
+        timestamp created_at
+    }
+    tbl_forecasts {
+        int forecast_id PK
+        int item_id FK
+        date forecast_period
+        decimal predicted_qty
+        varchar method
+        timestamp generated_at
+    }
+    tbl_inventory {
+        int item_id PK
+        varchar barcode UK
+        varchar item_name
+        int category_id FK
+        enum unit
+        decimal price
+        decimal cost_price
+        decimal stock_qty
+        int low_stock_threshold
+        date expiry_date
+        tinyint is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+    tbl_settings {
+        varchar setting_key PK
+        varchar setting_value
+    }
+    tbl_shifts {
+        int shift_id PK
+        int cashier_id
+        decimal starting_cash
+        datetime start_time
+        datetime end_time
+        decimal expected_cash
+        decimal actual_cash
+        decimal short_over
+        enum status
+    }
+    tbl_suppliers {
+        int supplier_id PK
+        varchar company_name
+        varchar contact_person
+        varchar category
+        varchar phone
+        text address
+        datetime created_at
+        tinyint is_active
+    }
+    tbl_transaction_details {
+        int detail_id PK
+        int transaction_id FK
+        int item_id FK
+        decimal quantity
+        decimal unit_price
+        decimal subtotal
+    }
+    tbl_transactions {
+        int transaction_id PK
+        varchar transaction_code UK
+        int user_id FK
+        decimal total_amount
+        decimal amount_tendered
+        decimal change_amount
+        varchar status
+        timestamp transaction_date
+        int shift_id
+    }
+    tbl_users {
+        int user_id PK
+        varchar username UK
+        varchar password
+        varchar full_name
+        enum role
+        tinyint is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+    tbl_sessions {
+        varchar id PK
+        mediumtext data
+        int last_activity
+    }

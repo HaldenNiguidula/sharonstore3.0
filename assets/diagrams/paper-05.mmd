@@ -1,0 +1,27 @@
+flowchart LR
+    A["Admin / Owner"]
+    C["Cashier"]
+    subgraph SYSTEM["Sharon Store System"]
+        L(["Sign in / Sign out"])
+        R(["Register cashier account"])
+        SH(["Open / Close own shift with manager PIN"])
+        MON(["View stock and live shift totals"])
+        POS(["Process sale"])
+        LOOK(["Select items by scan OR search"])
+        SAVE(["Validate prices, payment and stock;<br/>save sale and deduct inventory"])
+        VOID(["Void sale within 24 hours"])
+        INV(["Manage products, stock and categories"])
+        SUP(["Manage supplier directory"])
+        BI(["View dashboard and reports"])
+        FC(["Generate SMA / WMA forecasts"])
+        ACC(["Manage accounts and activation"])
+        AUD(["View audit trail"])
+        BAK(["Create / Download / Restore SQL backup"])
+        CLOUD(["Configure / Upload Google Drive backup"])
+        HIST(["View manager PIN and shift history"])
+    end
+    C --- L & R & SH & MON & POS
+    A --- L & SH & MON & POS & VOID & INV & SUP & BI & FC & ACC & AUD & BAK & CLOUD & HIST
+    POS -.->|include| LOOK
+    POS -.->|include| SAVE
+

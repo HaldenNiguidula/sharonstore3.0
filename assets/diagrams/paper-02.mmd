@@ -1,0 +1,8 @@
+flowchart TB
+    R["1 Requirements<br/>Retail workflows and historical records"] --> D["2 Design<br/>DFDs, 11-table ERD and interfaces"]
+    D --> DEV["3 Development<br/>POS, inventory, shifts, forecasts and analytics"]
+    DEV --> T["4 Testing<br/>Functional, integration and usability checks"]
+    T --> DEP["5 Deployment<br/>Local XAMPP or Vercel with remote database"]
+    DEP --> REV["6 Review<br/>52 retail participants and 3 IT experts"]
+    REV -->|Feedback for next iteration| R
+

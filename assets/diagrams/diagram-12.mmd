@@ -1,0 +1,36 @@
+stateDiagram-v2
+    [*] --> Active
+    state Active {
+        state StockClassification {
+            [*] --> EvaluateStock
+            state EvaluateStock <<choice>>
+            EvaluateStock --> Healthy: quantity > threshold
+            EvaluateStock --> LowStock: 0 < quantity <= threshold
+            EvaluateStock --> OutOfStock: quantity <= 0
+            Healthy --> EvaluateStock: sale or stock adjustment
+            LowStock --> EvaluateStock: sale, restock or adjustment
+            OutOfStock --> EvaluateStock: restock or adjustment
+        }
+        --
+        state ExpiryClassification {
+            [*] --> EvaluateExpiry
+            state EvaluateExpiry <<choice>>
+            EvaluateExpiry --> NoExpiry: date not set
+            EvaluateExpiry --> InDate: expiry > today + 30 days
+            EvaluateExpiry --> ExpiringSoon: today < expiry <= today + 30 days
+            EvaluateExpiry --> Expired: expiry <= today
+            InDate --> EvaluateExpiry: time passes or date edited
+            ExpiringSoon --> EvaluateExpiry: time passes or date edited
+            Expired --> EvaluateExpiry: date corrected
+            NoExpiry --> EvaluateExpiry: date entered
+        }
+    }
+    Active --> Archived: admin soft deletes item, is_active = 0
+    Archived --> [*]
+    note right of Active
+        Stock and expiry are independent derived conditions.
+        Expiry alerts include overdue products.
+        Disposal requires a manual stock adjustment.
+        The system does not automatically dispose of stock.
+    end note
+

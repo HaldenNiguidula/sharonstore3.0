@@ -1,0 +1,21 @@
+flowchart TB
+    LOGIN["Cashier signs in"] --> SHIFT{"Own shift open?"}
+    SHIFT -- No --> PIN["Enter manager PIN and starting cash"]
+    PIN --> VALID{"Valid PIN and cash?"}
+    VALID -- No --> PIN
+    VALID -- Yes --> OPEN["Save open shift"] --> MENU
+    SHIFT -- Yes --> MENU{"Choose task"}
+    MENU -- Sale --> CART["Scan OR search; build cart; enter payment"]
+    CART --> SERVER["Server locks stock and shift;<br/>uses stored prices; validates cart and payment"]
+    SERVER --> OK{"Checks and database writes succeed?"}
+    OK -- No --> ROLLBACK["Rollback; show error"] --> MENU
+    OK -- Yes --> COMMIT["Commit sale and stock deduction;<br/>audit after commit"]
+    COMMIT --> RECEIPT["Display receipt and browser print dialog"] --> MENU
+    MENU -- Stock / Live shift --> MON["View stock, expiry or running totals"] --> MENU
+    MENU -- Close --> CLOSE["Manager PIN and counted cash"]
+    CLOSE --> RECON["Lock shift; calculate expected cash and variance"]
+    RECON --> CLOSED{"Closed successfully?"}
+    CLOSED -- No --> MENU
+    CLOSED -- Yes --> SUMMARY["Show summary; retain session"] --> SHIFT
+    MENU -- Sign out --> END([Session ended])
+

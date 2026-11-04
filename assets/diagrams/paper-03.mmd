@@ -1,0 +1,12 @@
+flowchart TB
+    C["Cashier"]
+    S(("0.0 Sharon Store<br/>Inventory, POS<br/>and Forecasting"))
+    A["Admin / Owner"]
+    G["Google Drive via Apps Script"]
+    C -->|Credentials, registration,<br/>PIN, float, counted cash,<br/>barcode / search, cart and payment| S
+    S -->|Access or errors, prices and stock,<br/>receipt / change, live totals<br/>and cash reconciliation| C
+    A -->|Credentials, accounts, products,<br/>stock, categories, suppliers,<br/>filters, forecasts, backup / restore,<br/>admin cart and cash| S
+    S -->|Access, receipts, manager PIN,<br/>reports, forecasts, audit,<br/>SQL files and restore results| A
+    S -->|Optional SQL backup upload| G
+    G -->|Upload status| S
+

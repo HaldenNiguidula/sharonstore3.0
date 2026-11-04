@@ -13,21 +13,21 @@ function syncSessionUser(): void {
 
         try {
             $db = getDB();
-            $chk = $db->prepare("SELECT user_id, role, is_active FROM tbl_users WHERE user_id = ? LIMIT 1");
+            $chk = $db->prepare("SELECT user_id, username, full_name, role, is_active FROM tbl_users WHERE user_id = ? LIMIT 1");
             $chk->execute([$_SESSION['user_id']]);
             $row = $chk->fetch();
 
-            if (!$row && !empty($_SESSION['username'])) {
-                // User ID in session doesn't match DB (e.g. after a DB restore or import) - resync by username
-                $byUser = $db->prepare("SELECT user_id, role, is_active FROM tbl_users WHERE username = ? LIMIT 1");
-                $byUser->execute([$_SESSION['username']]);
-                $uRow = $byUser->fetch();
-                if ($uRow) {
-                    $_SESSION['user_id'] = (int)$uRow['user_id'];
-                    $_SESSION['role']    = $uRow['role'];
-                }
+            // Never transfer an authenticated session to another account after a restore.
+            if (!$row || (int)$row['is_active'] !== 1 || $row['username'] !== ($_SESSION['username'] ?? '')) {
+                $_SESSION = [];
+            } else {
+                $_SESSION['role'] = $row['role'];
+                $_SESSION['full_name'] = $row['full_name'];
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            // Fail closed when current account permissions cannot be verified.
+            $_SESSION = [];
+        }
     }
 }
 syncSessionUser();

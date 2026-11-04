@@ -172,6 +172,13 @@ $pageTitle = 'Database Backup';
         <div class="row g-4">
             <!-- Left Column: Actions & Cloud Card -->
             <div class="col-12 col-lg-5 d-flex flex-column gap-4">
+                <div class="card shadow-sm border-0" style="border-radius:14px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold" style="font-size:0.95rem;">Automatic Daily Backup</h5>
+                        <p class="small text-muted mb-2">Runs every 24 hours at 3:00 AM (Singapore time), even when this page is closed.</p>
+                        <div id="dailyBackupStatus" class="small text-muted" role="status">Checking daily backup status...</div>
+                    </div>
+                </div>
                 
                 <!-- Google Drive Cloud Card -->
                 <div class="card shadow-sm border-0" style="border-radius: 14px; overflow: hidden;">
@@ -908,6 +915,26 @@ function fallbackCopy(text, cb) {
 }
 
 // Initial Loads
+async function loadDailyBackupStatus() {
+    const el = document.getElementById('dailyBackupStatus');
+    try {
+        const response = await fetch('/sharonstore3.0/api/backup.php?action=schedule_status');
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error('Status unavailable');
+        const data = result.data;
+        if (!data.cloud_configured) {
+            el.textContent = 'Connect Google Drive below to provide storage for cloud backups.';
+        } else if (!data.scheduler_ready) {
+            el.textContent = 'The daily background schedule still needs to be activated for this environment.';
+        } else if (data.last_error) {
+            el.className = 'small text-danger';
+            el.textContent = 'Last attempt failed: ' + data.last_error + (data.last_success ? ' Last successful backup: ' + data.last_success + '.' : '');
+        } else {
+            el.textContent = data.last_success ? 'Last successful backup: ' + data.last_success + '.' : 'Daily schedule installed. Waiting for the first successful backup. The computer and database must be running for local backups.';
+        }
+    } catch (error) { el.textContent = 'Unable to load daily backup status.'; }
+}
+loadDailyBackupStatus();
 loadBackups();
 checkGdriveStatus();
 </script>

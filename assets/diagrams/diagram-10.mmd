@@ -1,0 +1,26 @@
+flowchart TB
+    subgraph CLIENT["Presentation"]
+        C["Cashier browser: POS, stock and shifts"]
+        A["Admin browser: management and analytics"]
+        SC["USB / Bluetooth HID scanner"] --> C
+        CDN["External CDN: Bootstrap, icons and charts"]
+    end
+    subgraph SERVER["Application deployment alternatives"]
+        LOCAL["Local XAMPP Apache / PHP"]
+        CLOUD["Vercel PHP functions / api/index.php router"]
+        APP["PHP pages and JSON action endpoints"]
+        AUTH["Current account checks and database-backed sessions"]
+        LOGIC["Checkout, shifts, inventory, forecasts and reports"]
+        BACK["PHP / PDO SQL exporter and importer"]
+        LOCAL & CLOUD --> APP
+        APP --> AUTH & LOGIC & BACK
+    end
+    DB[("Local MariaDB OR remote MySQL-compatible database<br/>11 tables including tbl_sessions")]
+    FILE[("Local backups/ OR serverless temporary files")]
+    DRIVE["Google Drive via configured Apps Script webhook"]
+    C & A <-->|HTML and JSON over HTTP / HTTPS| APP
+    CDN -->|Frontend dependencies| C & A
+    AUTH & LOGIC & BACK <-->|PDO queries; remote TLS configuration| DB
+    BACK <-->|SQL files| FILE
+    BACK -->|Optional HTTPS upload| DRIVE
+

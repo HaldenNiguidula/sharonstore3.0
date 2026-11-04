@@ -1,0 +1,27 @@
+flowchart TB
+    START([User opens system]) --> LOGIN["Enter credentials"]
+    LOGIN --> AUTH{"Active account and valid password?"}
+    AUTH -- No --> ERROR["Show login error"] --> LOGIN
+    AUTH -- Yes --> ROLE{"Current role?"}
+    ROLE -- Cashier --> SHIFT{"Own open shift?"}
+    SHIFT -- No --> OPEN["Enter manager PIN and starting cash"]
+    OPEN --> PIN{"Valid PIN and float?"}
+    PIN -- No --> OPEN
+    PIN -- Yes --> SAVE["Save open shift"] --> CASH["Cashier workspace"]
+    SHIFT -- Yes --> CASH
+    CASH --> TASK{"Select task"}
+    TASK -- Sale --> SALE["Scan or search; build cart; enter cash"]
+    SALE --> CHECK["Server locks stock; uses stored prices;<br/>validates stock, payment and shift"]
+    CHECK --> OK{"All checks and writes succeed?"}
+    OK -- No --> FAIL["Rollback and show error"] --> CASH
+    OK -- Yes --> COMMIT["Commit sale and stock deduction;<br/>then log audit event"]
+    COMMIT --> RECEIPT["Receipt and browser print dialog"] --> CASH
+    TASK -- Stock or live totals --> MON["View shift-gated stock or live totals"] --> CASH
+    TASK -- Close shift --> CLOSE["Manager PIN and counted cash;<br/>lock shift and reconcile"]
+    CLOSE --> CLOSED{"Close successful?"}
+    CLOSED -- No --> CASH
+    CLOSED -- Yes --> SUMMARY["Show reconciliation; keep session signed in"] --> SHIFT
+    ROLE -- Admin --> ADMIN["Admin hub: catalog, suppliers, sales,<br/>shifts, reports, forecasts, accounts,<br/>audit, SQL backups and optional cloud upload"]
+    ADMIN --> RESULT["Perform selected action and show result"] --> ADMIN
+    CASH & ADMIN -->|Optional sign out| LOGOUT["Destroy session"] --> END([End])
+

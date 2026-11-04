@@ -2,7 +2,17 @@
   "regions": [
     "sin1"
   ],
+  "crons": [
+    {
+      "path": "/api/backup_cron.php",
+      "schedule": "0 19 * * *"
+    }
+  ],
   "functions": {
+    "api/backup_cron.php": {
+      "runtime": "vercel-php@0.7.2",
+      "maxDuration": 300
+    },
     "api/*.php": {
       "runtime": "vercel-php@0.7.2"
     }

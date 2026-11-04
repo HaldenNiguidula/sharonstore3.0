@@ -1,0 +1,73 @@
+flowchart LR
+    A["Admin / Owner"]
+    C["Cashier"]
+    G["Google Drive / Apps Script"]
+    P1["1.0 Authentication and Accounts"]
+    P2["2.0 Shift and PIN Control"]
+    P3["3.0 Inventory and Categories"]
+    P4["4.0 Checkout and Voids"]
+    P5["5.0 Dashboard and Reports"]
+    P6["6.0 SMA / WMA Forecasting"]
+    P7["7.0 Supplier Directory"]
+    P8["8.0 Audit, Backup and Restore"]
+    D1[("D1 Users and Sessions")]
+    D2[("D2 Shifts")]
+    D3[("D3 Inventory and Categories")]
+    D4[("D4 Transactions and Details")]
+    D5[("D5 Forecasts")]
+    D6[("D6 Suppliers")]
+    D7[("D7 Audit Logs")]
+    D8[("D8 Settings")]
+    B[("SQL Backup Files")]
+    A -->|Credentials and account changes| P1
+    C -->|Credentials or registration| P1
+    P1 -->|Access, errors or activation pending| C
+    P1 -->|Access and account results| A
+    P1 <-->|Account and session data| D1
+    P1 -->|Authentication and account events| D7
+    C -->|PIN, starting cash or counted cash| P2
+    A -->|PIN and shift queries| P2
+    P2 -->|Live totals and reconciliation| C
+    P2 -->|Manager PIN and shift history| A
+    P2 <-->|Open and close shift records| D2
+    P2 <-->|Daily PIN and date| D8
+    D4 -->|Non-voided shift sales| P2
+    A -->|Product, category and stock changes| P3
+    P3 <-->|Product and category records| D3
+    C -->|Stock lookup| P3
+    D2 -->|Cashier open shift| P3
+    P3 -->|Stock and expiry alerts or access errors| C
+    P3 -->|Catalog and update results| A
+    P3 -->|Inventory events| D7
+    C -->|Barcode or search, cart and tendered cash| P4
+    A -->|Admin cart, payment or void request| P4
+    D2 -->|Locked active shift lookup| P4
+    P4 <-->|Stored prices and atomic stock changes| D3
+    P4 <-->|Sales, line items and void status| D4
+    P4 -->|Receipt, change or error| C
+    P4 -->|Receipt or void result| A
+    P4 -->|Sale and void events| D7
+    A -->|Report filters| P5
+    D4 -->|Sales history| P5
+    D3 -->|Stock and cost data| P5
+    D2 -->|Shift data| P5
+    P5 -->|Charts and reports| A
+    A -->|Lookback 3, 6 or 12 months| P6
+    D4 -->|Non-voided monthly quantities| P6
+    D3 -->|Current stock and units| P6
+    P6 <-->|Saved monthly predictions| D5
+    P6 -->|SMA, WMA and restock recommendations| A
+    A -->|Supplier details| P7
+    P7 <-->|Supplier records| D6
+    P7 -->|Directory and update results| A
+    A -->|Audit query, backup, restore or cloud settings| P8
+    D7 -->|Audit records| P8
+    P8 <-->|Cloud settings| D8
+    P8 <-->|SQL export and import| B
+    P8 <-->|Database-wide table data except session export| D1
+    P8 <-->|Backup and restore table data| D2 & D3 & D4 & D5 & D6 & D7
+    P8 -->|Restore and backup events| D7
+    P8 -->|SQL upload| G
+    G -->|Upload result| P8
+    P8 -->|Audit results, backup files and restore status| A
+

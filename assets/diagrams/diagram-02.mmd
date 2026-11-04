@@ -1,0 +1,17 @@
+flowchart LR
+    P1["<b>1. Requirements</b><br/>• Retail workflow requirements<br/>• Logbook audit<br/>• Problem baseline"]
+    P2["<b>2. Design</b><br/>• DFD L0 & L1<br/>• ERD 11 tables<br/>• UI Wireframes"]
+    P3["<b>3. Development</b><br/>• POS & Barcode<br/>• SMA / WMA Math<br/>• BI Dashboard"]
+    P4["<b>4. Testing</b><br/>• Unit tests<br/>• Stock sync check<br/>• Market UAT"]
+    P5["<b>5. Deployment</b><br/>• Local Apache or Vercel<br/>• Database setup<br/>• Scanner hookup"]
+    P6["<b>6. Review</b><br/>• ISO 25010 eval<br/>• Alpha (3 Experts)<br/>• Retail evaluation (52)"]
+
+    P1 --> P2 --> P3 --> P4 --> P5 --> P6
+    P6 -.->|Sprint Cycle Feedback| P1
+
+    style P1 fill:#fee2e2,stroke:#ef4444,stroke-width:2.5px
+    style P2 fill:#ffedd5,stroke:#f97316,stroke-width:2.5px
+    style P3 fill:#fef3c7,stroke:#f59e0b,stroke-width:2.5px
+    style P4 fill:#dbeafe,stroke:#3b82f6,stroke-width:2.5px
+    style P5 fill:#d1fae5,stroke:#10b981,stroke-width:2.5px
+    style P6 fill:#e0e7ff,stroke:#6366f1,stroke-width:2.5px

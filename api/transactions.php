@@ -171,137 +171,111 @@ function handleCompleteSale(array $body): never {
     $userId         = currentUserId();
     $db             = getDB();
 
-    // Verify $userId exists in tbl_users; if mismatched session (e.g. after backup import), resolve it
-    $chkUser = $db->prepare("SELECT user_id FROM tbl_users WHERE user_id = ? LIMIT 1");
-    $chkUser->execute([$userId]);
-    $validUserId = $chkUser->fetchColumn();
-
-    if (!$validUserId) {
-        if (!empty($_SESSION['username'])) {
-            $uStmt = $db->prepare("SELECT user_id, role FROM tbl_users WHERE username = ? LIMIT 1");
-            $uStmt->execute([$_SESSION['username']]);
-            $uRow = $uStmt->fetch();
-            if ($uRow) {
-                $validUserId = (int)$uRow['user_id'];
-                $_SESSION['user_id'] = $validUserId;
-            }
-        }
-        if (!$validUserId) {
-            $firstAdmin = $db->query("SELECT user_id FROM tbl_users WHERE role = 'admin' AND is_active = 1 ORDER BY user_id ASC LIMIT 1")->fetchColumn();
-            if ($firstAdmin) {
-                $validUserId = (int)$firstAdmin;
-                $_SESSION['user_id'] = $validUserId;
-            }
-        }
-    }
-    $userId = $validUserId ? (int)$validUserId : null;
-
     // ── Validate input ────────────────────────────────────────
     if (empty($items) || !is_array($items)) {
         jsonOut(['success' => false, 'message' => 'Cart is empty.'], 400);
     }
-    if ($amountTendered <= 0) {
+    if (!is_finite($amountTendered) || $amountTendered <= 0) {
         jsonOut(['success' => false, 'message' => 'Amount tendered is required.'], 400);
     }
 
-    // ── Validate all items before opening transaction ─────────
-    $validatedItems = [];
-    $grandTotal     = 0.0;
-
-    foreach ($items as $idx => $cartItem) {
-        $itemId   = (int)($cartItem['item_id']   ?? 0);
-        $qty      = (float)($cartItem['quantity']  ?? 0);
-        $price    = (float)($cartItem['unit_price'] ?? 0);
-
-        if ($itemId <= 0 || $qty <= 0 || $price < 0) {
-            jsonOut(['success' => false, 'message' => "Invalid item data at index {$idx}."], 400);
-        }
-
-        // Fresh stock check
-        $chk = $db->prepare(
-            "SELECT item_id, item_name, stock_qty, price, unit
-             FROM   tbl_inventory
-             WHERE  item_id = :id AND is_active = 1
-             LIMIT  1"
-        );
-        $chk->execute([':id' => $itemId]);
-        $row = $chk->fetch();
-
-        if (!$row) {
-            jsonOut(['success' => false, 'message' => "Item ID {$itemId} not found or inactive."], 404);
-        }
-        if ((float)$row['stock_qty'] < $qty) {
-            jsonOut([
-                'success' => false,
-                'message' => "Insufficient stock for '{$row['item_name']}'. Available: {$row['stock_qty']}.",
-            ], 409);
-        }
-
-        $subtotal         = round($qty * $price, 2);
-        $grandTotal      += $subtotal;
-        $validatedItems[] = [
-            'item_id'   => $itemId,
-            'item_name' => $row['item_name'],
-            'unit'      => $row['unit'],
-            'quantity'  => $qty,
-            'unit_price'=> $price,
-            'subtotal'  => $subtotal,
-        ];
-    }
-
-    // ── Check amount tendered ─────────────────────────────────
-    $grandTotal = round($grandTotal, 2);
-    if ($amountTendered < $grandTotal) {
-        jsonOut([
-            'success' => false,
-            'message' => 'Amount tendered is less than total amount.',
-        ], 400);
-    }
-
-    $changeAmount = round($amountTendered - $grandTotal, 2);
-
-    // ── Generate transaction code: TXN-YYYYMMDD-#### ──────────
-    $today   = date('Ymd');
-    $prefix  = 'TXN-' . $today . '-';
-
-    // Find the highest existing sequence for today's prefix
-    $prefixLen = strlen($prefix);
-    $seqStmt = $db->prepare(
-        "SELECT MAX(CAST(SUBSTRING(transaction_code, {$prefixLen} + 1) AS UNSIGNED)) AS max_seq
-         FROM   tbl_transactions
-         WHERE  transaction_code LIKE :like"
-    );
-    $seqStmt->execute([':like' => $prefix . '%']);
-    $maxSeq  = (int)($seqStmt->fetchColumn() ?: 0);
-    $seq     = $maxSeq + 1;
-    $transactionCode = $prefix . str_pad((string)$seq, 4, '0', STR_PAD_LEFT);
-
-    // Collision safety guard: ensure generated transaction code is truly unique
-    $chkCode = $db->prepare("SELECT 1 FROM tbl_transactions WHERE transaction_code = ? LIMIT 1");
-    for ($i = 0; $i < 100; $i++) {
-        $chkCode->execute([$transactionCode]);
-        if (!$chkCode->fetchColumn()) {
-            break;
-        }
-        $seq++;
-        $transactionCode = $prefix . str_pad((string)$seq, 4, '0', STR_PAD_LEFT);
-    }
-
-    // ── PDO transaction: INSERT + stock deduction ─────────────
     try {
         $db->beginTransaction();
+        // Validate inventory prices and availability while holding row locks.
+        $validatedItems = [];
+        $grandTotal     = 0.0;
 
+        foreach ($items as $idx => $cartItem) {
+            if (!is_array($cartItem)) {
+                throw new RuntimeException("Invalid item data at index {$idx}.", 400);
+            }
+            $itemId   = (int)($cartItem['item_id']   ?? 0);
+            $qty      = (float)($cartItem['quantity']  ?? 0);
+
+            if ($itemId <= 0 || !is_finite($qty) || $qty <= 0) {
+                throw new RuntimeException("Invalid item data at index {$idx}.", 400);
+            }
+
+            // Fresh stock check
+            $chk = $db->prepare(
+                "SELECT item_id, item_name, stock_qty, price, unit
+                 FROM   tbl_inventory
+                 WHERE  item_id = :id AND is_active = 1
+                 LIMIT  1 FOR UPDATE"
+            );
+            $chk->execute([':id' => $itemId]);
+            $row = $chk->fetch();
+
+            if (!$row) {
+                throw new RuntimeException("Item ID {$itemId} not found or inactive.", 404);
+            }
+            if ((float)$row['stock_qty'] < $qty) {
+                throw new RuntimeException("Insufficient stock for '{$row['item_name']}'.", 409);
+            }
+
+            $price = (float)$row['price'];
+            $subtotal         = round($qty * $price, 2);
+            $grandTotal      += $subtotal;
+            $validatedItems[] = [
+                'item_id'   => $itemId,
+                'item_name' => $row['item_name'],
+                'unit'      => $row['unit'],
+                'quantity'  => $qty,
+                'unit_price'=> $price,
+                'subtotal'  => $subtotal,
+            ];
+        }
+
+        // ── Check amount tendered ─────────────────────────────────
+        $grandTotal = round($grandTotal, 2);
+        if ($amountTendered < $grandTotal) {
+            throw new RuntimeException('Amount tendered is less than total amount.', 400);
+        }
+
+        $changeAmount = round($amountTendered - $grandTotal, 2);
+
+        // ── Generate transaction code: TXN-YYYYMMDD-#### ──────────
+        $today   = date('Ymd');
+        $prefix  = 'TXN-' . $today . '-';
+
+        // Find the highest existing sequence for today's prefix
+        $prefixLen = strlen($prefix);
+        $seqStmt = $db->prepare(
+            "SELECT MAX(CAST(SUBSTRING(transaction_code, {$prefixLen} + 1) AS UNSIGNED)) AS max_seq
+             FROM   tbl_transactions
+             WHERE  transaction_code LIKE :like"
+        );
+        $seqStmt->execute([':like' => $prefix . '%']);
+        $maxSeq  = (int)($seqStmt->fetchColumn() ?: 0);
+        $seq     = $maxSeq + 1;
+        $transactionCode = $prefix . str_pad((string)$seq, 4, '0', STR_PAD_LEFT);
+
+        // Collision safety guard: ensure generated transaction code is truly unique
+        $chkCode = $db->prepare("SELECT 1 FROM tbl_transactions WHERE transaction_code = ? LIMIT 1");
+        for ($i = 0; $i < 100; $i++) {
+            $chkCode->execute([$transactionCode]);
+            if (!$chkCode->fetchColumn()) {
+                break;
+            }
+            $seq++;
+            $transactionCode = $prefix . str_pad((string)$seq, 4, '0', STR_PAD_LEFT);
+        }
+
+    // ── PDO transaction: INSERT + stock deduction ─────────────
         // Fetch active shift for current user (cashier); if manager/admin, check if any register shift is currently open
-        $shiftStmt = $db->prepare("SELECT shift_id FROM tbl_shifts WHERE cashier_id = :uid AND status = 'open' ORDER BY shift_id DESC LIMIT 1");
+        $shiftStmt = $db->prepare("SELECT shift_id FROM tbl_shifts WHERE cashier_id = :uid AND status = 'open' ORDER BY shift_id DESC LIMIT 1 FOR UPDATE");
         $shiftStmt->execute([':uid' => $userId]);
         $activeShift = $shiftStmt->fetchColumn();
 
         if (!$activeShift && isAdmin()) {
-            $anyShiftStmt = $db->query("SELECT shift_id FROM tbl_shifts WHERE status = 'open' ORDER BY shift_id DESC LIMIT 1");
+            $anyShiftStmt = $db->query("SELECT shift_id FROM tbl_shifts WHERE status = 'open' ORDER BY shift_id DESC LIMIT 1 FOR UPDATE");
             $anyShift = $anyShiftStmt->fetchColumn();
             if ($anyShift) {
                 $activeShift = $anyShift;
             }
+        }
+        if (!$activeShift && !isAdmin()) {
+            throw new RuntimeException('Shift not started. Manager authorization is required.', 403);
         }
         $shiftIdVal = $activeShift ? (int)$activeShift : null;
 
@@ -339,7 +313,7 @@ function handleCompleteSale(array $body): never {
         $deduct = $db->prepare(
             "UPDATE tbl_inventory
              SET    stock_qty = stock_qty - :qty
-             WHERE  item_id = :id"
+             WHERE  item_id = :id AND stock_qty >= :required_qty AND is_active = 1"
         );
 
         foreach ($validatedItems as $vi) {
@@ -353,7 +327,11 @@ function handleCompleteSale(array $body): never {
             $deduct->execute([
                 ':qty' => $vi['quantity'],
                 ':id'  => $vi['item_id'],
+                ':required_qty' => $vi['quantity'],
             ]);
+            if ($deduct->rowCount() !== 1) {
+                throw new RuntimeException('Insufficient stock. Refresh the cart and try again.', 409);
+            }
         }
 
         $db->commit();
@@ -363,7 +341,8 @@ function handleCompleteSale(array $body): never {
             $db->rollBack();
         }
         error_log('complete_sale error: ' . $e->getMessage());
-        jsonOut(['success' => false, 'message' => 'Transaction failed: ' . $e->getMessage()], 500);
+        $status = in_array($e->getCode(), [400, 403, 404, 409], true) ? $e->getCode() : 500;
+        jsonOut(['success' => false, 'message' => $status === 500 ? 'Transaction failed. Please try again.' : $e->getMessage()], $status);
     }
 
     // ── Audit log ─────────────────────────────────────────────
@@ -489,9 +468,13 @@ function handleVoidTransaction(array $body): never {
         // Check if status column exists; add a soft status field
         // Mark transaction as voided
         $voidStmt = $db->prepare(
-            "UPDATE tbl_transactions SET status = 'voided' WHERE transaction_id = :id"
+            "UPDATE tbl_transactions SET status = 'voided' WHERE transaction_id = :id AND (status IS NULL OR status != 'voided')"
         );
         $voidStmt->execute([':id' => $txnId]);
+        if ($voidStmt->rowCount() !== 1) {
+            $db->rollBack();
+            jsonOut(['success' => false, 'message' => 'Transaction is already voided or no longer exists.'], 409);
+        }
 
         // Restore stock for each item
         $restore = $db->prepare(

@@ -1,0 +1,11 @@
+flowchart TB
+    LOGIN["Admin signs in"] --> AUTH{"Active account, valid password and admin role?"}
+    AUTH -- No --> LOGIN
+    AUTH -- Yes --> HUB{"Select admin action"}
+    HUB --> INV["Products and categories<br/>Add / Edit products; adjust stock;<br/>create / delete / reassign categories"]
+    HUB --> OPS["Store operations<br/>POS checkout, voids, stock monitor,<br/>own shift opening / closing and live totals"]
+    HUB --> FIN["Analytics<br/>Dashboard, sales and valuation reports,<br/>shift history and generated daily PIN"]
+    HUB --> SYS["Administration<br/>SMA / WMA forecasts, supplier directory,<br/>accounts, audit, SQL backup / restore,<br/>optional Google Drive upload"]
+    INV & OPS & FIN & SYS --> RESULT["Show results or validation errors"] --> HUB
+    HUB -- Sign out --> END([Session ended])
+

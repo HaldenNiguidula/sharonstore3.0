@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/forecast_history.php';
 
 requireAdmin();
 header('Content-Type: application/json');
@@ -121,6 +122,7 @@ if ($action === 'forecast') {
 
     if (!$itemId) respond(false, 'item_id is required.', null);
     $periods = in_array($periods, [3,6,12], true) ? $periods : 6;
+    $monthsBack = $periods - 1;
 
     try {
         // Get item details
@@ -139,6 +141,8 @@ if ($action === 'forecast') {
             JOIN tbl_transactions t ON t.transaction_id = d.transaction_id
             WHERE d.item_id = :id
               AND (t.status IS NULL OR t.status != 'voided')
+              AND t.transaction_date >= DATE_SUB(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL {$monthsBack} MONTH)
+              AND t.transaction_date < DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH)
             GROUP BY DATE_FORMAT(t.transaction_date, '%Y-%m'), DATE_FORMAT(t.transaction_date, '%b %Y')
             ORDER BY month_key DESC
             LIMIT {$periods}
@@ -146,8 +150,8 @@ if ($action === 'forecast') {
         $histStmt->execute([':id' => $itemId]);
         $rawHistory = $histStmt->fetchAll();
 
-        // Reverse so history goes chronologically (oldest to newest) for SMA/WMA
-        $history = array_reverse($rawHistory);
+        // Fill the calendar window, oldest first, including months without sales.
+        $history = forecastHistory($rawHistory, $periods);
 
         // Build array of qty values
         $qtys = array_map(fn($r) => (float)$r['qty_sold'], $history);
@@ -216,17 +220,21 @@ if ($action === 'forecast') {
 if ($action === 'forecast_all') {
     $periods = (int)($_GET['periods'] ?? 6);
     $periods = in_array($periods, [3,6,12], true) ? $periods : 6;
+    $monthsBack = $periods - 1;
 
     try {
         $items = $db->query("SELECT item_id, unit FROM tbl_inventory WHERE is_active = 1")->fetchAll();
         $nextMonth = date('Y-m-01', strtotime('first day of next month'));
 
         $histStmt = $db->prepare("
-            SELECT COALESCE(SUM(d.quantity), 0) AS qty_sold
+            SELECT DATE_FORMAT(t.transaction_date, '%Y-%m') AS month_key,
+                   COALESCE(SUM(d.quantity), 0) AS qty_sold
             FROM tbl_transaction_details d
             JOIN tbl_transactions t ON t.transaction_id = d.transaction_id
             WHERE d.item_id = :id
               AND (t.status IS NULL OR t.status != 'voided')
+              AND t.transaction_date >= DATE_SUB(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL {$monthsBack} MONTH)
+              AND t.transaction_date < DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH)
             GROUP BY DATE_FORMAT(t.transaction_date, '%Y-%m')
             ORDER BY DATE_FORMAT(t.transaction_date, '%Y-%m') DESC
             LIMIT {$periods}
@@ -240,8 +248,8 @@ if ($action === 'forecast_all') {
             $isPiece = isPieceUnit($item['unit'] ?? '');
             
             $histStmt->execute([':id' => $itemId]);
-            $rawQtys = array_map(fn($r) => (float)$r['qty_sold'], $histStmt->fetchAll());
-            $qtys = array_reverse($rawQtys);
+            $history = forecastHistory($histStmt->fetchAll(), $periods);
+            $qtys = array_column($history, 'qty_sold');
             $n = count($qtys);
 
             $wma_numerator = 0; $wma_denominator = 0;
