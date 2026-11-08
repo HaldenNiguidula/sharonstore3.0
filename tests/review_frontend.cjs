@@ -45,6 +45,50 @@ assert.equal(context.cart.length, 0, 'Expired search result was added');
 assert.match(toasts.at(-1), /expired/);
 console.log('PASS POS results outside initial catalog and expired product selection');
 
+context.cart = [
+    { ...initial, price: 23.50, quantity: 2 },
+    { ...searched, price: 65, quantity: 1 }
+];
+element('amountTendered').value = '150';
+context.calcTotals();
+assert.equal(element('dispSubtotal').textContent, '₱112.00');
+assert.equal(element('dispTotal').textContent, '₱112.00');
+assert.equal(element('dispChange').textContent, '₱38.00');
+assert.equal(element('btnCheckout').disabled, false);
+context.setExact();
+assert.equal(element('amountTendered').value, '112.00');
+assert.equal(element('dispChange').textContent, '₱0.00');
+element('amountTendered').value = '111.99';
+context.calcChange();
+assert.equal(element('btnCheckout').disabled, true);
+let receiptShown = 0, printed = 0;
+context.receiptM = { show() { receiptShown++; } };
+context.print = () => printed++;
+context.showReceipt({
+    transaction_code: 'TEST-0001', cashier_name: 'Test Cashier',
+    items: [
+        { item_name: 'First item', quantity: 2, unit_price: 23.50, subtotal: 47 },
+        { item_name: 'Second item', quantity: 1, unit_price: 65, subtotal: 65 }
+    ],
+    subtotal: 112, grand_total: 112, amount_tendered: 150, change_amount: 38
+});
+const receipt = element('receiptContent').innerHTML;
+assert.doesNotMatch(receipt, /\b(?:VAT|tax)\b|NaN|undefined/i);
+assert.match(receipt, /Subtotal<\/span>.*?112\.00/);
+assert.match(receipt, /TOTAL<\/span>.*?112\.00/);
+assert.match(receipt, /CHANGE<\/span>.*?38\.00/);
+assert.match(receipt, /This is not a official receipt/);
+assert.equal(receiptShown, 1);
+runTimers();
+assert.equal(printed, 1, 'Receipt no longer auto-prints');
+assert.doesNotMatch(fs.readFileSync(path.join(root, 'pos.php'), 'utf8'), /dispVAT|excl\. VAT|VAT \(/);
+context.cart = [];
+context.calcTotals();
+assert.equal(element('dispSubtotal').textContent, '₱0.00');
+assert.equal(element('dispTotal').textContent, '₱0.00');
+assert.equal(element('btnCheckout').disabled, true);
+console.log('PASS product-price totals, exact/insufficient cash, change, empty cart and receipt without tax');
+
 function runTimers() { const pending = [...timers.values()]; timers.clear(); pending.forEach(fn => fn()); }
 const settle = () => new Promise(resolve => setImmediate(resolve));
 async function searchRace() {

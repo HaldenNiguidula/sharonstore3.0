@@ -849,12 +849,8 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                 <!-- Totals -->
                 <div class="pos-right-section">
                     <div class="pos-total-row">
-                        <span class="pos-total-label">Subtotal (excl. VAT)</span>
+                        <span class="pos-total-label">Subtotal</span>
                         <span class="pos-total-val" id="dispSubtotal">&#8369;0.00</span>
-                    </div>
-                    <div class="pos-total-row">
-                        <span class="pos-total-label">VAT (12% incl.)</span>
-                        <span class="pos-total-val" id="dispVAT" style="color:#888888;">&#8369;0.00</span>
                     </div>
                     <div style="border-top:1.5px solid #e2e8f0;padding-top:10px;margin-top:4px;
                                 display:flex;justify-content:space-between;align-items:center;">
@@ -992,7 +988,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
-<script src="/sharonstore3.0/assets/js/pos.js?v=34"></script>
+<script src="/sharonstore3.0/assets/js/pos.js?v=35"></script>
 <?php require_once __DIR__ . '/includes/shift_modals.php'; ?>
 </body>
 </html>

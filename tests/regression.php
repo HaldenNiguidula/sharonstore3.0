@@ -112,6 +112,8 @@ foreach (['price','duplicate','insufficient','expired','expires_today','no_shift
     if ($scenario === 'price') {
         $data = json_decode($output, true, 512, JSON_THROW_ON_ERROR);
         check($data['success'] && (float)$data['grand_total'] === 10.0 && (float)$data['items'][0]['unit_price'] === 10.0, 'Browser price was accepted');
+        check((float)$data['subtotal'] === 10.0 && (float)$data['amount_tendered'] === 100.0 && (float)$data['change_amount'] === 90.0, 'Receipt totals differ from product prices and cash');
+        check(!array_key_exists('vat_amount', $data), 'Receipt still includes a tax breakdown');
     } elseif (in_array($scenario, ['duplicate','insufficient','expired','expires_today','no_shift','void'], true)) {
         check(json_decode($output, true, 512, JSON_THROW_ON_ERROR)['success'] === false, "$scenario should be rejected");
     } else check($output === 'PASS', "$scenario failed: $output");

@@ -21,7 +21,6 @@ var visibleItems = [];
 var searchRequest = 0;
 var receiptM  = null;
 var srchTimer = null;
-var VAT_RATE  = 12 / 112;
 
 document.addEventListener('DOMContentLoaded', function () {
     receiptM = new bootstrap.Modal(document.getElementById('receiptModal'));
@@ -339,9 +338,7 @@ function renderCart() {
 function calcTotals() {
     var total = 0;
     for (var i = 0; i < cart.length; i++) { total += parseFloat(cart[i].price) * parseFloat(cart[i].quantity); }
-    var vat = total * VAT_RATE;
-    document.getElementById('dispSubtotal').textContent = '\u20b1' + (total - vat).toFixed(2);
-    document.getElementById('dispVAT').textContent      = '\u20b1' + vat.toFixed(2);
+    document.getElementById('dispSubtotal').textContent = '\u20b1' + total.toFixed(2);
     document.getElementById('dispTotal').textContent    = '\u20b1' + total.toFixed(2);
     document.getElementById('dispTotal').dataset.total  = total;
     calcChange();
@@ -481,8 +478,7 @@ function showReceipt(data) {
         + '</table>'
         + SEP2
         + '<div style="' + S + '">'
-        +   '<div style="display:flex;justify-content:space-between;margin-bottom:2px;font-size:8pt;"><span>Subtotal (ex-VAT)</span><span style="white-space:nowrap;">&#8369;' + (parseFloat(data.subtotal)*(100/112)).toFixed(2) + '</span></div>'
-        +   '<div style="display:flex;justify-content:space-between;margin-bottom:2px;font-size:8pt;"><span>VAT 12%</span><span style="white-space:nowrap;">&#8369;' + parseFloat(data.vat_amount).toFixed(2) + '</span></div>'
+        +   '<div style="display:flex;justify-content:space-between;margin-bottom:2px;font-size:8pt;"><span>Subtotal</span><span style="white-space:nowrap;">&#8369;' + parseFloat(data.subtotal).toFixed(2) + '</span></div>'
         +   '<div style="display:flex;justify-content:space-between;' + SB + 'font-size:10.5pt;border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:3px 0;margin:3px 0;"><span>TOTAL</span><span style="white-space:nowrap;">&#8369;' + parseFloat(data.grand_total).toFixed(2) + '</span></div>'
         +   '<div style="display:flex;justify-content:space-between;margin-bottom:2px;font-size:8.2pt;"><span>Cash Tendered</span><span style="white-space:nowrap;">&#8369;' + parseFloat(data.amount_tendered).toFixed(2) + '</span></div>'
         +   '<div style="display:flex;justify-content:space-between;' + SB + 'font-size:9.5pt;border-top:1px solid #000;padding-top:2px;"><span>CHANGE</span><span style="white-space:nowrap;">&#8369;' + parseFloat(data.change_amount).toFixed(2) + '</span></div>'

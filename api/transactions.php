@@ -373,8 +373,7 @@ function handleCompleteSale(array $body): never {
         'transaction_date' => date('Y-m-d H:i:s'),
         'cashier_name'     => currentUserName(),
         'items'            => $validatedItems,
-        'subtotal'         => $grandTotal,         // subtotal before VAT (VAT-inclusive pricing)
-        'vat_amount'       => round($grandTotal * 12 / 112, 2), // VAT-inclusive breakdown
+        'subtotal'         => $grandTotal,
         'grand_total'      => $grandTotal,
         'amount_tendered'  => $amountTendered,
         'change_amount'    => $changeAmount,
