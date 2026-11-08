@@ -108,7 +108,7 @@
                         <span class="fw-bold text-dark" id="liveCashierName">--</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted fw-bold">Shift Started:</span>
+                        <span class="text-muted fw-bold">Shift Started (PHT):</span>
                         <span class="fw-bold" id="liveShiftStarted">--</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
@@ -473,8 +473,9 @@
 
                 if (cashierEl) cashierEl.textContent = json.data.cashier_name || 'Active Cashier';
                 if (startedEl) {
-                    const timeStr = json.data.start_time 
-                        ? new Date(json.data.start_time.replace(/-/g, '/')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                    const startedAt = json.data.start_time_unix;
+                    const timeStr = startedAt !== null && startedAt !== undefined && Number.isFinite(Number(startedAt))
+                        ? new Date(Number(startedAt) * 1000).toLocaleTimeString('en-PH', {timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit', hour12: true})
                         : '--';
                     startedEl.textContent = timeStr;
                 }

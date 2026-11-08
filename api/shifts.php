@@ -123,7 +123,7 @@ if ($action === 'summary') {
 
     if ($isAdminUser) {
         // Admin view: check if any cashier shift is currently open
-        $stmt = $db->query("SELECT s.*, u.full_name AS cashier_name 
+        $stmt = $db->query("SELECT s.*, UNIX_TIMESTAMP(s.start_time) AS start_time_unix, u.full_name AS cashier_name
                             FROM tbl_shifts s 
                             JOIN tbl_users u ON u.user_id = s.cashier_id 
                             WHERE s.status = 'open' 
@@ -131,7 +131,7 @@ if ($action === 'summary') {
         $activeShift = $stmt->fetch();
     } else {
         // Cashier view: check cashier's own open shift
-        $stmt = $db->prepare("SELECT s.*, u.full_name AS cashier_name 
+        $stmt = $db->prepare("SELECT s.*, UNIX_TIMESTAMP(s.start_time) AS start_time_unix, u.full_name AS cashier_name
                               FROM tbl_shifts s 
                               JOIN tbl_users u ON u.user_id = s.cashier_id 
                               WHERE s.cashier_id = ? AND s.status = 'open' 
@@ -164,6 +164,8 @@ if ($action === 'summary') {
         'has_active_shift' => true,
         'shift_id'         => $shiftId,
         'start_time'       => $activeShift['start_time'],
+        // Let the database interpret its own timezone before sending an absolute instant.
+        'start_time_unix'  => $activeShift['start_time_unix'] !== null ? (int)$activeShift['start_time_unix'] : null,
         'starting_cash'    => $startingCash,
         'txn_count'        => $txnCount,
         'total_sales'      => $totalSales,
