@@ -25,7 +25,7 @@ const context = vm.createContext({
     setTimeout(fn) { timers.set(++timerId, fn); return timerId; },
     clearTimeout(id) { timers.delete(id); },
     fetch(url) {
-        if (url.endsWith('/api/time.php')) return Promise.resolve({ ok: true, json: async () => ({ success: true, unix_ms: Date.now() }) });
+        if (url.endsWith('/api/index.php?action=server_time')) return Promise.resolve({ ok: true, json: async () => ({ success: true, unix_ms: Date.now() }) });
         return new Promise(resolve => requests.push({ url, resolve }));
     },
     performance, setInterval() {}, addEventListener() {}, SHARON_TIME_BOOT: Date.now(),

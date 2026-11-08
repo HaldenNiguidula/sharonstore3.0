@@ -4,6 +4,12 @@
 // ============================================================
 ob_start();
 
+// Reuse this function for the public clock; keep it independent of database/session startup.
+if (($_GET['action'] ?? '') === 'server_time' && empty($_GET['file'])) {
+    require __DIR__ . '/../includes/time_endpoint.php';
+    exit;
+}
+
 $rootDir = dirname(__DIR__);
 require_once $rootDir . '/includes/db.php';
 startAppSession();

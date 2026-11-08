@@ -38,7 +38,7 @@
         syncing = true;
         var before = tick();
         try {
-            var response = await fetch('/sharonstore3.0/api/time.php', {cache: 'no-store', headers: {'Accept': 'application/json'}});
+            var response = await fetch('/sharonstore3.0/api/index.php?action=server_time', {cache: 'no-store', headers: {'Accept': 'application/json'}});
             if (!response.ok) return;
             var data = await response.json();
             var after = tick(), timestamp = Number(data.unix_ms);
