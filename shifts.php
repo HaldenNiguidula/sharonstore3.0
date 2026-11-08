@@ -226,6 +226,48 @@ tr.shift-row.page-hidden {
         display: none !important;
     }
 
+    /* Print the selected shift instead of the report behind its dialog. */
+    body.print-shift-summary .app-wrapper {
+        display: none !important;
+    }
+    body.print-shift-summary #shiftDetailModal {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        opacity: 1 !important;
+        padding: 0 !important;
+    }
+    body.print-shift-summary #shiftDetailModal .modal-dialog {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        transform: none !important;
+    }
+    body.print-shift-summary #shiftDetailModal .modal-content {
+        background: #fff !important;
+        color: #111827 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    body.print-shift-summary #shiftDetailModal .modal-header {
+        padding: 0 0 12px !important;
+        margin-bottom: 12px;
+    }
+    body.print-shift-summary #shiftDetailModal .modal-body {
+        padding: 0 !important;
+    }
+    body.print-shift-summary #shiftDetailModal .modal-footer,
+    body.print-shift-summary #shiftDetailModal .btn-close {
+        display: none !important;
+    }
+    body.print-shift-summary #shiftDetailModal .detail-row {
+        break-inside: avoid;
+    }
+
     .app-wrapper,
     .main-content {
         margin: 0 !important;
@@ -1140,6 +1182,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailModalEl = document.getElementById('shiftDetailModal');
     const detailModal = detailModalEl ? new bootstrap.Modal(detailModalEl) : null;
     const detailBody = document.getElementById('shiftDetailBody');
+
+    // Also handles Ctrl+P, and resets the mode after printing or cancelling.
+    window.addEventListener('beforeprint', () => {
+        document.body.classList.toggle('print-shift-summary', Boolean(detailModalEl?.classList.contains('show')));
+    });
+    window.addEventListener('afterprint', () => {
+        document.body.classList.remove('print-shift-summary');
+    });
 
     document.querySelectorAll('.btn-view-shift').forEach(btn => {
         btn.addEventListener('click', () => {

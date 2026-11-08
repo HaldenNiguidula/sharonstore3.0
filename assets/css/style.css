@@ -816,12 +816,13 @@ pre code {
    PRINT
    ═══════════════════════════════════════════════════════════ */
 @media print {
-  .ss-sidebar, .ss-topbar, .ss-sidebar-overlay,
+  .ss-sidebar, .ss-topbar, .ss-sidebar-overlay, .modal-backdrop,
   .btn:not(.checkout-btn), #toastContainer,
   .page-header > .btn { display: none !important; }
   .main-content { margin-left: 0 !important; }
   .card { box-shadow: none !important; border: 1px solid #ccc !important; }
   body { background: #fff !important; }
+  body.modal-open { overflow: visible !important; padding-right: 0 !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════
