@@ -35,9 +35,9 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function tickClock() {
-    var now  = new Date();
-    var time = now.toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-    var date = now.toLocaleDateString('en-PH', {weekday:'short', month:'short', day:'numeric', year:'numeric'});
+    var now  = window.SharonTime.now();
+    var time = window.SharonTime.format(now, {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true});
+    var date = window.SharonTime.format(now, {weekday:'short', month:'short', day:'numeric', year:'numeric'});
     var te = document.getElementById('posTime');
     var de = document.getElementById('posDate');
     if (te) te.textContent = time;
@@ -385,8 +385,7 @@ function clearTendered() {
 window.clearTendered = clearTendered;
 
 function updateTxnCode() {
-    var n = new Date();
-    var ymd = n.getFullYear() + String(n.getMonth()+1).padStart(2,'0') + String(n.getDate()).padStart(2,'0');
+    var ymd = window.SharonTime.dateKey().replace(/-/g, '');
     document.getElementById('txnCodePreview').textContent = 'TXN-' + ymd + '-XXXX';
 }
 
@@ -430,9 +429,10 @@ function completeSale() {
 
 // ── Receipt: 58mm thermal (48mm safe printable width, centered, clear bold black) ────
 function showReceipt(data) {
-    var now     = new Date();   // real-time local clock when receipt opens
-    var dateStr = now.toLocaleDateString('en-PH', {year:'numeric', month:'short', day:'numeric'});
-    var timeStr = now.toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    var now = data.transaction_time_unix ? new Date(Number(data.transaction_time_unix) * 1000)
+        : data.transaction_date ? window.SharonTime.parse(data.transaction_date) : window.SharonTime.now();
+    var dateStr = window.SharonTime.format(now, {year:'numeric', month:'short', day:'numeric'});
+    var timeStr = window.SharonTime.format(now, {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true});
 
     // CSS dividers: 1.5px dashed and 2px solid for thick, dark thermal burn lines
     var SEP  = '<div style="border-top:1.5px dashed #000;margin:4px 0;width:100%;"></div>';

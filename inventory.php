@@ -353,7 +353,7 @@ $pageTitle = 'Inventory Management';
 </div></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=36"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=37"></script>
 <script>
 let currentPage  = 1;
 let categories   = [];
@@ -529,11 +529,7 @@ async function loadItems(page = 1) {
             // Safe calendar-day expiry calculation
             let expHtml = '<span style="color:#888888;">\u2014</span>';
             if (item.expiry_date && item.expiry_date !== '0000-00-00') {
-                const [ey,em,ed] = item.expiry_date.split('-').map(Number);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const expDate = new Date(ey, em - 1, ed, 0, 0, 0, 0);
-                const days = Math.round((expDate - today) / 86400000);
+                const days = window.SharonTime.daysUntil(item.expiry_date);
 
                 let badgeHtml = '';
                 let textCol = '#4a5568';

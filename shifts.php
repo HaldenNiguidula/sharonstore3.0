@@ -7,7 +7,8 @@ $pageTitle = 'Shift History';
 $db = getDB();
 
 $stmt = $db->query("
-    SELECT s.*, 
+    SELECT s.*, UNIX_TIMESTAMP(s.start_time) AS start_time_unix,
+           UNIX_TIMESTAMP(s.end_time) AS end_time_unix,
            COALESCE(u.full_name, 'Former Employee') as cashier_name, 
            COALESCE(u.username, 'deleted') as cashier_username
     FROM tbl_shifts s
@@ -15,6 +16,11 @@ $stmt = $db->query("
     ORDER BY s.shift_id DESC
 ");
 $shifts = $stmt->fetchAll();
+foreach ($shifts as &$shift) {
+    $shift['start_time'] = appTime((int)$shift['start_time_unix'])->format('Y-m-d H:i:s');
+    $shift['end_time'] = $shift['end_time_unix'] !== null ? appTime((int)$shift['end_time_unix'])->format('Y-m-d H:i:s') : null;
+}
+unset($shift);
 
 // Statistics calculation
 $totalShifts = count($shifts);
@@ -628,7 +634,7 @@ tr.shift-row.page-hidden {
             <table class="print-meta-grid mt-3">
                 <tr>
                     <td style="width:50%; text-align:left;">
-                        <strong>Date &amp; Time Generated:</strong> <?= date('F d, Y h:i A') ?><br>
+                        <strong>Date &amp; Time Generated:</strong> <span data-app-print-time><?= date('F d, Y h:i A') ?> PHT</span><br>
                         <strong>Report Classification:</strong> Cash Reconciliation &amp; Audit Log
                     </td>
                     <td style="width:50%; text-align:right;">
@@ -851,7 +857,7 @@ tr.shift-row.page-hidden {
                 </div>
             </div>
             <div class="print-footer-note">
-                Confidential &bull; Generated from Sharon Store POS &amp; Inventory Management System &bull; <?= date('Y-m-d H:i:s') ?>
+                Confidential &bull; Generated from Sharon Store POS &amp; Inventory Management System &bull; <span data-app-print-time><?= date('Y-m-d H:i:s') ?> PHT</span>
             </div>
         </div>
 
@@ -882,7 +888,7 @@ tr.shift-row.page-hidden {
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=37"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // Copy PIN to clipboard
@@ -1122,16 +1128,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Quick Date Range Preset Helper
     window.setShiftDateRange = function(range) {
-        const today = new Date();
+        const today = new Date(window.SharonTime.dateKey() + 'T00:00:00Z');
         const fromInput = document.getElementById('shiftDateFrom');
         const toInput = document.getElementById('shiftDateTo');
         if (!fromInput || !toInput) return;
 
         function fmt(d) {
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${y}-${m}-${day}`;
+            return d.toISOString().slice(0, 10);
         }
 
         if (range === 'today') {
@@ -1139,16 +1142,16 @@ document.addEventListener('DOMContentLoaded', () => {
             toInput.value = fmt(today);
         } else if (range === 'yesterday') {
             const yest = new Date(today);
-            yest.setDate(yest.getDate() - 1);
+            yest.setUTCDate(yest.getUTCDate() - 1);
             fromInput.value = fmt(yest);
             toInput.value = fmt(yest);
         } else if (range === '7days') {
             const d7 = new Date(today);
-            d7.setDate(d7.getDate() - 6);
+            d7.setUTCDate(d7.getUTCDate() - 6);
             fromInput.value = fmt(d7);
             toInput.value = fmt(today);
         } else if (range === 'month') {
-            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const firstDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
             fromInput.value = fmt(firstDay);
             toInput.value = fmt(today);
         } else if (range === 'all') {
@@ -1200,8 +1203,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const formatMoney = val => val !== null && val !== undefined ? '₱' + parseFloat(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
             const formatDate = str => {
                 if (!str) return '—';
-                const d = new Date(str.replace(' ', 'T'));
-                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                return window.SharonTime.format(window.SharonTime.parse(str), { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
             };
 
             let varianceBadge = '<span class="badge badge-variance exact">₱0.00 (Balanced)</span>';

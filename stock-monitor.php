@@ -323,7 +323,7 @@ if ($currentRole === 'cashier') {
             <table class="print-meta-grid mt-3">
                 <tr>
                     <td style="width:50%; text-align:left;">
-                        <strong>Date &amp; Time Generated:</strong> <?= date('F d, Y h:i A') ?><br>
+                        <strong>Date &amp; Time Generated:</strong> <span data-app-print-time><?= date('F d, Y h:i A') ?> PHT</span><br>
                         <strong>Report Scope:</strong> Full Stock &amp; Inventory Level Overview
                     </td>
                     <td style="width:50%; text-align:right;">
@@ -469,7 +469,7 @@ if ($currentRole === 'cashier') {
                 </div>
             </div>
             <div class="print-footer-note">
-                Confidential &bull; Generated from Sharon Store POS &amp; Inventory Management System &bull; <?= date('Y-m-d H:i:s') ?>
+                Confidential &bull; Generated from Sharon Store POS &amp; Inventory Management System &bull; <span data-app-print-time><?= date('Y-m-d H:i:s') ?> PHT</span>
             </div>
         </div>
 
@@ -480,7 +480,7 @@ if ($currentRole === 'cashier') {
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=36"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=37"></script>
 <?php require_once __DIR__ . '/includes/shift_modals.php'; ?>
 <script>
 const isCashierRole = <?= json_encode($currentRole === 'cashier') ?>;
@@ -579,7 +579,6 @@ async function loadExpiring() {
             return;
         }
         const expiring = (j.data && j.data.items) ? j.data.items : (Array.isArray(j.data) ? j.data : []);
-        const today    = new Date();
 
         document.getElementById('expCount').textContent = expiring.length;
         if (!expiring.length) {
@@ -589,9 +588,7 @@ async function loadExpiring() {
         let html = '<div class="table-responsive"><table class="table table-custom mb-0"><thead><tr><th class="sortable-th">Item <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Expiry <i class="fa-solid fa-sort sort-icon no-print"></i></th><th class="sortable-th">Days Left <i class="fa-solid fa-sort sort-icon no-print"></i></th></tr></thead><tbody>';
         expiring.forEach(row => {
             if (!row.expiry_date) return;
-            const [ey,em,ed] = row.expiry_date.split('-').map(Number);
-            const expDate = new Date(ey, em-1, ed);
-            const days = Math.ceil((expDate - today) / 86400000);
+            const days = window.SharonTime.daysUntil(row.expiry_date);
             const cls  = days<=0?'text-danger':days<=7?'text-warning':'text-info';
             html += `<tr class="${days<=0?'table-row-danger':days<=7?'table-row-warning':''}"><td style="font-weight:600;">${esc(row.item_name)}</td><td style="color:#555657;">${row.expiry_date}</td><td><span class="${cls}" style="font-weight:700;">${days<=0?'EXPIRED':days+' days'}</span></td></tr>`;
         });
@@ -644,9 +641,7 @@ function renderList(items) {
         const rowCls  = item.stock_status==='expired'?'table-row-danger':item.stock_status==='out'?'table-row-danger':item.stock_status==='low'?'table-row-warning':'';
         const sBadge  = item.stock_status==='expired'?'<span class="badge badge-danger">Expired</span>':item.stock_status==='out'?'<span class="badge badge-danger">Out</span>':item.stock_status==='low'?'<span class="badge badge-warning">Low</span>':'<span class="badge badge-success">OK</span>';
         const expHtml = item.expiry_date ? (() => {
-            const [ey, em, ed] = item.expiry_date.split('-').map(Number);
-            const expDate = new Date(ey, em - 1, ed);
-            const days = Math.ceil((expDate - new Date()) / 86400000);
+            const days = window.SharonTime.daysUntil(item.expiry_date);
             return `<span class="${days<=0?'text-danger fw-700':days<=30?'text-warning':'text-muted'}">${item.expiry_date}${days<=30?' ('+days+'d)':''}</span>`;
         })() : '<span class="text-muted">—</span>';
         

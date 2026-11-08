@@ -25,7 +25,7 @@ if ($action === 'schedule_status') {
     $prefix = 'daily_' . $source . '_';
     $success = (int)getSetting($db, $prefix . 'success', '0');
     $failure = (int)getSetting($db, $prefix . 'failure', '0');
-    $format = static fn(int $time) => $time > 0 ? (new DateTimeImmutable('@' . $time))->setTimezone(new DateTimeZone('Asia/Singapore'))->format('M d, Y g:i A') : null;
+    $format = static fn(int $time) => $time > 0 ? (new DateTimeImmutable('@' . $time))->setTimezone(new DateTimeZone(APP_TIMEZONE))->format('M d, Y g:i A') : null;
     echo json_encode(['success' => true, 'data' => [
         'source' => $source,
         'scheduler_ready' => $source === 'vercel' ? (string)getenv('CRON_SECRET') !== '' : is_file(__DIR__ . '/../backups/.daily-schedule.json'),

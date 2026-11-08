@@ -93,7 +93,7 @@ function writeDatabaseBackup(PDO $db, string $directory, string $filename): stri
     if ($db->inTransaction()) throw new LogicException('Cannot export inside an existing transaction.');
     $dir = rtrim($directory, '/\\');
     if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) throw new RuntimeException('Cannot create backup directory.');
-    $stamp = (new DateTimeImmutable('now', new DateTimeZone('Asia/Singapore')))->format('Y-m-d_H-i-s');
+    $stamp = (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('Y-m-d_H-i-s');
     $target = $dir . '/' . basename($filename);
     $partial = $target . '.partial';
     $file = fopen($partial, 'xb');
@@ -111,7 +111,7 @@ function writeDatabaseBackup(PDO $db, string $directory, string $filename): stri
         $db->beginTransaction();
         $tables = $db->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")->fetchAll(PDO::FETCH_NUM);
         if (!$tables) throw new RuntimeException('No database tables found to back up.');
-        $write("-- Sharon Store automatic backup\n-- Generated: {$stamp} Asia/Singapore\nSET FOREIGN_KEY_CHECKS = 0;\nSET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n\n");
+        $write("-- Sharon Store automatic backup\n-- Generated: {$stamp} Asia/Manila\nSET FOREIGN_KEY_CHECKS = 0;\nSET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n\n");
         foreach ($tables as $row) {
             $table = (string)$row[0];
             if ($table === 'tbl_sessions') continue;

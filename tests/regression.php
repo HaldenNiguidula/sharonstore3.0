@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
+require_once __DIR__ . '/../includes/time.php';
 
 // Run with C:\xampp\php\php.exe tests/regression.php.
 // All fixtures use connection-local TEMPORARY tables; store tables are never modified.

@@ -86,13 +86,13 @@ if ($action === 'list') {
 
     if ($status !== '') {
         if ($status === 'expired') {
-            $where[] = '(i.expiry_date IS NOT NULL AND i.expiry_date != \'0000-00-00\' AND i.expiry_date != \'\' AND i.expiry_date <= CURDATE())';
+            $where[] = '(i.expiry_date IS NOT NULL AND i.expiry_date != \'0000-00-00\' AND i.expiry_date != \'\' AND i.expiry_date <= DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR))';
         } elseif ($status === 'out') {
-            $where[] = '(i.stock_qty <= 0 AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > CURDATE()))';
+            $where[] = '(i.stock_qty <= 0 AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)))';
         } elseif ($status === 'low') {
-            $where[] = '(i.stock_qty > 0 AND i.stock_qty <= i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > CURDATE()))';
+            $where[] = '(i.stock_qty > 0 AND i.stock_qty <= i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)))';
         } elseif ($status === 'ok') {
-            $where[] = '(i.stock_qty > i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > CURDATE()))';
+            $where[] = '(i.stock_qty > i.low_stock_threshold AND (i.expiry_date IS NULL OR i.expiry_date = \'0000-00-00\' OR i.expiry_date = \'\' OR i.expiry_date > DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)))';
         }
     }
 
@@ -128,15 +128,15 @@ if ($action === 'list') {
     if (isset($sortMap[$sortBy])) {
         if ($sortMap[$sortBy] === 'stock_status_order') {
             $orderSql = ($sortDir === 'ASC')
-                ? "(CASE 
-                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE() THEN 4 
-                    WHEN i.stock_qty <= 0 THEN 3 
-                    WHEN i.stock_qty <= i.low_stock_threshold THEN 2 
+                ? "(CASE
+                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR) THEN 4
+                    WHEN i.stock_qty <= 0 THEN 3
+                    WHEN i.stock_qty <= i.low_stock_threshold THEN 2
                     ELSE 1 END) ASC, i.item_name ASC"
-                : "(CASE 
-                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE() THEN 4 
-                    WHEN i.stock_qty <= 0 THEN 3 
-                    WHEN i.stock_qty <= i.low_stock_threshold THEN 2 
+                : "(CASE
+                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR) THEN 4
+                    WHEN i.stock_qty <= 0 THEN 3
+                    WHEN i.stock_qty <= i.low_stock_threshold THEN 2
                     ELSE 1 END) DESC, i.item_name ASC";
         } elseif ($sortMap[$sortBy] === 'i.expiry_date') {
             $orderSql = ($sortDir === 'ASC')
@@ -169,7 +169,7 @@ if ($action === 'list') {
                 i.created_at,
                 i.updated_at,
                 CASE
-                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE() THEN 'expired'
+                    WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND i.expiry_date != '0000-00-00' AND i.expiry_date <= DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR) THEN 'expired'
                     WHEN i.stock_qty <= 0                        THEN 'out'
                     WHEN i.stock_qty <= i.low_stock_threshold    THEN 'low'
                     ELSE                                              'ok'
@@ -629,12 +629,12 @@ if ($action === 'low_stock') {
 if ($action === 'expiring_soon') {
     $stmt = $db->query("
         SELECT i.item_id, i.item_name, i.expiry_date, i.stock_qty, i.unit, c.category_name,
-               DATEDIFF(i.expiry_date, CURDATE()) AS days_left
+               DATEDIFF(i.expiry_date, DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)) AS days_left
         FROM tbl_inventory i
         JOIN tbl_categories c ON c.category_id = i.category_id
         WHERE i.is_active = 1
           AND i.expiry_date IS NOT NULL
-          AND i.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+          AND i.expiry_date <= DATE_ADD(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), INTERVAL 30 DAY)
         ORDER BY i.expiry_date ASC
     ");
     respond(true, 'OK', ['items' => $stmt->fetchAll()]);

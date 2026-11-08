@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/time.php';
 
 /** Consecutive calendar months ending in the current month, including zero sales. */
 function forecastHistory(array $rows, int $periods, ?DateTimeImmutable $month = null): array {

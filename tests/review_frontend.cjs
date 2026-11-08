@@ -18,15 +18,21 @@ function element(id) {
 const context = vm.createContext({
     console, document: {
         getElementById: element, addEventListener() {},
+        querySelectorAll() { return []; },
         createElement() { return { textContent: '', get innerHTML() { return this.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); } }; }
     },
     localStorage: { setItem() {} },
     setTimeout(fn) { timers.set(++timerId, fn); return timerId; },
     clearTimeout(id) { timers.delete(id); },
-    fetch(url) { return new Promise(resolve => requests.push({ url, resolve })); },
+    fetch(url) {
+        if (url.endsWith('/api/time.php')) return Promise.resolve({ ok: true, json: async () => ({ success: true, unix_ms: Date.now() }) });
+        return new Promise(resolve => requests.push({ url, resolve }));
+    },
+    performance, setInterval() {}, addEventListener() {}, SHARON_TIME_BOOT: Date.now(),
     confirm() { throw new Error('Unexpected confirmation'); },
 });
 context.window = context;
+vm.runInContext(fs.readFileSync(path.join(root, 'assets/js/time.js'), 'utf8'), context);
 vm.runInContext(fs.readFileSync(path.join(root, 'assets/js/pos.js'), 'utf8'), context);
 const toasts = [];
 context.showToast = message => toasts.push(message);

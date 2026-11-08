@@ -123,6 +123,7 @@ if ($action === 'forecast') {
     if (!$itemId) respond(false, 'item_id is required.', null);
     $periods = in_array($periods, [3,6,12], true) ? $periods : 6;
     $monthsBack = $periods - 1;
+    $localTransactionTime = appLocalSql('t.transaction_date');
 
     try {
         // Get item details
@@ -134,16 +135,16 @@ if ($action === 'forecast') {
         // Get monthly historical sales for this item
         // Note: $periods is directly interpolated as validated integer (MySQL/TiDB syntax forbids binding parameters to INTERVAL)
         $histStmt = $db->prepare("
-            SELECT DATE_FORMAT(t.transaction_date, '%Y-%m') AS month_key,
-                   DATE_FORMAT(t.transaction_date, '%b %Y') AS month_label,
+            SELECT DATE_FORMAT({$localTransactionTime}, '%Y-%m') AS month_key,
+                   DATE_FORMAT({$localTransactionTime}, '%b %Y') AS month_label,
                    COALESCE(SUM(d.quantity), 0)             AS qty_sold
             FROM tbl_transaction_details d
             JOIN tbl_transactions t ON t.transaction_id = d.transaction_id
             WHERE d.item_id = :id
               AND (t.status IS NULL OR t.status != 'voided')
-              AND t.transaction_date >= DATE_SUB(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL {$monthsBack} MONTH)
-              AND t.transaction_date < DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH)
-            GROUP BY DATE_FORMAT(t.transaction_date, '%Y-%m'), DATE_FORMAT(t.transaction_date, '%b %Y')
+              AND {$localTransactionTime} >= DATE_SUB(DATE_FORMAT(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), '%Y-%m-01'), INTERVAL {$monthsBack} MONTH)
+              AND {$localTransactionTime} < DATE_ADD(DATE_FORMAT(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), '%Y-%m-01'), INTERVAL 1 MONTH)
+            GROUP BY DATE_FORMAT({$localTransactionTime}, '%Y-%m'), DATE_FORMAT({$localTransactionTime}, '%b %Y')
             ORDER BY month_key DESC
             LIMIT {$periods}
         ");
@@ -221,22 +222,23 @@ if ($action === 'forecast_all') {
     $periods = (int)($_GET['periods'] ?? 6);
     $periods = in_array($periods, [3,6,12], true) ? $periods : 6;
     $monthsBack = $periods - 1;
+    $localTransactionTime = appLocalSql('t.transaction_date');
 
     try {
         $items = $db->query("SELECT item_id, unit FROM tbl_inventory WHERE is_active = 1")->fetchAll();
         $nextMonth = date('Y-m-01', strtotime('first day of next month'));
 
         $histStmt = $db->prepare("
-            SELECT DATE_FORMAT(t.transaction_date, '%Y-%m') AS month_key,
+            SELECT DATE_FORMAT({$localTransactionTime}, '%Y-%m') AS month_key,
                    COALESCE(SUM(d.quantity), 0) AS qty_sold
             FROM tbl_transaction_details d
             JOIN tbl_transactions t ON t.transaction_id = d.transaction_id
             WHERE d.item_id = :id
               AND (t.status IS NULL OR t.status != 'voided')
-              AND t.transaction_date >= DATE_SUB(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL {$monthsBack} MONTH)
-              AND t.transaction_date < DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH)
-            GROUP BY DATE_FORMAT(t.transaction_date, '%Y-%m')
-            ORDER BY DATE_FORMAT(t.transaction_date, '%Y-%m') DESC
+              AND {$localTransactionTime} >= DATE_SUB(DATE_FORMAT(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), '%Y-%m-01'), INTERVAL {$monthsBack} MONTH)
+              AND {$localTransactionTime} < DATE_ADD(DATE_FORMAT(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), '%Y-%m-01'), INTERVAL 1 MONTH)
+            GROUP BY DATE_FORMAT({$localTransactionTime}, '%Y-%m')
+            ORDER BY DATE_FORMAT({$localTransactionTime}, '%Y-%m') DESC
             LIMIT {$periods}
         ");
         

@@ -12,7 +12,7 @@ function scheduledBackupState(PDO $db, string $key, string $value): void {
 function runScheduledBackup(PDO $db, string $source, ?callable $exporter = null, ?callable $uploader = null): array {
     if (!in_array($source, ['local', 'vercel'], true)) throw new InvalidArgumentException('Invalid backup source.');
     $prefix = 'daily_' . $source . '_';
-    $day = (new DateTimeImmutable('now', new DateTimeZone('Asia/Singapore')))->format('Y-m-d');
+    $day = (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('Y-m-d');
     $lockKey = $prefix . 'lock';
     $claim = (time() + 1800) . ':' . bin2hex(random_bytes(16));
     // Compare-and-set a short lease using the existing settings table (MySQL and TiDB).
@@ -57,7 +57,7 @@ function runScheduledBackup(PDO $db, string $source, ?callable $exporter = null,
 /** Publish only complete, consistent exports; never prune existing manual/safety backups. */
 function generateScheduledBackupFile(PDO $db, string $source): string {
     $dir = $source === 'vercel' ? sys_get_temp_dir() . '/sharonstore_backups' : rtrim(getBackupDir(), '/\\');
-    $stamp = (new DateTimeImmutable('now', new DateTimeZone('Asia/Singapore')))->format('Y-m-d_H-i-s');
+    $stamp = (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('Y-m-d_H-i-s');
     return writeDatabaseBackup($db, $dir, 'sharonstore_auto_' . $source . '_' . $stamp . '_' . bin2hex(random_bytes(4)) . '.sql');
 }
 

@@ -19,26 +19,27 @@ $action = $_GET['action'] ?? '';
 $db     = getDB();
 
 function getDashboardStats(PDO $db): array {
+    $localTransactionTime = appLocalSql('transaction_date');
     $today = $db->query("
         SELECT COALESCE(SUM(total_amount),0) AS today_revenue,
                COUNT(*) AS today_transactions
         FROM tbl_transactions
-        WHERE DATE(transaction_date) = CURDATE()
+        WHERE DATE({$localTransactionTime}) = DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)
           AND (status IS NULL OR status != 'voided')
     ")->fetch() ?: [];
 
     $weekly = $db->query("
         SELECT COALESCE(SUM(total_amount),0) AS weekly_revenue
         FROM tbl_transactions
-        WHERE transaction_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        WHERE {$localTransactionTime} >= DATE_SUB(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), INTERVAL 7 DAY)
           AND (status IS NULL OR status != 'voided')
     ")->fetch() ?: [];
 
     $monthly = $db->query("
         SELECT COALESCE(SUM(total_amount),0) AS monthly_revenue
         FROM tbl_transactions
-        WHERE MONTH(transaction_date) = MONTH(CURDATE())
-          AND YEAR(transaction_date) = YEAR(CURDATE())
+        WHERE MONTH({$localTransactionTime}) = MONTH(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR))
+          AND YEAR({$localTransactionTime}) = YEAR(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR))
           AND (status IS NULL OR status != 'voided')
     ")->fetch() ?: [];
 
@@ -46,7 +47,7 @@ function getDashboardStats(PDO $db): array {
         SELECT COUNT(*) AS total_items,
                SUM(CASE WHEN stock_qty <= 0 THEN 1 ELSE 0 END) AS out_of_stock,
                SUM(CASE WHEN stock_qty > 0 AND stock_qty <= low_stock_threshold THEN 1 ELSE 0 END) AS low_stock,
-               SUM(CASE WHEN expiry_date IS NOT NULL AND expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) AS expiring_soon,
+               SUM(CASE WHEN expiry_date IS NOT NULL AND expiry_date BETWEEN DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR) AND DATE_ADD(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), INTERVAL 30 DAY) THEN 1 ELSE 0 END) AS expiring_soon,
                COALESCE(SUM(price * stock_qty), 0) AS total_stock_value
         FROM tbl_inventory WHERE is_active = 1
     ")->fetch() ?: [];
@@ -55,14 +56,15 @@ function getDashboardStats(PDO $db): array {
 }
 
 function getDashboardSalesTrend(PDO $db): array {
+    $localTransactionTime = appLocalSql('transaction_date');
     $stmt = $db->query("
-        SELECT DATE(transaction_date) AS sale_date,
+        SELECT DATE({$localTransactionTime}) AS sale_date,
                COALESCE(SUM(total_amount),0) AS daily_total,
                COUNT(*) AS tx_count
         FROM tbl_transactions
-        WHERE transaction_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        WHERE {$localTransactionTime} >= DATE_SUB(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), INTERVAL 30 DAY)
           AND (status IS NULL OR status != 'voided')
-        GROUP BY DATE(transaction_date)
+        GROUP BY DATE({$localTransactionTime})
         ORDER BY sale_date ASC
     ");
     $rows   = $stmt->fetchAll();
@@ -72,13 +74,14 @@ function getDashboardSalesTrend(PDO $db): array {
 }
 
 function getDashboardTopItems(PDO $db): array {
+    $localTransactionTime = appLocalSql('t.transaction_date');
     // Attempt recent 30-day window first
     $stmt = $db->query("
         SELECT i.item_name, SUM(d.quantity) AS total_qty, SUM(d.subtotal) AS total_sales
         FROM tbl_transaction_details d
         JOIN tbl_inventory i ON i.item_id = d.item_id
         JOIN tbl_transactions t ON t.transaction_id = d.transaction_id
-        WHERE t.transaction_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        WHERE {$localTransactionTime} >= DATE_SUB(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), INTERVAL 30 DAY)
           AND (t.status IS NULL OR t.status != 'voided')
         GROUP BY i.item_id, i.item_name
         ORDER BY total_qty DESC
@@ -111,13 +114,14 @@ function getDashboardTopItems(PDO $db): array {
 }
 
 function getDashboardCategorySales(PDO $db): array {
+    $localTransactionTime = appLocalSql('t.transaction_date');
     $stmt = $db->query("
         SELECT c.category_name, COALESCE(SUM(d.subtotal),0) AS total
         FROM tbl_transaction_details d
         JOIN tbl_inventory i ON i.item_id = d.item_id
         JOIN tbl_categories c ON c.category_id = i.category_id
         JOIN tbl_transactions t ON t.transaction_id = d.transaction_id
-        WHERE t.transaction_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        WHERE {$localTransactionTime} >= DATE_SUB(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), INTERVAL 30 DAY)
           AND (t.status IS NULL OR t.status != 'voided')
         GROUP BY c.category_id, c.category_name
         ORDER BY total DESC
@@ -146,12 +150,12 @@ function getDashboardLowStock(PDO $db): array {
 function getDashboardExpiringSoon(PDO $db): array {
     $stmt = $db->query("
         SELECT i.item_id, i.item_name, i.expiry_date, i.stock_qty, i.unit, c.category_name,
-               DATEDIFF(i.expiry_date, CURDATE()) AS days_left
+               DATEDIFF(i.expiry_date, DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)) AS days_left
         FROM tbl_inventory i
         JOIN tbl_categories c ON c.category_id = i.category_id
         WHERE i.is_active = 1
           AND i.expiry_date IS NOT NULL
-          AND i.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+          AND i.expiry_date <= DATE_ADD(DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR), INTERVAL 30 DAY)
         ORDER BY i.expiry_date ASC
         LIMIT 10
     ");

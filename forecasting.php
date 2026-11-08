@@ -312,7 +312,7 @@ $currentRole = currentRole();
             <table class="print-meta-grid mt-3">
                 <tr>
                     <td style="width:50%; text-align:left;">
-                        <strong>Date &amp; Time Generated:</strong> <?= date('F d, Y h:i A') ?><br>
+                        <strong>Date &amp; Time Generated:</strong> <span data-app-print-time><?= date('F d, Y h:i A') ?> PHT</span><br>
                         <strong>Methodology:</strong> Simple &amp; Weighted Moving Averages (SMA &amp; WMA)
                     </td>
                     <td style="width:50%; text-align:right;">
@@ -497,7 +497,7 @@ $currentRole = currentRole();
                 </div>
             </div>
             <div class="print-footer-note">
-                Confidential &bull; Generated from Sharon Store POS &amp; Inventory Management System &bull; <?= date('Y-m-d H:i:s') ?>
+                Confidential &bull; Generated from Sharon Store POS &amp; Inventory Management System &bull; <span data-app-print-time><?= date('Y-m-d H:i:s') ?> PHT</span>
             </div>
         </div>
 
@@ -507,7 +507,7 @@ $currentRole = currentRole();
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=36"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=37"></script>
 <script>
 let forecastChart;
 

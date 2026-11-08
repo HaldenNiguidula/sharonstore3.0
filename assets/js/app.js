@@ -103,19 +103,10 @@ async function apiFetch(url, options = {}) {
     const dateEl = document.getElementById('liveDate');
     if (!timeEl && !dateEl) return;
 
-    const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
     function tick() {
-        const now  = new Date();
-        let   h    = now.getHours();
-        const m    = String(now.getMinutes()).padStart(2, '0');
-        const s    = String(now.getSeconds()).padStart(2, '0');
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        h = h % 12 || 12;
-
-        if (timeEl) timeEl.textContent = `${String(h).padStart(2,'0')}:${m}:${s} ${ampm}`;
-        if (dateEl) dateEl.textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+        const now = window.SharonTime.now();
+        if (timeEl) timeEl.textContent = window.SharonTime.format(now, {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true});
+        if (dateEl) dateEl.textContent = window.SharonTime.format(now, {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'});
     }
     tick();
     setInterval(tick, 1000);

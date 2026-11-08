@@ -1,15 +1,16 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/time.php';
 
 /** Calendar windows include today/current week/month, including periods without sales. */
 function salesReportRows(PDO $db, string $type, ?DateTimeImmutable $today = null): array {
     if (!in_array($type, ['daily', 'weekly', 'monthly'], true)) throw new InvalidArgumentException('Invalid report type.');
-    // Use the database calendar, just as transaction timestamps and dashboard totals do.
-    $today = ($today ?? new DateTimeImmutable((string)$db->query('SELECT CURDATE()')->fetchColumn()))->setTime(0, 0);
+    $today = ($today ?? new DateTimeImmutable((string)$db->query('SELECT ' . appTodaySql())->fetchColumn(), new DateTimeZone(APP_TIMEZONE)))->setTime(0, 0);
+    $localTransactionTime = appLocalSql('transaction_date');
     [$count, $step, $keySql] = match ($type) {
-        'daily' => [30, 'day', "DATE_FORMAT(transaction_date, '%Y-%m-%d')"],
-        'weekly' => [12, 'week', "DATE_FORMAT(transaction_date, '%x-%v')"],
-        'monthly' => [12, 'month', "DATE_FORMAT(transaction_date, '%Y-%m')"],
+        'daily' => [30, 'day', "DATE_FORMAT({$localTransactionTime}, '%Y-%m-%d')"],
+        'weekly' => [12, 'week', appIsoWeekSql('transaction_date')],
+        'monthly' => [12, 'month', "DATE_FORMAT({$localTransactionTime}, '%Y-%m')"],
     };
     $current = match ($type) {
         'weekly' => $today->modify('-' . ((int)$today->format('N') - 1) . ' days'),
@@ -19,7 +20,7 @@ function salesReportRows(PDO $db, string $type, ?DateTimeImmutable $today = null
     $start = $current->modify('-' . ($count - 1) . ' ' . $step);
     $stmt = $db->prepare("SELECT {$keySql} AS raw_date, COALESCE(SUM(total_amount), 0) AS total, COUNT(*) AS tx_count
         FROM tbl_transactions
-        WHERE (status IS NULL OR status != 'voided') AND transaction_date >= ? AND transaction_date < ?
+        WHERE (status IS NULL OR status != 'voided') AND {$localTransactionTime} >= ? AND {$localTransactionTime} < ?
         GROUP BY {$keySql}");
     $stmt->execute([$start->format('Y-m-d'), $today->modify('+1 day')->format('Y-m-d')]);
     $totals = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), null, 'raw_date');

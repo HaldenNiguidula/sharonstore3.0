@@ -76,21 +76,22 @@ if ($action === 'item_breakdown') {
 
     $where = "(t.status IS NULL OR t.status != 'voided')";
     $params = [];
+    $localTransactionTime = appLocalSql('t.transaction_date');
 
     if ($type === 'daily') {
-        $where .= " AND DATE(t.transaction_date) = ?";
+        $where .= " AND DATE({$localTransactionTime}) = ?";
         $params[] = $raw_date;
     } elseif ($type === 'weekly') {
         // raw_date format: YYYY-WW
         $parts = explode('-', $raw_date);
         if (count($parts) !== 2) respond(false, 'Invalid date format.');
-        $where .= " AND DATE_FORMAT(t.transaction_date, '%x-%v') = ?";
+        $where .= ' AND ' . appIsoWeekSql('t.transaction_date') . ' = ?';
         $params[] = sprintf('%04d-%02d', (int)$parts[0], (int)$parts[1]);
     } elseif ($type === 'monthly') {
         // raw_date format: YYYY-MM
         $parts = explode('-', $raw_date);
         if (count($parts) !== 2) respond(false, 'Invalid date format.');
-        $where .= " AND YEAR(t.transaction_date) = ? AND MONTH(t.transaction_date) = ?";
+        $where .= " AND YEAR({$localTransactionTime}) = ? AND MONTH({$localTransactionTime}) = ?";
         $params[] = (int)$parts[0];
         $params[] = (int)$parts[1];
     } else {

@@ -27,6 +27,8 @@ if ($__role === 'cashier') {
     }
 }
 ?>
+<script>window.SHARON_TIME_BOOT = <?= json_encode(microtime(true) * 1000) ?>;</script>
+<script src="/sharonstore3.0/assets/js/time.js?v=1"></script>
 <!-- ══ TOPBAR ══════════════════════════════════════════════ -->
 <header class="ss-topbar" id="appTopbar">
 

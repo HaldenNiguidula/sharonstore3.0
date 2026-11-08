@@ -380,7 +380,7 @@ sort($allCategories, SORT_NATURAL | SORT_FLAG_CASE);
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="/sharonstore3.0/assets/js/app.js?v=35"></script>
+<script src="/sharonstore3.0/assets/js/app.js?v=37"></script>
 <script>
 const supplierModal = new bootstrap.Modal(document.getElementById('supplierModal'));
 

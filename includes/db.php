@@ -2,6 +2,7 @@
 // ============================================================
 // Database Connection — Sharon Store System
 // ============================================================
+require_once __DIR__ . '/time.php';
 $rawHost = getenv('DB_HOST');
 $rawPort = getenv('DB_PORT');
 $rawUser = getenv('DB_USER');

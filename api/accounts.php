@@ -23,8 +23,14 @@ $userId = currentUserId();
 
 // ── List ──────────────────────────────────────────────────────
 if ($action === 'list') {
-    $stmt = $db->query("SELECT user_id, username, full_name, role, is_active, created_at FROM tbl_users ORDER BY created_at DESC");
-    respond(true, 'OK', $stmt->fetchAll());
+    $stmt = $db->query("SELECT user_id, username, full_name, role, is_active, created_at,
+        UNIX_TIMESTAMP(created_at) AS created_at_unix FROM tbl_users ORDER BY created_at DESC");
+    $accounts = $stmt->fetchAll();
+    foreach ($accounts as &$account) {
+        if ($account['created_at_unix'] !== null) $account['created_at'] = appTime((int)$account['created_at_unix'])->format('Y-m-d H:i:s');
+    }
+    unset($account);
+    respond(true, 'OK', $accounts);
 }
 
 // ── Get ───────────────────────────────────────────────────────

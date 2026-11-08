@@ -68,7 +68,7 @@ function handleBarcodeLookup(): never {
     $stmt = $db->prepare(
         "SELECT i.item_id, i.barcode, i.item_name, i.unit, i.price, i.stock_qty,
                 i.low_stock_threshold, c.category_name,
-                (i.expiry_date IS NOT NULL AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE()) AS is_expired
+                (i.expiry_date IS NOT NULL AND i.expiry_date != '0000-00-00' AND i.expiry_date <= DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)) AS is_expired
          FROM   tbl_inventory i
          JOIN   tbl_categories c ON c.category_id = i.category_id
          WHERE  i.barcode = :barcode AND i.is_active = 1
@@ -125,7 +125,7 @@ function handleSearchItems(): never {
         $stmt = $db->prepare(
             "SELECT i.item_id, i.barcode, i.item_name, i.unit, i.price,
                     i.stock_qty, i.low_stock_threshold, c.category_name,
-                    (i.expiry_date IS NOT NULL AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE()) AS is_expired
+                    (i.expiry_date IS NOT NULL AND i.expiry_date != '0000-00-00' AND i.expiry_date <= DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)) AS is_expired
              FROM   tbl_inventory i
              JOIN   tbl_categories c ON c.category_id = i.category_id
              WHERE  i.is_active = 1 AND i.stock_qty > 0
@@ -139,7 +139,7 @@ function handleSearchItems(): never {
         $stmt = $db->prepare(
             "SELECT i.item_id, i.barcode, i.item_name, i.unit, i.price,
                     i.stock_qty, i.low_stock_threshold, c.category_name,
-                    (i.expiry_date IS NOT NULL AND i.expiry_date != '0000-00-00' AND i.expiry_date <= CURDATE()) AS is_expired
+                    (i.expiry_date IS NOT NULL AND i.expiry_date != '0000-00-00' AND i.expiry_date <= DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)) AS is_expired
              FROM   tbl_inventory i
              JOIN   tbl_categories c ON c.category_id = i.category_id
              WHERE  i.is_active = 1
@@ -206,7 +206,7 @@ function handleCompleteSale(array $body): never {
             // Fresh stock check
             $chk = $db->prepare(
                 "SELECT item_id, item_name, stock_qty, price, unit,
-                        (expiry_date IS NOT NULL AND expiry_date != '0000-00-00' AND expiry_date <= CURDATE()) AS is_expired
+                        (expiry_date IS NOT NULL AND expiry_date != '0000-00-00' AND expiry_date <= DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)) AS is_expired
                  FROM   tbl_inventory
                  WHERE  item_id = :id AND is_active = 1
                  LIMIT  1 FOR UPDATE"
@@ -246,7 +246,8 @@ function handleCompleteSale(array $body): never {
         $changeAmount = round($amountTendered - $grandTotal, 2);
 
         // ── Generate transaction code: TXN-YYYYMMDD-#### ──────────
-        $today   = date('Ymd');
+        $transactionTime = time();
+        $today   = date('Ymd', $transactionTime);
         $prefix  = 'TXN-' . $today . '-';
 
         // Find the highest existing sequence for today's prefix
@@ -295,7 +296,7 @@ function handleCompleteSale(array $body): never {
             "INSERT INTO tbl_transactions
                 (transaction_code, user_id, shift_id, total_amount, amount_tendered, change_amount, transaction_date)
              VALUES
-                (:code, :uid, :shift_id, :total, :tendered, :change, NOW())"
+                (:code, :uid, :shift_id, :total, :tendered, :change, FROM_UNIXTIME(:sold_at))"
         );
         $insHdr->bindValue(':code',     $transactionCode, PDO::PARAM_STR);
         if ($userId === null) {
@@ -311,6 +312,7 @@ function handleCompleteSale(array $body): never {
         $insHdr->bindValue(':total',    $grandTotal);
         $insHdr->bindValue(':tendered', $amountTendered);
         $insHdr->bindValue(':change',   $changeAmount);
+        $insHdr->bindValue(':sold_at', $transactionTime, PDO::PARAM_INT);
         $insHdr->execute();
         $transactionId = (int)$db->lastInsertId();
 
@@ -370,7 +372,8 @@ function handleCompleteSale(array $body): never {
         'message'          => 'Sale completed successfully.',
         'transaction_id'   => $transactionId,
         'transaction_code' => $transactionCode,
-        'transaction_date' => date('Y-m-d H:i:s'),
+        'transaction_date' => appTime($transactionTime)->format(DATE_ATOM),
+        'transaction_time_unix' => $transactionTime,
         'cashier_name'     => currentUserName(),
         'items'            => $validatedItems,
         'subtotal'         => $grandTotal,
@@ -386,13 +389,14 @@ function handleCompleteSale(array $body): never {
 // ============================================================
 function handleDailySummary(): never {
     $db   = getDB();
+    $localTransactionTime = appLocalSql('transaction_date');
     $stmt = $db->prepare(
         "SELECT COUNT(*)                       AS transaction_count,
                 COALESCE(SUM(total_amount), 0)    AS total_sales,
                 COALESCE(SUM(amount_tendered), 0) AS total_tendered,
                 COALESCE(SUM(change_amount), 0)   AS total_change
          FROM   tbl_transactions
-         WHERE  DATE(transaction_date) = CURDATE()
+         WHERE  DATE({$localTransactionTime}) = DATE(UTC_TIMESTAMP() + INTERVAL 8 HOUR)
            AND  (status IS NULL OR status != 'voided')"
     );
     $stmt->execute();
@@ -440,7 +444,8 @@ function handleVoidTransaction(array $body): never {
 
     // Fetch transaction (must exist and be within 24h)
     $stmt = $db->prepare(
-        "SELECT transaction_id, transaction_code, total_amount, status, transaction_date
+        "SELECT transaction_id, transaction_code, total_amount, status, transaction_date,
+                UNIX_TIMESTAMP(transaction_date) AS transaction_time_unix
          FROM   tbl_transactions
          WHERE  transaction_id = :id
          LIMIT  1"
@@ -456,7 +461,7 @@ function handleVoidTransaction(array $body): never {
     }
 
     // Within last 24 hours check
-    $txnTime  = strtotime($txn['transaction_date']);
+    $txnTime  = (int)$txn['transaction_time_unix'];
     $cutoff   = time() - (24 * 3600);
     if ($txnTime < $cutoff) {
         jsonOut([
@@ -525,7 +530,7 @@ function handleRecentTransactions(): never {
     $stmt = $db->prepare(
         "SELECT t.transaction_id, t.transaction_code, t.total_amount,
                 t.amount_tendered, t.change_amount,
-                t.transaction_date, t.status,
+                t.transaction_date, UNIX_TIMESTAMP(t.transaction_date) AS transaction_time_unix, t.status,
                 COALESCE(u.full_name, 'Former Employee') AS cashier_name,
                 COUNT(d.detail_id) AS item_count
          FROM   tbl_transactions t
@@ -540,6 +545,7 @@ function handleRecentTransactions(): never {
 
     // Format amounts
     foreach ($rows as &$r) {
+        $r['transaction_date'] = appTime((int)$r['transaction_time_unix'])->format(DATE_ATOM);
         $r['total_amount_fmt']    = peso((float)$r['total_amount']);
         $r['amount_tendered_fmt'] = peso((float)$r['amount_tendered']);
         $r['change_amount_fmt']   = peso((float)$r['change_amount']);
