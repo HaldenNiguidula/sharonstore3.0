@@ -261,17 +261,47 @@ function bindEvents() {
 }
 
 function lookupBarcode(barcode) {
-    fetch('/sharonstore3.0/api/transactions.php?action=barcode_lookup&barcode=' + encodeURIComponent(barcode), { headers: {'Accept':'application/json'} })
-    .then(function (r) { if (r.status === 401) throw new Error('session'); return r.json(); })
+    return fetch('/sharonstore3.0/api/transactions.php?action=barcode_lookup&barcode=' + encodeURIComponent(barcode), { headers: {'Accept':'application/json'} })
+    .then(function (r) {
+        // A platform challenge is not an inventory response and may not contain JSON.
+        if (r.headers && r.headers.get('x-vercel-mitigated') === 'challenge') throw new Error('verification');
+        if (r.status === 401) throw new Error('session');
+        if (r.status === 403) throw new Error('blocked');
+        if (r.status === 429) throw new Error('busy');
+        if (r.status >= 500) throw new Error('unavailable');
+        if (!r.ok && r.status !== 404 && r.status !== 409) throw new Error('response');
+        return r.json().then(function (j) {
+            if (!j || typeof j.success !== 'boolean' || (!r.ok && j.success)
+                || (j.success && (!j.item || !(Number(j.item.item_id) > 0)))) throw new Error('response');
+            return j;
+        });
+    })
     .then(function (j) {
-        if (j.out_of_stock) { _toast('Out of stock: ' + j.item.item_name, 'warning'); return; }
-        if (!j.success)     { _toast(j.message || 'Item not found.', 'error'); return; }
+        setBarcodeLookupNotice('');
+        if (j.out_of_stock) { _toast('Out of stock: ' + (j.item && j.item.item_name || 'This item'), 'warning'); return; }
+        if (!j.success)     { _toast(j.message || 'Barcode lookup failed. Please try again.', 'error'); return; }
         addToCart(j.item); focusScanner();
     })
     .catch(function (err) {
-        if (err.message === 'session') _toast('Session expired. Please log in.', 'error');
-        else _toast('Barcode lookup failed.', 'error');
+        var messages = {
+            verification: 'Security verification required. Refresh this page, complete any website verification, then scan again.',
+            blocked: 'Barcode lookup was blocked. Refresh this page and try again. If it continues, contact the administrator.',
+            session: 'Session expired. Please log in.',
+            busy: 'Barcode service is busy. Please wait a moment, then scan again.',
+            unavailable: 'Barcode service is temporarily unavailable. Please try again shortly.'
+        };
+        var message = messages[err.message] || 'Barcode lookup failed. Check your connection and try again.';
+        if (err.message === 'verification' || err.message === 'blocked') setBarcodeLookupNotice(message);
+        _toast(message, 'error');
     });
+}
+
+function setBarcodeLookupNotice(message) {
+    var notice = document.getElementById('barcodeLookupNotice');
+    var text = document.getElementById('barcodeLookupMessage');
+    if (!notice || !text) return;
+    text.textContent = message;
+    notice.style.display = message ? 'block' : 'none';
 }
 
 function addToCart(item) {

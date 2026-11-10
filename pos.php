@@ -749,6 +749,10 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
                             Press <kbd class="pos-kbd">F2</kbd> to focus scanner
                         </span>
                     </div>
+                    <div id="barcodeLookupNotice" class="alert alert-warning mt-2 mb-0 small" role="alert" style="display:none;">
+                        <span id="barcodeLookupMessage"></span>
+                        <button type="button" class="btn btn-sm btn-outline-dark mt-2" onclick="window.location.reload()">Verify connection</button>
+                    </div>
                 </div>
 
                 <!-- Manual Search Panel (Traditional Desktop POS List) -->
@@ -988,7 +992,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#f0f4f8;color:#2C2D2D;
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="/sharonstore3.0/assets/js/app.js?v=37"></script>
-<script src="/sharonstore3.0/assets/js/pos.js?v=36"></script>
+<script src="/sharonstore3.0/assets/js/pos.js?v=37"></script>
 <?php require_once __DIR__ . '/includes/shift_modals.php'; ?>
 </body>
 </html>
